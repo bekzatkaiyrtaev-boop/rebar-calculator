@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Защитный слой бетона — §9.10 СТ РК EN 1992-1-1</title>
+<style>
+  /* ── Токены ── */
+  :root {
+    --bg:         #0f1117;
+    --surface:    #1a1d27;
+    --surface2:   #22263a;
+    --border:     #2e3347;
+    --accent:     #4f8ef7;
+    --accent2:    #7dd3a8;
+    --warn:       #f4b942;
+    --text:       #d6daf0;
+    --muted:      #6b7099;
+    --result-bg:  #0d2240;
+    --result-brd: #4f8ef7;
+    --mono:       'JetBrains Mono', 'Courier New', monospace;
+    --sans:       'Inter', 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    padding: 24px 16px 48px;
+    min-height: 100vh;
+  }
+
+  /* ── Шапка ── */
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -.3px;
+    color: #fff;
+  }
+  header p {
+    color: var(--muted);
+    margin-top: 4px;
+    font-size: 12px;
+  }
+  .ref-badge {
+    display: inline-block;
+    margin-top: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+
+  /* ── Layout ── */
+  .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 960px; margin: 0 auto; }
+  @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } }
+
+  /* ── Карточки ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* ── Поля ввода ── */
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .field label span {
+    font-family: var(--mono);
+    color: var(--text);
+    font-size: 13px;
+  }
+  input[type=number], select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input[type=number]:focus, select:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+
+  /* ── Формула ── */
+  .formula-block {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.9;
+  }
+  .formula-block .f-label { color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+
+  /* ── Шаги расчёта ── */
+  .steps { font-family: var(--mono); font-size: 12px; line-height: 2; }
+  .step-row { display: flex; justify-content: space-between; align-items: center;
+    padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .step-row:last-child { border-bottom: none; }
+  .step-name { color: var(--muted); }
+  .step-val  { color: var(--accent); font-weight: 600; }
+  .step-val.max { color: var(--accent2); }
+
+  /* ── Итог ── */
+  .result-box {
+    grid-column: 1 / -1;
+    background: var(--result-bg);
+    border: 2px solid var(--result-brd);
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .result-label { font-size: 13px; color: var(--muted); }
+  .result-formula { font-family: var(--mono); font-size: 13px; color: var(--text); margin-top: 4px; }
+  .result-value {
+    font-family: var(--mono);
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -1px;
+  }
+  .result-unit { font-size: 18px; color: var(--muted); margin-left: 4px; }
+
+  /* ── Таблица классов ── */
+  .table-card { grid-column: 1 / -1; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
+  th {
+    background: var(--surface2);
+    color: var(--muted);
+    text-align: center;
+    padding: 7px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+  }
+  td {
+    padding: 6px 10px;
+    text-align: center;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  tr:nth-child(even) td { background: var(--surface2); }
+  td.row-header { text-align: left; color: var(--muted); font-weight: 600; }
+  td.active { background: var(--result-bg) !important; color: var(--accent); font-weight: 700;
+    border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+  /* ── Классы среды ── */
+  .env-table { grid-column: 1 / -1; overflow-x: auto; }
+  .env-table table { min-width: 700px; }
+  .env-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-right: 3px;
+  }
+  .tag-x0   { background: #1a2a1a; color: #7dd3a8; border: 1px solid #2a4a2a; }
+  .tag-xc   { background: #1a2435; color: #7baadd; border: 1px solid #2a3a55; }
+  .tag-xd   { background: #2a1a1a; color: #dd8877; border: 1px solid #4a2a2a; }
+  .tag-xs   { background: #1a1a2a; color: #aa88dd; border: 1px solid #2a2a4a; }
+  .tag-xf   { background: #1a1a1a; color: #aaaacc; border: 1px solid #3a3a4a; }
+  .tag-xa   { background: #2a2a1a; color: #ddcc77; border: 1px solid #4a4a2a; }
+
+  .legend-table { font-size: 12px; }
+  .legend-table td { text-align: left; vertical-align: top; padding: 7px 10px; line-height: 1.55; }
+  .legend-table td.sym {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .legend-table td.def { color: var(--text); }
+  .legend-table td.def b { color: #fff; }
+  .legend-table td.src {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+  tr.legend-group td {
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    padding: 6px 10px;
+    border-top: 1px solid var(--border);
+  }
+  .note {
+    font-size: 11px;
+    color: var(--muted);
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-radius: 5px;
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+  .note b { color: var(--warn); }
+
+  .disclaimer {
+    max-width: 960px;
+    margin: 24px auto 0;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .disclaimer p { margin-bottom: 8px; }
+  .disclaimer p:last-child { margin-bottom: 0; }
+  .disclaimer .contact { color: var(--accent); }
+
+  /* ── Переключатель вкладок ── */
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tab-btn {
+    padding: 6px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .tab-btn.active { background: var(--result-bg); border-color: var(--accent); color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Защитный слой бетона</h1>
+  <span class="ref-badge">§9.10 СТ РК EN 1992-1-1</span>
+</header>
+
+<div class="layout">
+
+  <!-- ── Ввод ── -->
+  <div class="card">
+    <div class="card-title">Исходные данные</div>
+
+    <div class="field">
+      <label>Диаметр арматуры <span>Ø (мм) — ГОСТ 34028</span></label>
+      <select id="diameter" onchange="calc()">
+        <option value="4">Ø 4</option>
+        <option value="4.5">Ø 4,5</option>
+        <option value="5">Ø 5</option>
+        <option value="5.5">Ø 5,5</option>
+        <option value="6">Ø 6</option>
+        <option value="6.5">Ø 6,5</option>
+        <option value="7">Ø 7</option>
+        <option value="7.5">Ø 7,5</option>
+        <option value="8">Ø 8</option>
+        <option value="8.5">Ø 8,5</option>
+        <option value="9">Ø 9</option>
+        <option value="9.5">Ø 9,5</option>
+        <option value="10">Ø 10</option>
+        <option value="11">Ø 11</option>
+        <option value="12">Ø 12</option>
+        <option value="13">Ø 13</option>
+        <option value="14">Ø 14</option>
+        <option value="15">Ø 15</option>
+        <option value="16">Ø 16</option>
+        <option value="17">Ø 17</option>
+        <option value="18" selected>Ø 18</option>
+        <option value="19">Ø 19</option>
+        <option value="20">Ø 20</option>
+        <option value="22">Ø 22</option>
+        <option value="25">Ø 25</option>
+        <option value="28">Ø 28</option>
+        <option value="32">Ø 32</option>
+        <option value="36">Ø 36</option>
+        <option value="40">Ø 40</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Класс конструкций <span>S</span></label>
+      <select id="sclass" onchange="calc()">
+        <option value="S1">S1 — Временные (< 10 лет)</option>
+        <option value="S2">S2 — Заменяемые (10–25 лет)</option>
+        <option value="S3" selected>S3 — Сельскохозяйственные (15–30 лет)</option>
+        <option value="S4">S4 — Жилые / общественные (50 лет)</option>
+        <option value="S5">S5 — Монументальные / мосты (100 лет)</option>
+        <option value="S6">S6 — Особые (> 100 лет)</option>
+      </select>
+      <div style="font-size:11px;color:var(--muted);margin-top:5px;">Класс, принятый по умолчанию в нац. приложении — S4 (50 лет), §9.10.4</div>
+    </div>
+
+    <div class="field">
+      <label>Класс условий эксплуатации</label>
+      <select id="xclass" onchange="calc()">
+        <option value="X0">X0 — Нет коррозии / воздействия</option>
+        <option value="XC1">XC1 — Сухое / пост. водонасыщенное</option>
+        <option value="XC2_XC3">XC2/XC3 — Водонасыщение с высыханием / умерен. влажность</option>
+        <option value="XC4">XC4 — Попеременно влажное и сухое</option>
+        <option value="XD1_XS1" selected>XD1/XS1 — Умеренная влажность + хлориды</option>
+        <option value="XD2_XS2">XD2/XS2 — Водонасыщ. + хлориды</option>
+        <option value="XD3_XS3">XD3/XS3 — Попеременно + хлориды</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Δc<sub>dev</sub> — допустимое отрицательное отклонение <span>(мм)</span></label>
+      <select id="cdev" onchange="calc()">
+        <option value="0">0</option>
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+      </select>
+    </div>
+
+    <div class="note">
+      Δc<sub>dur,γ</sub> = Δc<sub>dur,st</sub> = Δc<sub>dur,add</sub> = 0 по нац. приложению
+    </div>
+  </div>
+
+  <!-- ── Расчёт ── -->
+  <div class="card">
+    <div class="card-title">Ход расчёта</div>
+
+    <div class="formula-block">
+      <div class="f-label">Формула EN 1992-1-1 §9.10.2</div>
+      <div>c<sub>min</sub> = max { c<sub>min,b</sub> ; c<sub>min,dur</sub> + Δc<sub>dur,γ</sub> − Δc<sub>dur,st</sub> − Δc<sub>dur,add</sub> ; 10 мм }</div>
+      <div style="margin-top:4px;">c<sub>nom</sub> = c<sub>min</sub> + Δc<sub>dev</sub></div>
+    </div>
+
+    <div class="steps" id="steps">
+      <!-- JS заполняет -->
+    </div>
+
+    <div class="note" style="margin-top:14px;">
+      <b>⚑ Примечание:</b> При соединённых вместе стержнях c<sub>min,b</sub> = Ø<sub>n</sub> (эквивалентный диаметр), §9.10.3.<br>
+      Если номинальный размер крупного заполнителя превышает 32 мм, c<sub>min,b</sub> увеличивается на 5 мм (§9.10.3).
+    </div>
+  </div>
+
+  <!-- ── Итог ── -->
+  <div class="result-box">
+    <div>
+      <div class="result-label">Номинальный защитный слой</div>
+      <div class="result-formula" id="res-formula">c<sub>nom</sub> = — мм + — мм</div>
+    </div>
+    <div>
+      <span class="result-value" id="res-cnom">—</span>
+      <span class="result-unit">мм</span>
+    </div>
+  </div>
+
+  <!-- ── Справочные таблицы ── -->
+  <div class="card table-card">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('tab-cmin')">Таблица c<sub>min,dur</sub></button>
+      <button class="tab-btn" onclick="showTab('tab-env')">Классы среды</button>
+      <button class="tab-btn" onclick="showTab('tab-legend')">Обозначения</button>
+    </div>
+
+    <!-- Таблица cmin,dur -->
+    <div class="tab-content active" id="tab-cmin">
+      <div class="card-title" style="margin-bottom:10px;">
+        c<sub>min,dur</sub> (мм) — Таблица 9.10 СТ РК EN 1992-1-1 · Ячейка вашего варианта выделена
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="durTable">
+          <thead>
+            <tr>
+              <th>Класс</th>
+              <th>X0</th>
+              <th>XC1</th>
+              <th>XC2/XC3</th>
+              <th>XC4</th>
+              <th>XD1/XS1</th>
+              <th>XD2/XS2</th>
+              <th>XD3/XS3</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="row-header">S1</td><td>10</td><td>10</td><td>10</td><td>15</td><td>20</td><td>25</td><td>30</td></tr>
+            <tr><td class="row-header">S2</td><td>10</td><td>10</td><td>15</td><td>20</td><td>25</td><td>30</td><td>35</td></tr>
+            <tr><td class="row-header">S3</td><td>10</td><td>10</td><td>20</td><td>25</td><td>30</td><td>35</td><td>40</td></tr>
+            <tr><td class="row-header">S4</td><td>10</td><td>15</td><td>25</td><td>30</td><td>35</td><td>40</td><td>45</td></tr>
+            <tr><td class="row-header">S5</td><td>15</td><td>20</td><td>30</td><td>35</td><td>40</td><td>45</td><td>50</td></tr>
+            <tr><td class="row-header">S6</td><td>20</td><td>25</td><td>35</td><td>40</td><td>45</td><td>50</td><td>55</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Классы среды -->
+    <div class="tab-content" id="tab-env">
+      <div class="card-title" style="margin-bottom:10px;">
+        Таблица 5.2 — Классы условий эксплуатации (EN 1992-1-1 / СТ РК EN 206-1)
+      </div>
+      <div style="overflow-x:auto;" class="env-table">
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:left;width:80px">Класс</th>
+              <th style="text-align:left">Характеристика</th>
+              <th style="text-align:left">Примеры</th>
+              <th>Бетон</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="4" style="color:var(--muted);font-size:11px;text-align:left;padding:8px 10px;background:var(--surface2);">1 — Отсутствие коррозии / воздействия</td></tr>
+            <tr><td><span class="env-tag tag-x0">X0</span></td><td style="text-align:left">Для ЖБ: очень сухая среда</td><td style="text-align:left">Бетон в зданиях с малой влажностью</td><td>C12/15</td></tr>
+
+            <tr><td colspan="4" style="color:var(--muted);font-size:11px;text-align:left;padding:8px 10px;background:var(--surface2);">2 — Коррозия от карбонизации</td></tr>
+            <tr><td><span class="env-tag tag-xc">XC1</span></td><td style="text-align:left">Сухое / пост. водонасыщ.</td><td style="text-align:left">Здания с небольшой влажностью; под водой</td><td>C20/25</td></tr>
+            <tr><td><span class="env-tag tag-xc">XC2</span></td><td style="text-align:left">Водонасыщ. с высыханием</td><td style="text-align:left">Фундаменты, увлажняемые поверхности</td><td>C25/30</td></tr>
+            <tr><td><span class="env-tag tag-xc">XC3</span></td><td style="text-align:left">Умеренная влажность</td><td style="text-align:left">Здания с высокой влажн.; защищён от дождя</td><td>C30/37</td></tr>
+            <tr><td><span class="env-tag tag-xc">XC4</span></td><td style="text-align:left">Попеременно влажное/сухое</td><td style="text-align:left">Увлажняемые водой (не XC2)</td><td>C30/37</td></tr>
+
+            <tr><td colspan="4" style="color:var(--muted);font-size:11px;text-align:left;padding:8px 10px;background:var(--surface2);">3 — Коррозия от хлоридов (не морская вода)</td></tr>
+            <tr><td><span class="env-tag tag-xd">XD1</span></td><td style="text-align:left">Умеренная влажность</td><td style="text-align:left">Туман с хлоридами</td><td>C30/37</td></tr>
+            <tr><td><span class="env-tag tag-xd">XD2</span></td><td style="text-align:left">Водонасыщ. с высыханием</td><td style="text-align:left">Бассейны, техвода с хлоридами</td><td>C30/37</td></tr>
+            <tr><td><span class="env-tag tag-xd">XD3</span></td><td style="text-align:left">Попеременно влажное/сухое</td><td style="text-align:left">Мосты, дороги, паркинги</td><td>C35/45</td></tr>
+
+            <tr><td colspan="4" style="color:var(--muted);font-size:11px;text-align:left;padding:8px 10px;background:var(--surface2);">4 — Коррозия от хлоридов морской воды</td></tr>
+            <tr><td><span class="env-tag tag-xs">XS1</span></td><td style="text-align:left">Воздух насыщен солью</td><td style="text-align:left">Сооружения у побережья</td><td>C30/37</td></tr>
+            <tr><td><span class="env-tag tag-xs">XS2</span></td><td style="text-align:left">Постоянное погружение</td><td style="text-align:left">Морские элементы под водой</td><td>C35/45</td></tr>
+            <tr><td><span class="env-tag tag-xs">XS3</span></td><td style="text-align:left">Приливы/отливы, брызги</td><td style="text-align:left">Морские элементы в зоне брызг</td><td>C35/45</td></tr>
+
+            <tr><td colspan="4" style="color:var(--muted);font-size:11px;text-align:left;padding:8px 10px;background:var(--surface2);">5 — Замораживание/оттаивание</td></tr>
+            <tr><td><span class="env-tag tag-xf">XF1</span></td><td style="text-align:left">Умерен. водонасыщ., без а/л</td><td style="text-align:left">Вертик. поверхности в дождь и мороз</td><td>C30/37</td></tr>
+            <tr><td><span class="env-tag tag-xf">XF2</span></td><td style="text-align:left">Умерен. водонасыщ., с а/л</td><td style="text-align:left">Вертик. дорожные поверхности</td><td>C25/30</td></tr>
+            <tr><td><span class="env-tag tag-xf">XF3</span></td><td style="text-align:left">Высокое водонасыщ., без а/л</td><td style="text-align:left">Горизонт. поверхности в дождь и мороз</td><td>C30/37</td></tr>
+            <tr><td><span class="env-tag tag-xf">XF4</span></td><td style="text-align:left">Высокое водонасыщ., с а/л</td><td style="text-align:left">Мосты, дороги с а/л, морские в зоне брызг</td><td>C30/37</td></tr>
+
+            <tr><td colspan="4" style="color:var(--muted);font-size:11px;text-align:left;padding:8px 10px;background:var(--surface2);">6 — Химическое воздействие</td></tr>
+            <tr><td><span class="env-tag tag-xa">XA1</span></td><td style="text-align:left">Слабоагрессивная среда</td><td style="text-align:left">Резервуары очистных сооружений</td><td>C30/37</td></tr>
+            <tr><td><span class="env-tag tag-xa">XA2</span></td><td style="text-align:left">Умеренно агрессивная</td><td style="text-align:left">Бетонные полы</td><td>C30/37</td></tr>
+            <tr><td><span class="env-tag tag-xa">XA3</span></td><td style="text-align:left">Сильноагрессивная</td><td style="text-align:left">Хим. предприятия, градирни</td><td>C35/45</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Обозначения -->
+    <div class="tab-content" id="tab-legend">
+      <div class="card-title" style="margin-bottom:12px;">Расшифровка обозначений — §9.10 СТ РК EN 1992-1-1</div>
+      <table class="legend-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;width:160px">Символ</th>
+            <th style="text-align:left">Расшифровка</th>
+            <th style="text-align:left;width:130px">Источник</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="legend-group"><td colspan="3">Результирующие величины</td></tr>
+          <tr>
+            <td class="sym">c<sub>nom</sub></td>
+            <td class="def"><b>Номинальный защитный слой бетона</b> — итоговое значение, указываемое на чертежах. Равно минимальному слою плюс допустимое отрицательное отклонение.</td>
+            <td class="src">§9.10.1</td>
+          </tr>
+          <tr>
+            <td class="sym">c<sub>min</sub></td>
+            <td class="def"><b>Минимальный защитный слой</b> — наибольшее из трёх условий: сцепление арматуры с бетоном, долговечность (защита от среды) и абсолютный минимум 10 мм.</td>
+            <td class="src">§9.10.2</td>
+          </tr>
+
+          <tr class="legend-group"><td colspan="3">Компоненты c<sub>min</sub></td></tr>
+          <tr>
+            <td class="sym">c<sub>min,b</sub></td>
+            <td class="def"><b>Минимум из условия сцепления</b> — для одиночного стержня равен его диаметру Ø. Для пучка арматуры — эквивалентному диаметру Ø<sub>eq</sub> (§9.10.3).</td>
+            <td class="src">§9.10.3</td>
+          </tr>
+          <tr>
+            <td class="sym">c<sub>min,dur</sub></td>
+            <td class="def"><b>Минимум из условия долговечности</b> — зависит от класса конструкций (S1–S6) и класса условий эксплуатации (X0, XC, XD, XS…). Определяется по Таблице 4.4N.</td>
+            <td class="src">§9.10.4, Табл. 9.10</td>
+          </tr>
+          <tr>
+            <td class="sym">10 мм</td>
+            <td class="def"><b>Абсолютный минимум</b> — нижняя граница независимо от класса конструкции и среды.</td>
+            <td class="src">§9.10.2</td>
+          </tr>
+
+          <tr class="legend-group"><td colspan="3">Поправочные коэффициенты к c<sub>min,dur</sub></td></tr>
+          <tr>
+            <td class="sym">Δc<sub>dur,γ</sub></td>
+            <td class="def"><b>Дополнительный элемент надёжности</b> — добавочный запас к минимальному слою долговечности. По национальному приложению РК принят равным <b>0 мм</b>.</td>
+            <td class="src">§9.10.2 (Δcdur,γ)</td>
+          </tr>
+          <tr>
+            <td class="sym">Δc<sub>dur,st</sub></td>
+            <td class="def"><b>Уменьшение при нержавеющей стали</b> — допускается снижение минимального слоя при использовании нержавеющей арматуры. По нац. приложению РК принят равным <b>0 мм</b>.</td>
+            <td class="src">§9.10.2 (cdur,st)</td>
+          </tr>
+          <tr>
+            <td class="sym">Δc<sub>dur,add</sub></td>
+            <td class="def"><b>Уменьшение при доп. защите</b> — снижение при наличии дополнительной антикоррозийной защиты (гидроизоляция, покрытия и т.д.). По нац. приложению РК принят равным <b>0 мм</b>.</td>
+            <td class="src">§9.10.2 (Δcdur,add)</td>
+          </tr>
+
+          <tr class="legend-group"><td colspan="3">Допуск на отклонение</td></tr>
+          <tr>
+            <td class="sym">Δc<sub>dev</sub></td>
+            <td class="def"><b>Допустимое отрицательное отклонение</b> — добавочный запас на неточность установки арматуры в производстве. Принимает значения <b>0, 5 или 10 мм</b>: 10 мм — обычные условия; 5 мм — при контролируемом производстве (система менеджмента качества, в т.ч. для сборного ЖБ); 0 мм — при особо точном контроле с применением измерительных приборов.</td>
+            <td class="src">§9.10.5, §9.10.7</td>
+          </tr>
+
+          <tr class="legend-group"><td colspan="3">Классификационные параметры</td></tr>
+          <tr>
+            <td class="sym">S1 – S6</td>
+            <td class="def"><b>Класс конструкций</b> — зависит от расчётного срока службы и назначения объекта. Базовый класс S4 (50 лет). Увеличивается при большем сроке службы или агрессивной среде.</td>
+            <td class="src">§9.10.4 (примечание: нац. класс — S4)</td>
+          </tr>
+          <tr>
+            <td class="sym">X0, XC, XD, XS, XF, XA</td>
+            <td class="def"><b>Класс условий эксплуатации</b> — характеристика агрессивности среды: X0 (нет воздействия), XC (карбонизация), XD (хлориды, не морские), XS (морские хлориды), XF (замораживание), XA (хим. воздействие).</td>
+            <td class="src">Табл. 5.2</td>
+          </tr>
+          <tr>
+            <td class="sym">Ø</td>
+            <td class="def"><b>Номинальный диаметр арматурного стержня</b> (мм). Выбирается по ГОСТ 34028.</td>
+            <td class="src">ГОСТ 34028</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  
+  </div>
+</div><!-- /layout -->
+
+<div class="disclaimer">
+  <p>Калькулятор предназначен для предварительных расчётов и личного использования. Перед применением в проекте всегда сверяйте результат с действующими нормами и проверяйте у ГИПа/экспертизы. Возможны опечатки и обновления без предупреждения. Автор не несёт ответственности за использование данных инструмента.</p>
+  <p style="margin-top:12px;color:var(--text);font-weight:600;">С уважением, Кайыртаев Бекзат Бейсембаевич</p>
+</div>
+
+<script>
+// ── Данные таблицы 4.4N ──
+const DUR_TABLE = {
+  S1: { X0:10, XC1:10, XC2_XC3:10, XC4:15, XD1_XS1:20, XD2_XS2:25, XD3_XS3:30 },
+  S2: { X0:10, XC1:10, XC2_XC3:15, XC4:20, XD1_XS1:25, XD2_XS2:30, XD3_XS3:35 },
+  S3: { X0:10, XC1:10, XC2_XC3:20, XC4:25, XD1_XS1:30, XD2_XS2:35, XD3_XS3:40 },
+  S4: { X0:10, XC1:15, XC2_XC3:25, XC4:30, XD1_XS1:35, XD2_XS2:40, XD3_XS3:45 },
+  S5: { X0:15, XC1:20, XC2_XC3:30, XC4:35, XD1_XS1:40, XD2_XS2:45, XD3_XS3:50 },
+  S6: { X0:20, XC1:25, XC2_XC3:35, XC4:40, XD1_XS1:45, XD2_XS2:50, XD3_XS3:55 },
+};
+
+// Порядок столбцов в HTML-таблице
+const COLS = ['X0','XC1','XC2_XC3','XC4','XD1_XS1','XD2_XS2','XD3_XS3'];
+const ROWS = ['S1','S2','S3','S4','S5','S6'];
+
+function calc() {
+  const d    = parseFloat(document.getElementById('diameter').value) || 0;
+  const sc   = document.getElementById('sclass').value;
+  const xc   = document.getElementById('xclass').value;
+  const dg   = 0; // Δcdur,γ — по национальному приложению РК принят равным 0, не задаётся пользователем
+  const dst  = 0; // Δcdur,st — по национальному приложению РК принят равным 0, не задаётся пользователем
+  const dadd = 0; // Δcdur,add — по национальному приложению РК принят равным 0, не задаётся пользователем
+  const cdev = parseFloat(document.getElementById('cdev').value)    || 0;
+
+  const cmin_b   = d;                           // §9.10.3
+  const cmin_dur = DUR_TABLE[sc][xc];           // Таблица 9.10
+  const dur_term = cmin_dur + dg - dst - dadd;  // §9.10.2
+  const vals     = [cmin_b, dur_term, 10];
+  const cmin     = Math.max(...vals);
+  const cnom     = cmin + cdev;
+
+  // ── Шаги ──
+  const stepsEl = document.getElementById('steps');
+  stepsEl.innerHTML = `
+    <div class="step-row"><span class="step-name">c<sub>min,b</sub> = Ø</span><span class="step-val">${cmin_b} мм</span></div>
+    <div class="step-row"><span class="step-name">c<sub>min,dur</sub> [${sc}, ${xc.replace('_','/')}]</span><span class="step-val">${cmin_dur} мм</span></div>
+    <div class="step-row"><span class="step-name">c<sub>min,dur</sub> + Δc<sub>dur,γ</sub> − Δc<sub>dur,st</sub> − Δc<sub>dur,add</sub></span><span class="step-val">${dur_term} мм</span></div>
+    <div class="step-row"><span class="step-name" style="color:var(--text)">c<sub>min</sub> = max { ${cmin_b} ; ${dur_term} ; 10 }</span><span class="step-val max">${cmin} мм</span></div>
+    <div class="step-row"><span class="step-name">Δc<sub>dev</sub></span><span class="step-val">${cdev} мм</span></div>
+  `;
+
+  // ── Итог ──
+  document.getElementById('res-formula').innerHTML =
+    `c<sub>nom</sub> = ${cmin} + ${cdev}`;
+  document.getElementById('res-cnom').textContent = cnom;
+
+  // ── Подсветка таблицы ──
+  const table = document.getElementById('durTable');
+  const rows  = table.querySelectorAll('tbody tr');
+  const colIdx = COLS.indexOf(xc);
+  rows.forEach((tr, ri) => {
+    const cells = tr.querySelectorAll('td');
+    cells.forEach((td, ci) => td.classList.remove('active'));
+    if (ROWS[ri] === sc && colIdx >= 0) {
+      cells[colIdx + 1].classList.add('active'); // +1 из-за row-header
+    }
+  });
+}
+
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── Первый расчёт при загрузке ──
+calc();
+</script>
+
+</body>
+</html>
