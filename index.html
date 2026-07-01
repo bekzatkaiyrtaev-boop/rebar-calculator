@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Справочник конструктора — EN 1992-1-1</title>
+<style>
+  :root {
+    --bg:         #0f1117;
+    --surface:    #1a1d27;
+    --surface2:   #22263a;
+    --border:     #2e3347;
+    --accent:     #4f8ef7;
+    --accent2:    #7dd3a8;
+    --warn:       #f4b942;
+    --text:       #d6daf0;
+    --muted:      #6b7099;
+    --mono:       'JetBrains Mono', 'Courier New', monospace;
+    --sans:       'Inter', 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    padding: 24px 16px 48px;
+    min-height: 100vh;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -.3px;
+    color: #fff;
+  }
+  header p {
+    color: var(--muted);
+    margin-top: 6px;
+    font-size: 13px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    text-decoration: none;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color .15s, transform .15s;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .card .icon {
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+  .card .title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .card .desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .card .ref {
+    margin-top: auto;
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    align-self: flex-start;
+  }
+
+  /* Заглушка для будущих разделов */
+  .card.soon {
+    opacity: .45;
+    pointer-events: none;
+  }
+  .card.soon .ref { color: var(--muted); }
+
+  .section-title {
+    max-width: 960px;
+    margin: 32px auto 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--muted);
+  }
+
+  footer {
+    max-width: 960px;
+    margin: 40px auto 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Справочник конструктора</h1>
+  <p>Расчётные инструменты по Еврокодам EN 1990–1995 · КЖ / КМ / АС</p>
+</header>
+
+<div class="section-title">Раздел 9 — Железобетонные конструкции (EN 1992-1-1)</div>
+<div class="grid">
+
+  <a class="card" href="Vedomost_elementov.html">
+    <div class="icon">📐</div>
+    <div class="title">Ведомость деталей</div>
+    <div class="desc">Радиусы отгиба арматуры, длины стержней по средней оси, эскизы форм A/B.</div>
+    <span class="ref">EN 1992-1-1 · Табл. 8.1N</span>
+  </a>
+
+  <a class="card" href="zashitny-sloy.html">
+    <div class="icon">🧱</div>
+    <div class="title">Защитный слой бетона</div>
+    <div class="desc">Расчёт c_min и c_nom по классу конструкции, условиям среды и допуску на отклонение.</div>
+    <span class="ref">СТ РК EN 1992-1-1 · §9.10</span>
+  </a>
+
+  <div class="card soon">
+    <div class="icon">➕</div>
+    <div class="title">Скоро добавится</div>
+    <div class="desc">Следующий калькулятор появится здесь.</div>
+    <span class="ref">—</span>
+  </div>
+
+</div>
+
+<footer>
+  Калькуляторы предназначены для предварительных расчётов и личного использования.<br>
+  Перед применением в проекте всегда сверяйте результат с действующими нормами и проверяйте у ГИПа/экспертизы.<br><br>
+  С уважением, Кайыртаев Бекзат Бейсембаевич
+</footer>
+
+</body>
+</html>
