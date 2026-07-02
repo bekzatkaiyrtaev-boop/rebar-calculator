@@ -33,9 +33,13 @@
 
   header {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border);
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
   }
   header h1 {
     font-size: 24px;
@@ -49,12 +53,48 @@
     font-size: 13px;
   }
 
+  .search-wrap { max-width: 960px; margin: 0 auto 28px; }
+  #search {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  #search:focus { border-color: var(--accent); }
+  #search::placeholder { color: var(--muted); }
+
+  .container { max-width: 960px; margin: 0 auto; }
+
+  .section-title {
+    margin: 28px 0 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title:first-child { margin-top: 0; }
+  .section-title .count {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 16px;
-    max-width: 960px;
-    margin: 0 auto;
   }
 
   .card {
@@ -69,24 +109,10 @@
     gap: 8px;
     transition: border-color .15s, transform .15s;
   }
-  .card:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
-  }
-  .card .icon {
-    font-size: 22px;
-    margin-bottom: 4px;
-  }
-  .card .title {
-    font-size: 15px;
-    font-weight: 700;
-    color: #fff;
-  }
-  .card .desc {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card .icon { font-size: 22px; margin-bottom: 4px; }
+  .card .title { font-size: 15px; font-weight: 700; color: #fff; }
+  .card .desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
   .card .ref {
     margin-top: auto;
     display: inline-block;
@@ -100,32 +126,19 @@
     align-self: flex-start;
   }
 
-  /* Заглушка для будущих разделов */
-  .card.soon {
-    opacity: .45;
-    pointer-events: none;
-  }
-  .card.soon .ref { color: var(--muted); }
-
-  .section-title {
-    max-width: 960px;
-    margin: 32px auto 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .8px;
-    color: var(--muted);
-  }
+  .no-results { text-align: center; color: var(--muted); padding: 40px 0; font-size: 13px; }
 
   footer {
     max-width: 960px;
-    margin: 40px auto 0;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
+    margin: 24px auto 0;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
     font-size: 11px;
     color: var(--muted);
-    text-align: center;
-    line-height: 1.6;
+    text-align: left;
+    line-height: 1.7;
   }
 </style>
 </head>
@@ -133,40 +146,117 @@
 
 <header>
   <h1>Справочник конструктора</h1>
-  <p>Расчётные инструменты по Еврокодам EN 1990–1995 · КЖ / КМ / АС</p>
+  <p>Расчётные инструменты для проектирования · КЖ / КМ / АС</p>
 </header>
 
-<div class="section-title">Раздел 9 — Железобетонные конструкции (EN 1992-1-1)</div>
-<div class="grid">
-
-  <a class="card" href="Vedomost_elementov.html">
-    <div class="icon">📐</div>
-    <div class="title">Ведомость деталей</div>
-    <div class="desc">Радиусы отгиба арматуры, длины стержней по средней оси, эскизы форм A/B.</div>
-    <span class="ref">EN 1992-1-1 · Табл. 8.1N</span>
-  </a>
-
-  <a class="card" href="zashitny-sloy.html">
-    <div class="icon">🧱</div>
-    <div class="title">Защитный слой бетона</div>
-    <div class="desc">Расчёт c_min и c_nom по классу конструкции, условиям среды и допуску на отклонение.</div>
-    <span class="ref">СТ РК EN 1992-1-1 · §9.10</span>
-  </a>
-
-  <div class="card soon">
-    <div class="icon">➕</div>
-    <div class="title">Скоро добавится</div>
-    <div class="desc">Следующий калькулятор появится здесь.</div>
-    <span class="ref">—</span>
-  </div>
-
+<div class="search-wrap">
+  <input type="text" id="search" placeholder="Поиск калькулятора по названию или пункту Еврокода…">
 </div>
 
+<div class="container" id="container"></div>
+
 <footer>
-  Калькуляторы предназначены для предварительных расчётов и личного использования.<br>
-  Перед применением в проекте всегда сверяйте результат с действующими нормами и проверяйте у ГИПа/экспертизы.<br><br>
-  С уважением, Кайыртаев Бекзат Бейсембаевич
+  Калькуляторы предназначены для предварительных расчётов и личного использования. Перед применением в проекте всегда сверяйте результат с действующими нормами и проверяйте у ГИПа/экспертизы. Возможны опечатки и обновления без предупреждения. Автор не несёт ответственности за использование данных инструмента.<br><br>
+  <span style="color:var(--text); font-weight:600;">С уважением, Кайыртаев Бекзат Бейсембаевич</span>
 </footer>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   РЕЕСТР КАЛЬКУЛЯТОРОВ
+   Чтобы добавить новый калькулятор — добавьте один объект в нужный
+   раздел ниже. Больше НИЧЕГО менять не нужно — карточка, поиск
+   и группировка построятся автоматически.
+
+   Поля:
+     title — название на карточке
+     desc  — короткое описание (1-2 строки)
+     ref   — пункт норматива, например "EN 1992-1-1 · §9.10"
+     href  — путь к файлу калькулятора (с учётом папки, если есть)
+     icon  — любой эмодзи-иконка
+   ══════════════════════════════════════════════════════════════ */
+
+const REGISTRY = {
+  "Раздел 1 — Железобетонные конструкции": [
+    {
+      title: "Ведомость деталей",
+      desc: "Радиусы отгиба арматуры, длины стержней по средней оси, эскизы форм A/B.",
+      ref: "EN 1992-1-1 · Табл. 8.1N",
+      href: "Vedomost_elementov.html",
+      icon: "📐"
+    },
+    {
+      title: "Защитный слой бетона",
+      desc: "Расчёт c_min и c_nom по классу конструкции, условиям среды и допуску на отклонение.",
+      ref: "СТ РК EN 1992-1-1 · §9.10",
+      href: "zashitny-sloy.html",
+      icon: "🧱"
+    }
+  ],
+
+  "Раздел 2 — Металлические конструкции": [
+    {
+      title: "Двутавры по ГОСТ 26020-83",
+      desc: "Сортамент нормальных, широкополочных и колонных двутавров, характеристики сечения и параметры стыка.",
+      ref: "ГОСТ 26020-83 · EN 1993-1-1",
+      href: "dvutavry-b.html",
+      icon: "🔩"
+    },
+    {
+      title: "Двутавры по СТО АСЧМ 20-93",
+      desc: "Сортамент нормальных, широкополочных и колонных двутавров, характеристики сечения и параметры стыка.",
+      ref: "СТО АСЧМ 20-93 · EN 1993-1-1",
+      href: "dvutavry-sto.html",
+      icon: "🔩"
+    }
+  ]
+};
+
+function render(filter = "") {
+  const container = document.getElementById('container');
+  container.innerHTML = "";
+  const q = filter.trim().toLowerCase();
+  let totalShown = 0;
+
+  for (const [section, items] of Object.entries(REGISTRY)) {
+    const filtered = items.filter(it =>
+      !q ||
+      it.title.toLowerCase().includes(q) ||
+      it.desc.toLowerCase().includes(q) ||
+      it.ref.toLowerCase().includes(q)
+    );
+    if (filtered.length === 0) continue;
+    totalShown += filtered.length;
+
+    const sectionTitle = document.createElement('div');
+    sectionTitle.className = 'section-title';
+    sectionTitle.innerHTML = `${section} <span class="count">${filtered.length}</span>`;
+    container.appendChild(sectionTitle);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    filtered.forEach(it => {
+      const a = document.createElement('a');
+      a.className = 'card';
+      a.href = it.href;
+      a.innerHTML = `
+        <div class="icon">${it.icon}</div>
+        <div class="title">${it.title}</div>
+        <div class="desc">${it.desc}</div>
+        <span class="ref">${it.ref}</span>
+      `;
+      grid.appendChild(a);
+    });
+    container.appendChild(grid);
+  }
+
+  if (totalShown === 0) {
+    container.innerHTML = `<div class="no-results">Ничего не найдено по запросу «${filter}»</div>`;
+  }
+}
+
+document.getElementById('search').addEventListener('input', e => render(e.target.value));
+render();
+</script>
 
 </body>
 </html>
