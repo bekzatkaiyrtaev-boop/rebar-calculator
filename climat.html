@@ -370,7 +370,7 @@ async function loadCities() {
   try {
     const res  = await fetch(`${BACKEND}?book=climat&sheet=climat_kz`);
     const json = await res.json();
-    CITIES = (json.data || []).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+    CITIES = (json.records || []).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
     input.disabled = false;
     input.placeholder = 'Введите название или выберите из списка...';
     const astana = CITIES.find(c => c.name === 'Астана');
