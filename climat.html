@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Города — Климатические параметры участка строительства</title>
+<style>
+:root {
+  --bg:       #0f1117;
+  --surface:  #1a1d27;
+  --surface2: #22263a;
+  --border:   #2e3347;
+  --accent:   #4f8ef7;
+  --green:    #7dd3a8;
+  --warn:     #f4b942;
+  --red:      #ef4444;
+  --text:     #d6daf0;
+  --muted:    #6b7099;
+  --mono:     'JetBrains Mono','Courier New',monospace;
+  --sans:     'Inter','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;padding:24px 16px 48px;}
+
+/* ── Шапка ── */
+.page-wrap{max-width:960px;margin:0 auto;}
+.backlink{display:block;margin-bottom:14px;color:var(--muted);font-size:12px;text-decoration:none;}
+.backlink:hover{color:var(--accent);}
+header{text-align:center;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+header h1{font-size:22px;font-weight:700;color:#fff;}
+header p{color:var(--muted);margin-top:4px;font-size:12px;}
+
+/* ── Выбор города ── */
+.city-select-wrap{margin-bottom:24px;}
+.city-select-wrap label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px;}
+#citySelect{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);font-family:var(--sans);font-size:15px;font-weight:700;
+  padding:12px 16px;border-radius:8px;outline:none;cursor:pointer;
+  transition:border-color .15s;
+}
+#citySelect:focus{border-color:var(--accent);}
+
+/* ── Регион ── */
+.region-label{
+  text-align:center;font-size:11px;color:var(--muted);
+  margin-bottom:20px;letter-spacing:.5px;
+}
+
+/* ── Карточки ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.card-header{
+  background:var(--surface2);padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.card-header .title{font-size:13px;font-weight:700;color:#fff;}
+.card-header .ref{font-family:var(--mono);font-size:10px;color:var(--accent);
+  background:var(--bg);border:1px solid var(--border);padding:3px 8px;border-radius:4px;}
+
+/* ── Таблица параметров ── */
+table.params{width:100%;border-collapse:collapse;font-size:12px;}
+table.params td{padding:7px 14px;border-bottom:1px solid var(--border);}
+table.params tr:last-child td{border-bottom:none;}
+table.params td.label{color:var(--muted);width:55%;}
+table.params td.val{color:var(--green);font-family:var(--mono);font-weight:700;text-align:right;}
+table.params td.unit{color:var(--muted);font-size:10px;padding-left:4px;width:36px;text-align:left;}
+table.params td.val.accent{color:var(--accent);}
+table.params td.val.warn{color:var(--warn);}
+table.params td.val.muted{color:var(--muted);}
+
+/* ── Сетка блоков ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.grid2 .col{padding:0;}
+.grid2 .col:first-child{border-right:1px solid var(--border);}
+.section-label{
+  text-align:center;font-size:11px;font-weight:700;color:var(--accent);
+  padding:8px;background:var(--surface2);border-bottom:1px solid var(--border);
+  text-transform:uppercase;letter-spacing:.5px;
+}
+
+/* ── Расчётные параметры — крупные значения ── */
+.design-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1px;background:var(--border);}
+.design-cell{background:var(--surface);padding:14px 16px;text-align:center;}
+.design-cell .dc-label{font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.3;}
+.design-cell .dc-val{font-size:18px;font-weight:700;font-family:var(--mono);color:#fff;}
+.design-cell .dc-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.design-cell.highlight .dc-val{color:var(--warn);}
+.design-cell.highlight-blue .dc-val{color:var(--accent);}
+.design-cell.highlight-red .dc-val{color:var(--red);}
+
+/* ── Footer ── */
+footer{max-width:960px;margin:24px auto 0;padding:16px 20px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  font-size:11px;color:var(--muted);line-height:1.7;}
+
+@media(max-width:640px){
+  .grid2{grid-template-columns:1fr;}
+  .grid2 .col:first-child{border-right:none;border-bottom:1px solid var(--border);}
+  .design-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<a href="index.html" class="backlink">← На главную</a>
+
+<header>
+  <h1>Города</h1>
+  <p>Климатические параметры участка строительства · Республика Казахстан</p>
+</header>
+
+<div class="city-select-wrap">
+  <label>Населённый пункт</label>
+  <div style="position:relative;">
+    <!-- Поле ввода + кнопка стрелки (комбобокс) -->
+    <input id="cityInput" type="text" placeholder="Введите название или выберите из списка..."
+      autocomplete="off"
+      style="width:100%;background:var(--surface2);border:1px solid var(--border);
+             color:var(--text);font-family:var(--sans);font-size:15px;font-weight:700;
+             padding:12px 48px 12px 16px;border-radius:8px;outline:none;box-sizing:border-box;
+             transition:border-color .15s;"
+      onfocus="showDropdown(this.value);this.style.borderColor='var(--accent)'"
+      onblur="this.style.borderColor='';setTimeout(closeDropdown,150)"
+    >
+    <!-- Кнопка-стрелка -->
+    <button id="cityArrow" onclick="toggleDropdown()" type="button"
+      style="position:absolute;right:0;top:0;bottom:0;width:44px;
+             background:transparent;border:none;cursor:pointer;
+             display:flex;align-items:center;justify-content:center;color:var(--muted);">
+      <svg id="cityArrowIcon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <!-- Выпадающий список -->
+    <div id="cityDropdown"
+      style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;z-index:100;
+             background:var(--surface2);border:1px solid var(--border);
+             border-radius:8px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);">
+    </div>
+  </div>
+</div>
+<div class="region-label" id="regionLabel"></div>
+
+<!-- Расчётные параметры -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Расчётные параметры для проектирования</span>
+    <button id="btnCopyParams" onclick="copyClimaticParams()" title="Скопировать в буфер обмена"
+      style="background:var(--accent);border:none;color:#fff;font-size:11px;font-weight:600;
+             padding:5px 12px;border-radius:5px;cursor:pointer;font-family:var(--sans);
+             display:flex;align-items:center;gap:6px;transition:opacity .15s;"
+      onmouseenter="this.style.opacity='.8'" onmouseleave="this.style.opacity='1'">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 11H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.5"/></svg>
+      Копировать для общих данных
+    </button>
+  </div>
+  <div class="design-grid">
+    <div class="design-cell">
+      <div class="dc-label">Климатический район</div>
+      <div class="dc-val" id="climat_district">—</div>
+    </div>
+    <div class="design-cell highlight-blue">
+      <div class="dc-label">Ветер — район / давление</div>
+      <div class="dc-val"><span id="wind_zone">—</span> / <span id="wind_kpa">—</span> кПа</div>
+      <div class="dc-sub">Базовая скорость: <span id="wind_speed">—</span> м/с</div>
+    </div>
+    <div class="design-cell highlight">
+      <div class="dc-label">Снег на покрытие — район / нагрузка</div>
+      <div class="dc-val"><span id="snow_roof_dist">—</span> / <span id="snow_roof_kpa">—</span> кПа</div>
+    </div>
+    <div class="design-cell highlight">
+      <div class="dc-label">Снег на грунт — район / нагрузка</div>
+      <div class="dc-val"><span id="snow_g_dist">—</span> / <span id="snow_g_kpa">—</span> кПа</div>
+    </div>
+    <div class="design-cell">
+      <div class="dc-label">Зона влажности</div>
+      <div class="dc-val" id="moisture_zone">—</div>
+    </div>
+    <div class="design-cell highlight-red">
+      <div class="dc-label">Сейсмическая опасность</div>
+      <div class="dc-val"><span id="seismic_2475">—</span> / <span id="seismic_22475">—</span> баллов</div>
+      <div class="dc-sub">ОСЗ-2475 / ОСЗ-22475</div>
+    </div>
+    <div class="design-cell">
+      <div class="dc-label">Глубина нулевой изотермы в грунте</div>
+      <div class="dc-val" id="frost_depth">—</div>
+      <div class="dc-sub">максимальная, см</div>
+    </div>
+    <div class="design-cell">
+      <div class="dc-label">Гололёд — район / толщина</div>
+      <div class="dc-val"><span id="ice_dist">—</span> / <span id="ice_mm">—</span> мм</div>
+    </div>
+  </div>
+</div>
+
+<!-- Холодный период -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Холодный период года</span>
+    <span class="ref">СП РК 2.04-01-2017 · Табл. 3.1</span>
+  </div>
+  <div class="grid2">
+    <div class="col">
+      <div class="section-label">Температура воздуха, °С</div>
+      <table class="params">
+        <tr><td class="label">Абсолютная минимальная</td><td class="val highlight-red" id="t_abs_min">—</td><td class="unit">°С</td></tr>
+        <tr><td class="label">Наиб. холодных суток (0,98)</td><td class="val" id="t_cold_day_98">—</td><td class="unit">°С</td></tr>
+        <tr><td class="label">Наиб. холодных суток (0,92)</td><td class="val" id="t_cold_day_92">—</td><td class="unit">°С</td></tr>
+        <tr><td class="label">Наиб. холодной пятидневки (0,98)</td><td class="val accent" id="t_cold_5d_98">—</td><td class="unit">°С</td></tr>
+        <tr><td class="label">Наиб. холодной пятидневки (0,92)</td><td class="val" id="t_cold_5d_92">—</td><td class="unit">°С</td></tr>
+        <tr><td class="label">Температура обесп. 0,94</td><td class="val" id="t_heat_94">—</td><td class="unit">°С</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <div class="section-label">Отопительный период</div>
+      <table class="params">
+        <tr><td class="label">Продолжительность (≤ 0°С)</td><td class="val" id="dur_0">—</td><td class="unit">сут.</td></tr>
+        <tr><td class="label">Средняя температура (≤ 0°С)</td><td class="val" id="t_0">—</td><td class="unit">°С</td></tr>
+        <tr><td class="label">Продолжительность (≤ 8°С)</td><td class="val accent" id="dur_8">—</td><td class="unit">сут.</td></tr>
+        <tr><td class="label">Средняя температура (≤ 8°С)</td><td class="val accent" id="t_8">—</td><td class="unit">°С</td></tr>
+        <tr><td class="label">Начало отопительного периода</td><td class="val" id="heat_start">—</td><td class="unit"></td></tr>
+        <tr><td class="label">Конец отопительного периода</td><td class="val" id="heat_end">—</td><td class="unit"></td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="col">
+      <div class="section-label">Влажность и осадки</div>
+      <table class="params">
+        <tr><td class="label">Дней с оттепелью (дек–фев)</td><td class="val" id="thaw_days">—</td><td class="unit">дни</td></tr>
+        <tr><td class="label">Влажность в 15ч (январь)</td><td class="val" id="rh_jan">—</td><td class="unit">%</td></tr>
+        <tr><td class="label">Влажность за отоп. период</td><td class="val" id="rh_heat">—</td><td class="unit">%</td></tr>
+        <tr><td class="label">Осадки ноябрь–март</td><td class="val" id="precip_cold">—</td><td class="unit">мм</td></tr>
+        <tr><td class="label">Давление (январь)</td><td class="val" id="press_jan">—</td><td class="unit">гПа</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <div class="section-label">Ветер (холодный период)</div>
+      <table class="params">
+        <tr><td class="label">Направление (дек–фев)</td><td class="val" id="wind_dir_cold">—</td><td class="unit"></td></tr>
+        <tr><td class="label">Ср. скорость за отоп. период</td><td class="val" id="wind_v_heat">—</td><td class="unit">м/с</td></tr>
+        <tr><td class="label">Макс. скорость по румбам (янв)</td><td class="val" id="wind_v_jan_max">—</td><td class="unit">м/с</td></tr>
+        <tr><td class="label">Дней со скор. ≥10 м/с при t&lt;0</td><td class="val" id="wind_days">—</td><td class="unit">дни</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Тёплый период -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Тёплый период года</span>
+    <span class="ref">СП РК 2.04-01-2017 · Табл. 3.2</span>
+  </div>
+  <div class="grid2">
+    <div class="col">
+      <div class="section-label">Температура воздуха, °С</div>
+      <table class="params">
+        <tr><td class="label">Абсолютная максимальная</td><td class="val highlight-red" id="t_abs_max">—</td><td class="unit">°С</td></tr>
+        <tr><td class="label">Средняя макс. (июль)</td><td class="val" id="t_jul_max">—</td><td class="unit">°С</td></tr>
+        <tr><td class="label">Обеспеченность 0,95</td><td class="val" id="t_w95">—</td><td class="unit">°С</td></tr>
+        <tr><td class="label">Обеспеченность 0,98</td><td class="val accent" id="t_w98">—</td><td class="unit">°С</td></tr>
+        <tr><td class="label">Высота над ур. моря</td><td class="val" id="altitude">—</td><td class="unit">м</td></tr>
+        <tr><td class="label">Давление (июль)</td><td class="val" id="press_jul">—</td><td class="unit">гПа</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <div class="section-label">Влажность, осадки и ветер</div>
+      <table class="params">
+        <tr><td class="label">Влажность в 15ч (июль)</td><td class="val" id="rh_jul">—</td><td class="unit">%</td></tr>
+        <tr><td class="label">Осадки апрель–октябрь</td><td class="val" id="precip_warm">—</td><td class="unit">мм</td></tr>
+        <tr><td class="label">Макс. суточные осадки (ср.)</td><td class="val" id="precip_daily_avg">—</td><td class="unit">мм</td></tr>
+        <tr><td class="label">Макс. суточные осадки (наиб.)</td><td class="val" id="precip_daily_max">—</td><td class="unit">мм</td></tr>
+        <tr><td class="label">Направление ветра (июнь–авг)</td><td class="val" id="wind_dir_warm">—</td><td class="unit"></td></tr>
+        <tr><td class="label">Мин. скорость ветра (июль)</td><td class="val" id="wind_v_jul">—</td><td class="unit">м/с</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- Роза ветров -->
+<div class="card" id="windRoseCard">
+  <div class="card-header">
+    <span class="title">Роза ветров</span>
+    <span class="ref" id="windRoseSrc" style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
+  </div>
+  <div id="windRoseContent" style="padding:20px;display:flex;align-items:center;justify-content:center;gap:32px;flex-wrap:wrap;">
+    <svg id="windRoseSvg" viewBox="0 0 260 260" width="260" height="260" style="flex-shrink:0;"></svg>
+    <div id="windRoseTable" style="font-size:12px;min-width:140px;"></div>
+  </div>
+  <div id="windRoseNoData" style="display:none;padding:24px;text-align:center;color:var(--muted);font-size:12px;">
+    Данные розы ветров пока не добавлены для этого города.<br>
+    Скачайте архив погоды на rp5.kz и передайте нам для обработки.
+  </div>
+</div>
+
+<!-- Примечания -->
+<div class="card" style="margin-top:0;">
+  <div class="card-header">
+    <span class="title">Примечания</span>
+  </div>
+  <div style="padding:14px 16px;font-size:12px;line-height:1.8;color:var(--muted);">
+    <p style="margin-bottom:10px;">
+      <span style="color:var(--warn);font-weight:700;">* Звёздочка</span> — населённый пункт находится вблизи границы двух зон.
+      Принят <strong style="color:var(--text);">наихудший (более высокий) показатель</strong> для проектирования.
+      Рекомендуется уточнение по карте нормативного документа.
+    </p>
+    <p style="margin-bottom:10px;">
+      <span style="color:var(--warn);font-weight:700;">Ерейментау, Зайсан</span> — ветровой район XI.
+      Данные уточняются в <strong style="color:var(--text);">Казгидромете</strong> согласно СП РК 2.04-01-2017.
+    </p>
+    <p style="margin-bottom:10px;">
+      <span style="color:var(--warn);font-weight:700;">Катон-Карагай, Риддер</span> — горные районы.
+      Снеговые и ветровые нагрузки уточняются по картам детального зонирования
+      и данным <strong style="color:var(--text);">Казгидромета</strong>.
+    </p>
+    <p style="margin-bottom:10px;">
+      <span style="color:var(--warn);font-weight:700;">Алматы</span> — сейсмика уточняется по
+      <strong style="color:var(--text);">СП РК 2.03-31-2020</strong>
+      «Застройка территории города Алматы с учётом сейсмического микрозонирования».
+    </p>
+    <p style="margin-bottom:10px;">
+      Области, отмеченные в сейсмическом нормативе знаком ²
+      (Алматинская, Жамбылская, Жетысуская, Абайская, Восточно-Казахстанская) —
+      уточнять по картам <strong style="color:var(--text);">ДСЗ</strong>
+      (детальное сейсмическое зонирование), разработанным ТОО «НЦСНИ».
+    </p>
+    <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
+    <p style="margin-bottom:6px;color:var(--muted);font-size:11px;">
+      <strong style="color:var(--text);">Источники:</strong>
+    </p>
+    <p style="margin-bottom:4px;">— СП РК 2.04-01-2017 «Строительная климатология» (ред. 13.05.2025) — Таблицы 3.1, 3.2; Прил. А (рис. А.1–А.5)</p>
+    <p style="margin-bottom:4px;">— НТП РК 01-01-3.1 (4.1)-2017 «Нагрузки и воздействия» — Прил. В, карты снеговых нагрузок</p>
+    <p style="margin-bottom:4px;">— СП РК 2.03-30-2017 «Строительство в сейсмических районах» (ред. 12.08.2025) — Прил. Д, Прил. Е</p>
+  </div>
+</div>
+
+<footer>
+  Калькулятор предназначен для предварительных расчётов и личного использования.
+  Перед применением в проекте всегда сверяйте результат с действующей редакцией норматива и проверяйте у ГИПа/экспертизы.<br><br>
+  <span style="color:var(--text);font-weight:600;">С уважением, Кайыртаев Бекзат Бейсембаевич</span>
+</footer>
+
+</div>
+<script>
+/* ══════════════════════════════════════════════════════
+   Справочник конструктора — Климатические параметры
+   Данные загружаются с бэкенда (Google Sheets)
+   ══════════════════════════════════════════════════════ */
+
+const BACKEND = 'https://rebar-backend-henna.vercel.app/api/sheet-data';
+let CITIES = [];
+window._currentCity = null;
+
+/* ── Утилита ── */
+function v(val) {
+  if (val === null || val === undefined || val === '') return '—';
+  return String(val);
+}
+
+/* ── Загрузка данных с бэкенда ── */
+async function loadCities() {
+  const input = document.getElementById('cityInput');
+  input.placeholder = 'Загрузка данных...';
+  input.disabled = true;
+
+  try {
+    const res  = await fetch(`${BACKEND}?book=climat&sheet=climat_kz`);
+    const json = await res.json();
+    CITIES = (json.data || []).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+    input.disabled = false;
+    input.placeholder = 'Введите название или выберите из списка...';
+    const astana = CITIES.find(c => c.name === 'Астана');
+    selectCity(astana ? 'Астана' : CITIES[0]?.name);
+  } catch (e) {
+    input.placeholder = 'Ошибка загрузки — обновите страницу';
+    console.error('Ошибка загрузки климатических данных:', e);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   КОМБОБОКС — поиск + выпадающий список
+   ══════════════════════════════════════════════════════ */
+const cityInput     = document.getElementById('cityInput');
+const cityDropdown  = document.getElementById('cityDropdown');
+const cityArrowIcon = document.getElementById('cityArrowIcon');
+let dropdownOpen = false;
+
+function openDropdown() {
+  cityDropdown.style.display = 'block';
+  cityArrowIcon.style.transform = 'rotate(180deg)';
+  cityInput.style.borderColor = 'var(--accent)';
+  dropdownOpen = true;
+}
+function closeDropdown() {
+  cityDropdown.style.display = 'none';
+  cityArrowIcon.style.transform = '';
+  cityInput.style.borderColor = '';
+  dropdownOpen = false;
+}
+function toggleDropdown() {
+  dropdownOpen ? closeDropdown() : (cityInput.focus(), showDropdown(''));
+}
+
+function showDropdown(query) {
+  const q = (query || '').trim().toLowerCase();
+  const matches = q.length === 0
+    ? CITIES
+    : CITIES.filter(c => c.name.toLowerCase().startsWith(q));
+  cityDropdown.innerHTML = '';
+  if (matches.length === 0) {
+    cityDropdown.innerHTML = '<div style="padding:10px 16px;color:var(--muted);font-size:13px;">Ничего не найдено</div>';
+    openDropdown(); return;
+  }
+  matches.forEach(c => {
+    const item = document.createElement('div');
+    item.textContent = c.name;
+    item.dataset.name = c.name;
+    item.style.cssText = 'padding:9px 16px;cursor:pointer;font-size:14px;border-bottom:1px solid var(--border);transition:background .1s;';
+    item.onmouseenter = () => { clearActive(); item.style.background = 'var(--surface)'; item.classList.add('active'); };
+    item.onmouseleave = () => { item.style.background = ''; item.classList.remove('active'); };
+    item.onmousedown  = (e) => { e.preventDefault(); selectCity(c.name); };
+    cityDropdown.appendChild(item);
+  });
+  openDropdown();
+}
+
+function clearActive() {
+  cityDropdown.querySelectorAll('div').forEach(i => { i.style.background = ''; i.classList.remove('active'); });
+}
+function setActive(item) {
+  clearActive();
+  if (item) { item.style.background = 'var(--accent)'; item.style.color = '#fff'; item.classList.add('active'); item.scrollIntoView({ block: 'nearest' }); }
+}
+function selectCity(name) {
+  cityInput.value = name;
+  closeDropdown();
+  render(name);
+}
+
+cityInput.addEventListener('input',  () => showDropdown(cityInput.value));
+cityInput.addEventListener('focus',  () => showDropdown(cityInput.value));
+cityInput.addEventListener('blur',   () => setTimeout(closeDropdown, 150));
+cityInput.addEventListener('keydown', e => {
+  const items = [...cityDropdown.querySelectorAll('div')];
+  const activeEl  = cityDropdown.querySelector('.active');
+  const activeIdx = items.indexOf(activeEl);
+  if (e.key === 'ArrowDown') { e.preventDefault(); if (!dropdownOpen) { showDropdown(''); return; } setActive(items[activeIdx < items.length - 1 ? activeIdx + 1 : 0]); }
+  else if (e.key === 'ArrowUp')  { e.preventDefault(); setActive(items[activeIdx > 0 ? activeIdx - 1 : items.length - 1]); }
+  else if (e.key === 'Enter')    { if (activeEl) selectCity(activeEl.dataset.name); else if (items.length === 1) selectCity(items[0].dataset.name); }
+  else if (e.key === 'Escape')   { closeDropdown(); }
+});
+
+/* ══════════════════════════════════════════════════════
+   РЕНДЕР ДАННЫХ ГОРОДА
+   ══════════════════════════════════════════════════════ */
+function render(cityName) {
+  const c = CITIES.find(x => x.name === cityName);
+  if (!c) return;
+  window._currentCity = c;
+  document.getElementById('regionLabel').textContent = c.region || '';
+
+  /* ── Холодный период ── */
+  document.getElementById('t_abs_min').textContent      = v(c.t_abs_min);
+  document.getElementById('t_cold_day_98').textContent  = v(c.t_cold_day_98);
+  document.getElementById('t_cold_day_92').textContent  = v(c.t_cold_day_92);
+  document.getElementById('t_cold_5d_98').textContent   = v(c.t_cold_5d_98);
+  document.getElementById('t_cold_5d_92').textContent   = v(c.t_cold_5d_92);
+  document.getElementById('t_heat_94').textContent      = v(c.t_heat_94);
+  document.getElementById('dur_0').textContent          = v(c.heat_dur_0);
+  document.getElementById('t_0').textContent            = v(c.heat_t_0);
+  document.getElementById('dur_8').textContent          = v(c.heat_dur_8);
+  document.getElementById('t_8').textContent            = v(c.heat_t_8);
+  document.getElementById('heat_start').textContent     = v(c.heat_start);
+  document.getElementById('heat_end').textContent       = v(c.heat_end);
+  document.getElementById('thaw_days').textContent      = v(c.thaw_days);
+  document.getElementById('rh_jan').textContent         = v(c.rh_jan_15h);
+  document.getElementById('rh_heat').textContent        = v(c.rh_heat);
+  document.getElementById('precip_cold').textContent    = v(c.precip_cold);
+  document.getElementById('press_jan').textContent      = v(c.press_jan);
+  document.getElementById('wind_dir_cold').textContent  = v(c.wind_dir_cold);
+  document.getElementById('wind_v_heat').textContent    = v(c.wind_v_heat);
+  document.getElementById('wind_v_jan_max').textContent = v(c.wind_v_jan_max);
+  document.getElementById('wind_days').textContent      = v(c.wind_days_gte10);
+
+  /* ── Тёплый период ── */
+  document.getElementById('press_jul').textContent      = v(c.press_jul);
+  document.getElementById('altitude').textContent       = v(c.altitude);
+  document.getElementById('t_w95').textContent          = v(c.t_warm_95);
+  document.getElementById('t_w98').textContent          = v(c.t_warm_98);
+  document.getElementById('t_jul_max').textContent      = v(c.t_jul_max_avg);
+  document.getElementById('t_abs_max').textContent      = v(c.t_abs_max);
+  document.getElementById('rh_jul').textContent         = v(c.rh_jul_15h);
+  document.getElementById('precip_warm').textContent    = v(c.precip_warm);
+  document.getElementById('precip_daily_avg').textContent = v(c.precip_daily_avg);
+  document.getElementById('precip_daily_max').textContent = v(c.precip_daily_max);
+  document.getElementById('wind_dir_warm').textContent  = v(c.wind_dir_warm);
+  document.getElementById('wind_v_jul').textContent     = v(c.wind_v_jul_min);
+
+  /* ── Расчётные параметры ── */
+  document.getElementById('climat_district').textContent  = v(c.climat_district);
+  document.getElementById('wind_zone').textContent        = v(c.wind_zone);
+  document.getElementById('wind_kpa').textContent         = v(c.wind_kpa);
+  document.getElementById('wind_speed').textContent       = v(c.wind_speed);
+  document.getElementById('snow_roof_dist').textContent   = v(c.snow_r_zone);
+  document.getElementById('snow_roof_kpa').textContent    = v(c.snow_r_kpa);
+  document.getElementById('snow_g_dist').textContent      = v(c.snow_g_zone);
+  document.getElementById('snow_g_kpa').textContent       = v(c.snow_g_kpa);
+  document.getElementById('moisture_zone').textContent    = v(c.moisture_zone);
+  document.getElementById('seismic_2475').textContent     = v(c.seis_2475);
+  document.getElementById('seismic_22475').textContent    = v(c.seis_22475);
+  document.getElementById('frost_depth').textContent      = v(c.frost_cm);
+  document.getElementById('ice_dist').textContent         = v(c.ice_dist);
+  document.getElementById('ice_mm').textContent           = v(c.ice_mm);
+
+  syncSketchHeight();
+  renderWindRose(c);
+}
+
+/* ── Синхронизация высоты эскизов ── */
+function syncSketchHeight() {
+  document.querySelectorAll('.row2-inner').forEach(inner => {
+    const axisTabs = inner.querySelector('.axis-tabs');
+    const sketchBox = inner.querySelector('.sketch-box');
+    if (!axisTabs || !sketchBox) return;
+    sketchBox.style.height = axisTabs.offsetHeight + 'px';
+  });
+}
+window.addEventListener('resize', syncSketchHeight);
+
+/* ══════════════════════════════════════════════════════
+   РОЗА ВЕТРОВ — два периода (красный/синий)
+   ══════════════════════════════════════════════════════ */
+function renderWindRose(c) {
+  const card    = document.getElementById('windRoseCard');
+  const svg     = document.getElementById('windRoseSvg');
+  const table   = document.getElementById('windRoseTable');
+  const noData  = document.getElementById('windRoseNoData');
+  const content = document.getElementById('windRoseContent');
+  const srcEl   = document.getElementById('windRoseSrc');
+
+  const cold = [c.wind_cold_n, c.wind_cold_ne, c.wind_cold_e, c.wind_cold_se,
+                c.wind_cold_s, c.wind_cold_sw, c.wind_cold_w, c.wind_cold_nw];
+  const coldCalm = c.wind_cold_calm;
+  const warm = [c.wind_warm_n, c.wind_warm_ne, c.wind_warm_e, c.wind_warm_se,
+                c.wind_warm_s, c.wind_warm_sw, c.wind_warm_w, c.wind_warm_nw];
+  const warmCalm = c.wind_warm_calm;
+  const src  = c.wind_rose_src;
+
+  if (!cold[0]) {
+    card.style.display = 'none'; return;
+  }
+  card.style.display = 'block';
+  content.style.display = 'flex';
+  noData.style.display  = 'none';
+  srcEl.textContent = src || '—';
+
+  const dirs = ['С','СВ','В','ЮВ','Ю','ЮЗ','З','СЗ'];
+  const cx = 130, cy = 130, maxR = 95;
+  const maxVal  = Math.max(...cold, ...warm);
+  const maxTick = Math.ceil(maxVal / 5) * 5;
+  const scale   = maxR / maxTick;
+
+  let s = '';
+  for (let t = 5; t <= maxTick; t += 5) {
+    const r = t * scale, main = t % 10 === 0;
+    s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#2e3347" stroke-width="${main?1.2:0.5}"/>`;
+    if (main) s += `<text x="${cx+3}" y="${cy-r+4}" fill="#4a4f6a" font-size="8" font-family="monospace">${t}%</text>`;
+  }
+  for (let i = 0; i < 8; i++) {
+    const a = (i*45-90)*Math.PI/180;
+    s += `<line x1="${cx}" y1="${cy}" x2="${cx+Math.cos(a)*(maxR+4)}" y2="${cy+Math.sin(a)*(maxR+4)}" stroke="#2e3347" stroke-width="0.6"/>`;
+  }
+
+  function petal(vals, color) {
+    vals.forEach((pct, i) => {
+      if (!pct) return;
+      const r = pct * scale, hw = 14 * Math.PI / 180, a = (i*45-90)*Math.PI/180;
+      const x1 = cx+Math.cos(a-hw)*r, y1 = cy+Math.sin(a-hw)*r;
+      const x2 = cx+Math.cos(a+hw)*r, y2 = cy+Math.sin(a+hw)*r;
+      s += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 0,1 ${x2},${y2} Z" fill="${color}" fill-opacity="0.55" stroke="${color}" stroke-width="0.8" stroke-opacity="0.9"/>`;
+    });
+  }
+  petal(warm, '#2a78d6');
+  petal(cold, '#e24b4a');
+
+  const lblR = maxR + 14;
+  dirs.forEach((d, i) => {
+    const a = (i*45-90)*Math.PI/180;
+    const x = cx+Math.cos(a)*lblR, y = cy+Math.sin(a)*lblR;
+    const maxC = Math.max(...cold), maxW = Math.max(...warm);
+    const isBigC = cold[i]===maxC, isBigW = warm[i]===maxW;
+    const col = isBigC ? '#e24b4a' : isBigW ? '#2a78d6' : '#d6daf0';
+    s += `<text x="${x}" y="${y+4}" text-anchor="middle" fill="${col}" font-size="${(isBigC||isBigW)?11:9}" font-weight="${(isBigC||isBigW)?700:400}" font-family="Inter,sans-serif">${d}</text>`;
+  });
+  svg.innerHTML = s;
+
+  const maxC = Math.max(...cold), maxW = Math.max(...warm);
+  let tbl = `<table style="border-collapse:collapse;width:100%;font-size:11px;">
+    <tr><th style="padding:2px 6px 4px 0;color:var(--muted);text-align:left;font-weight:400;">Румб</th>
+        <th style="padding:2px 6px 4px;color:#e24b4a;text-align:center;font-weight:600;">Зима %</th>
+        <th style="padding:2px 0 4px;color:#2a78d6;text-align:center;font-weight:600;">Лето %</th></tr>`;
+  dirs.forEach((d, i) => {
+    const cc = cold[i]||0, ww = warm[i]||0;
+    tbl += `<tr><td style="padding:2px 6px 2px 0;color:var(--muted);">${d}</td>
+      <td style="padding:2px 6px 2px;color:#e24b4a;text-align:right;${cc===maxC?'font-weight:700;':''}">${cc}</td>
+      <td style="padding:2px 0 2px 6px;color:#2a78d6;text-align:right;${ww===maxW?'font-weight:700;':''}">${ww}</td></tr>`;
+  });
+  tbl += `<tr><td colspan="3" style="padding:6px 0 0;border-top:1px solid var(--border);color:var(--muted);">
+    Штиль: <span style="color:#e24b4a">${coldCalm||0}%</span> / <span style="color:#2a78d6">${warmCalm||0}%</span>
+  </td></tr></table>`;
+
+  // Автоматическое резюме
+  const maxColdDir = dirs[cold.indexOf(maxC)], secC = [...cold].sort((a,b)=>b-a)[1], secCDir = dirs[cold.indexOf(secC)];
+  const maxWarmDir = dirs[warm.indexOf(maxW)], secW = [...warm].sort((a,b)=>b-a)[1], secWDir = dirs[warm.indexOf(secW)];
+  function dom(v) { return v>=35?'резко выраженная':v>=25?'умеренная':'равномерная'; }
+  tbl += `<div style="margin-top:12px;padding:10px 12px;background:var(--surface2,#1a1d27);border-radius:6px;font-size:11px;line-height:1.7;color:var(--muted,#6b7099);">
+    <span style="color:#e24b4a;font-weight:600;">Зима:</span> ${dom(maxC)} роза, доминирует <strong style="color:#fff;">${maxColdDir} (${maxC}%)</strong>, второй — ${secCDir} (${secC}%). Штиль ${coldCalm||0}%.<br>
+    <span style="color:#2a78d6;font-weight:600;">Лето:</span> ${dom(maxW)} роза, доминирует <strong style="color:#fff;">${maxWarmDir} (${maxW}%)</strong>, второй — ${secWDir} (${secW}%). Штиль ${warmCalm||0}%.
+  </div>
+  <div style="margin-top:8px;font-size:10px;color:var(--muted);">
+    <span style="display:inline-block;width:10px;height:10px;background:#e24b4a;opacity:.7;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Холодный (окт–март)
+    &nbsp;&nbsp;
+    <span style="display:inline-block;width:10px;height:10px;background:#2a78d6;opacity:.7;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Тёплый (апр–сент)
+  </div>`;
+  table.innerHTML = tbl;
+}
+
+/* ══════════════════════════════════════════════════════
+   КНОПКА «КОПИРОВАТЬ ДЛЯ ОБЩИХ ДАННЫХ»
+   ══════════════════════════════════════════════════════ */
+function copyClimaticParams() {
+  const city = cityInput.value.trim();
+  const c = window._currentCity;
+  if (!c) return;
+
+  const tStr      = c.t_cold_5d_92 != null ? `${c.t_cold_5d_92}°С` : '***';
+  const climatStr = c.climat_district || '***';
+  const snowZone  = c.snow_g_zone || '***';
+  const snowKpa   = c.snow_g_kpa  != null ? `${c.snow_g_kpa} кПа` : '*** кПа';
+  const windZone  = c.wind_zone   || '***';
+  const windKpa   = c.wind_kpa    != null ? `${c.wind_kpa} кПа` : '*** кПа';
+  const windSpeed = c.wind_speed  != null ? `${c.wind_speed} м/с` : '*** м/с';
+
+  let seisStr;
+  if (!c.seis_2475) {
+    seisStr = 'не сейсмичен';
+  } else {
+    const n = parseFloat(String(c.seis_2475).replace('*',''));
+    if (n < 7) seisStr = 'не сейсмичен';
+    else {
+      const star = String(c.seis_2475).includes('*') ? ', уточнить по ДСЗ' : '';
+      seisStr = `ОСЗ-2475 — ${c.seis_2475} баллов / ОСЗ-22475 — ${c.seis_22475} баллов (СП РК 2.03-30-2017, прил. Д)${star}`;
+    }
+  }
+
+  const text =
+`Климатические условия участка строительства (${city}):
+1. Климатический район — ${climatStr} (СП РК 2.04-01-2017, табл. 3.1)
+2. Расчётная температура наружного воздуха (t хол. пятидневки 0,92) — ${tStr} (СП РК 2.04-01-2017, табл. 3.1)
+3. Район по весу снегового покрова — ${snowZone} (НТП РК 01-01-3.1(4.1)-2017, прил. В)
+4. Значение снеговой нагрузки на грунт — ${snowKpa} (НТП РК 01-01-3.1(4.1)-2017, прил. В)
+5. Район по давлению ветра — ${windZone} (СП РК 2.04-01-2017, прил. А)
+6. Давление ветра — ${windKpa} (СП РК 2.04-01-2017, прил. А)
+7. Базовая скорость ветра — ${windSpeed} (СП РК 2.04-01-2017, прил. А)
+8. Сейсмичность района — ${seisStr}`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('btnCopyParams');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Скопировано!';
+    btn.style.background = 'var(--green)';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = 'var(--accent)'; }, 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  });
+}
+
+/* ── Запуск ── */
+loadCities();
+</script>
+</body>
+</html>
