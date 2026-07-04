@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Справочник конструктора — EN 1992-1-1</title>
+<title>Электронный справочник конструктора</title>
 <style>
   :root {
     --bg:         #0f1117;
@@ -12,15 +12,12 @@
     --border:     #2e3347;
     --accent:     #4f8ef7;
     --accent2:    #7dd3a8;
-    --warn:       #f4b942;
     --text:       #d6daf0;
     --muted:      #6b7099;
     --mono:       'JetBrains Mono', 'Courier New', monospace;
     --sans:       'Inter', 'Segoe UI', sans-serif;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     background: var(--bg);
     color: var(--text);
@@ -28,7 +25,6 @@
     font-size: 14px;
     line-height: 1.55;
     padding: 24px 16px 48px;
-    min-height: 100vh;
   }
 
   header {
@@ -36,16 +32,22 @@
     margin-bottom: 24px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border);
-    max-width: 960px;
+    max-width: 760px;
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
+  }
+  header .brand {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 8px;
   }
   header h1 {
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: -.3px;
+    font-size: 26px;
+    font-weight: 800;
     color: #fff;
+    letter-spacing: -0.3px;
   }
   header p {
     color: var(--muted);
@@ -53,7 +55,7 @@
     font-size: 13px;
   }
 
-  .search-wrap { max-width: 960px; margin: 0 auto 28px; }
+  .search-wrap { max-width: 760px; margin: 0 auto 32px; }
   #search {
     width: 100%;
     background: var(--surface);
@@ -69,67 +71,68 @@
   #search:focus { border-color: var(--accent); }
   #search::placeholder { color: var(--muted); }
 
-  .container { max-width: 960px; margin: 0 auto; }
+  /* ── Книжное содержание ── */
+  .toc { max-width: 760px; margin: 0 auto; }
 
-  .section-title {
-    margin: 28px 0 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .8px;
-    color: var(--muted);
+  .toc-section { margin-bottom: 8px; }
+  .toc-section-title {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    align-items: baseline;
+    gap: 10px;
+    padding: 14px 4px 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
   }
-  .section-title:first-child { margin-top: 0; }
-  .section-title .count {
-    background: var(--surface2);
-    border-radius: 10px;
-    padding: 1px 8px;
-    font-size: 10px;
-    color: var(--muted);
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px;
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
-    text-decoration: none;
-    color: var(--text);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    transition: border-color .15s, transform .15s;
-  }
-  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .card .icon { font-size: 22px; margin-bottom: 4px; }
-  .card .title { font-size: 15px; font-weight: 700; color: #fff; }
-  .card .desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
-  .card .ref {
-    margin-top: auto;
-    display: inline-block;
-    background: var(--surface2);
-    border: 1px solid var(--border);
+  .toc-section-title .num {
     color: var(--accent);
     font-family: var(--mono);
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    align-self: flex-start;
+    min-width: 24px;
+  }
+
+  .toc-item {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 9px 4px 9px 34px;
+    text-decoration: none;
+    color: var(--text);
+    border-radius: 6px;
+    transition: background .12s;
+  }
+  .toc-item:hover { background: var(--surface); }
+  .toc-item:hover .toc-title { color: var(--accent); }
+
+  .toc-item .num {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    min-width: 34px;
+    flex-shrink: 0;
+  }
+  .toc-item .toc-title {
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color .12s;
+  }
+  .toc-item .dots {
+    flex: 1;
+    border-bottom: 1px dotted var(--border);
+    margin-bottom: 4px;
+    min-width: 20px;
+  }
+  .toc-item .ref {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .no-results { text-align: center; color: var(--muted); padding: 40px 0; font-size: 13px; }
 
   footer {
-    max-width: 960px;
+    max-width: 760px;
     margin: 24px auto 0;
     padding: 16px 20px;
     background: var(--surface);
@@ -145,15 +148,16 @@
 <body>
 
 <header>
-  <h1>Справочник конструктора</h1>
+  <div class="brand">Электронный справочник конструктора</div>
+  <h1>Содержание</h1>
   <p>Расчётные инструменты для проектирования · КЖ / КМ / АС</p>
 </header>
 
 <div class="search-wrap">
-  <input type="text" id="search" placeholder="Поиск калькулятора по названию или пункту Еврокода…">
+  <input type="text" id="search" placeholder="Поиск калькулятора по названию или пункту норматива…">
 </div>
 
-<div class="container" id="container"></div>
+<div class="toc" id="toc"></div>
 
 <footer>
   Калькуляторы предназначены для предварительных расчётов и личного использования. Перед применением в проекте всегда сверяйте результат с действующими нормами и проверяйте у ГИПа/экспертизы. Возможны опечатки и обновления без предупреждения. Автор не несёт ответственности за использование данных инструмента.<br><br>
@@ -162,102 +166,141 @@
 
 <script>
 /* ══════════════════════════════════════════════════════════════
-   РЕЕСТР КАЛЬКУЛЯТОРОВ
-   Чтобы добавить новый калькулятор — добавьте один объект в нужный
-   раздел ниже. Больше НИЧЕГО менять не нужно — карточка, поиск
-   и группировка построятся автоматически.
+   РЕЕСТР КАЛЬКУЛЯТОРОВ — книжное содержание с автонумерацией
 
-   Поля:
+   Ключевая идея: номера НИГДЕ не хранятся руками — они считаются
+   на лету из позиции в массиве (индекс раздела + индекс элемента).
+   Поэтому чтобы:
+     • добавить новый калькулятор в середину раздела — просто
+       вставьте объект в нужное место массива items, все номера
+       после него сдвинутся сами при следующей загрузке страницы
+     • переставить местами разделы — поменяйте местами объекты
+       в массиве SECTIONS
+     • вставить новый раздел — добавьте объект в любое место
+       массива SECTIONS
+
+   Поля раздела:
+     title — название раздела (без номера! номер добавляется сам)
+     items — массив калькуляторов этого раздела
+
+   Поля калькулятора:
      title — название на карточке
-     desc  — короткое описание (1-2 строки)
+     desc  — короткое описание (не показывается в содержании,
+             используется только для поиска)
      ref   — пункт норматива, например "EN 1992-1-1 · §9.10"
-     href  — путь к файлу калькулятора (с учётом папки, если есть)
-     icon  — любой эмодзи-иконка
+     href  — путь к файлу калькулятора
    ══════════════════════════════════════════════════════════════ */
 
-const REGISTRY = {
-  "Раздел 1 — Железобетонные конструкции": [
-    {
-      title: "Ведомость деталей",
-      desc: "Радиусы отгиба арматуры, длины стержней по средней оси, эскизы форм A/B.",
-      ref: "EN 1992-1-1 · Табл. 8.1N",
-      href: "Vedomost_elementov.html",
-      icon: "📐"
-    },
-    {
-      title: "Защитный слой бетона",
-      desc: "Расчёт c_min и c_nom по классу конструкции, условиям среды и допуску на отклонение.",
-      ref: "СТ РК EN 1992-1-1 · §9.10",
-      href: "zashitny-sloy.html",
-      icon: "🧱"
-    }
-  ],
-
-  "Раздел 2 — Металлические конструкции": [
-    {
-      title: "Двутавры по ГОСТ 26020-83",
-      desc: "Сортамент нормальных, широкополочных и колонных двутавров, характеристики сечения и параметры стыка.",
-      ref: "ГОСТ 26020-83 · EN 1993-1-1",
-      href: "dvutavry-b.html",
-      icon: "🔩"
-    },
-    {
-      title: "Двутавры по СТО АСЧМ 20-93",
-      desc: "Сортамент нормальных, широкополочных и колонных двутавров, характеристики сечения и параметры стыка.",
-      ref: "СТО АСЧМ 20-93 · EN 1993-1-1",
-      href: "dvutavry-sto.html",
-      icon: "🔩"
-    }
-  ],
-
-  "Раздел 3 — Общие данные": [
-    {
-      title: "Климатические параметры",
-      desc: "Расчётные параметры по СП РК для 44 городов Казахстана: температура, снег, ветер, сейсмика, роза ветров.",
-      ref: "SP RK 2.04-01-2017",
-      href: "climat.html",
-      icon: "🌦️"
-    }
-  ]
-};
+const SECTIONS = [
+  {
+    title: "Железобетонные конструкции",
+    items: [
+      {
+        title: "Ведомость деталей",
+        desc: "Радиусы отгиба арматуры, длины стержней по средней оси, эскизы форм A/B.",
+        ref: "EN 1992-1-1 · Табл. 8.1N",
+        href: "Vedomost_elementov.html"
+      },
+      {
+        title: "Защитный слой бетона",
+        desc: "Расчёт c_min и c_nom по классу конструкции, условиям среды и допуску на отклонение.",
+        ref: "СТ РК EN 1992-1-1 · §9.10",
+        href: "zashitny-sloy.html"
+      }
+    ]
+  },
+  {
+    title: "Металлические конструкции",
+    items: [
+      {
+        title: "Двутавры по ГОСТ 26020-83",
+        desc: "Сортамент нормальных, широкополочных и колонных двутавров, характеристики сечения и параметры стыка.",
+        ref: "ГОСТ 26020-83 · EN 1993-1-1",
+        href: "dvutavry-b.html"
+      },
+      {
+        title: "Двутавры по СТО АСЧМ 20-93",
+        desc: "Сортамент нормальных, широкополочных и колонных двутавров, характеристики сечения и параметры стыка.",
+        ref: "СТО АСЧМ 20-93 · EN 1993-1-1",
+        href: "dvutavry-sto.html"
+      }
+    ]
+  },
+  {
+    title: "Архитектурно-строительные решения",
+    items: []
+  },
+  {
+    title: "Справочные материалы",
+    items: [
+      {
+        title: "Климатические параметры",
+        desc: "Расчётные параметры по СП РК для 44 городов Казахстана: температура, снег, ветер, сейсмика, роза ветров.",
+        ref: "SP RK 2.04-01-2017",
+        href: "climat.html"
+      }
+    ]
+  }
+];
 
 function render(filter = "") {
-  const container = document.getElementById('container');
+  const container = document.getElementById('toc');
   container.innerHTML = "";
   const q = filter.trim().toLowerCase();
   let totalShown = 0;
 
-  for (const [section, items] of Object.entries(REGISTRY)) {
-    const filtered = items.filter(it =>
+  SECTIONS.forEach((section, sIdx) => {
+    const sectionNum = sIdx + 1;
+
+    const filteredItems = section.items.filter(it =>
       !q ||
       it.title.toLowerCase().includes(q) ||
       it.desc.toLowerCase().includes(q) ||
       it.ref.toLowerCase().includes(q)
     );
-    if (filtered.length === 0) continue;
-    totalShown += filtered.length;
+    // Пустой раздел (пока без калькуляторов) скрываем только во время поиска —
+    // в обычном режиме содержания он остаётся виден с пометкой "пока пусто"
+    if (filteredItems.length === 0 && (q || section.items.length > 0)) return;
+    totalShown += filteredItems.length || 1;
+
+    const sectionEl = document.createElement('div');
+    sectionEl.className = 'toc-section';
 
     const sectionTitle = document.createElement('div');
-    sectionTitle.className = 'section-title';
-    sectionTitle.innerHTML = `${section} <span class="count">${filtered.length}</span>`;
-    container.appendChild(sectionTitle);
+    sectionTitle.className = 'toc-section-title';
+    sectionTitle.innerHTML = `<span class="num">${sectionNum}.</span><span>${section.title}</span>`;
+    sectionEl.appendChild(sectionTitle);
 
-    const grid = document.createElement('div');
-    grid.className = 'grid';
-    filtered.forEach(it => {
+    if (section.items.length === 0) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'padding:4px 4px 4px 34px; color:var(--muted); font-size:12px; font-style:italic;';
+      empty.textContent = 'Пока нет калькуляторов';
+      sectionEl.appendChild(empty);
+      container.appendChild(sectionEl);
+      return;
+    }
+
+    filteredItems.forEach((it) => {
+      // Номер элемента считаем по его РЕАЛЬНОЙ позиции в исходном
+      // (нефильтрованном) массиве раздела — чтобы при поиске номера
+      // не "прыгали", а оставались как в полном содержании
+      const itemIdx = section.items.indexOf(it);
+      const itemNum = `${sectionNum}.${itemIdx + 1}`;
+
       const a = document.createElement('a');
-      a.className = 'card';
+      a.className = 'toc-item';
       a.href = it.href;
       a.innerHTML = `
-        <div class="icon">${it.icon}</div>
-        <div class="title">${it.title}</div>
-        <div class="desc">${it.desc}</div>
+        <span class="num">${itemNum}</span>
+        <span class="toc-title">${it.title}</span>
+        <span class="dots"></span>
         <span class="ref">${it.ref}</span>
       `;
-      grid.appendChild(a);
+      sectionEl.appendChild(a);
     });
-    container.appendChild(grid);
-  }
+
+    container.appendChild(sectionEl);
+  });
 
   if (totalShown === 0) {
     container.innerHTML = `<div class="no-results">Ничего не найдено по запросу «${filter}»</div>`;
@@ -270,4 +313,3 @@ render();
 
 </body>
 </html>
-
