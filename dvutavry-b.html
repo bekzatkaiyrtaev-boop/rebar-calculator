@@ -251,7 +251,7 @@ async function fetchSheet(typeKey) {
     throw new Error(err.error || `Ошибка сервера (${response.status})`);
   }
   const json = await response.json();
-  DATASETS[typeKey] = json.data || [];
+  DATASETS[typeKey] = json.records || [];
   return DATASETS[typeKey];
 }
 
