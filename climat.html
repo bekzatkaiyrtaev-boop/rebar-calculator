@@ -184,9 +184,9 @@ footer{max-width:960px;margin:24px auto 0;padding:16px 20px;
       <div class="dc-sub">ОСЗ-2475 / ОСЗ-22475</div>
     </div>
     <div class="design-cell">
-      <div class="dc-label">Глубина нулевой изотермы в грунте</div>
-      <div class="dc-val" id="frost_depth">—</div>
-      <div class="dc-sub">максимальная, см</div>
+      <div class="dc-label">Глубина нулевой изотермы — район</div>
+      <div class="dc-val" id="frost_zone">—</div>
+      <div class="dc-sub"><span id="frost_cm_90">—</span> см (0,90) / <span id="frost_cm_98">—</span> см (0,98)</div>
     </div>
     <div class="design-cell">
       <div class="dc-label">Гололёд — район / толщина</div>
@@ -514,9 +514,11 @@ function render(cityName) {
   document.getElementById('moisture_zone').textContent    = v(c.moisture_zone);
   document.getElementById('seismic_2475').textContent     = v(c.seis_2475);
   document.getElementById('seismic_22475').textContent    = v(c.seis_22475);
-  document.getElementById('frost_depth').textContent      = v(c.frost_cm);
-  document.getElementById('ice_dist').textContent         = v(c.ice_dist);
-  document.getElementById('ice_mm').textContent           = v(c.ice_mm);
+  document.getElementById('frost_zone').textContent       = v(c.frost_zone);
+  document.getElementById('frost_cm_90').textContent      = v(c.frost_cm_90);
+  document.getElementById('frost_cm_98').textContent      = v(c.frost_cm_98);
+  document.getElementById('ice_dist').textContent         = v(c.gololed_zone);
+  document.getElementById('ice_mm').textContent           = v(c.gololed_mm);
 
   syncSketchHeight();
   renderWindRose(c);
