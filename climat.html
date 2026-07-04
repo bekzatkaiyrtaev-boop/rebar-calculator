@@ -368,7 +368,9 @@ async function loadCities() {
   input.disabled = true;
 
   try {
-    const res  = await fetch(`${BACKEND}?book=climat&sheet=climat_kz`);
+    const res  = await fetch(`${BACKEND}?book=climat&sheet=climat_kz`, {
+      headers: { 'x-app-key': 'spravochnik-km-2026-x7k9' }
+    });
     const json = await res.json();
     CITIES = (json.records || []).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
     input.disabled = false;
