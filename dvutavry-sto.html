@@ -246,13 +246,13 @@ async function fetchSheet(typeKey) {
   if (DATASETS[typeKey]) return DATASETS[typeKey]; // уже загружено ранее
 
   const sheetName = SHEET_NAMES[typeKey];
-  const response = await fetch(`${BACKEND_URL}?sheet=${sheetName}`);
+  const response = await fetch(`${BACKEND_URL}?sheet=${sheetName}`, {     headers: { 'x-app-key': 'spravochnik-km-2026-x7k9' }   });
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
     throw new Error(err.error || `Ошибка сервера (${response.status})`);
   }
   const json = await response.json();
-  DATASETS[typeKey] = json.data || [];
+  DATASETS[typeKey] = json.records || [];
   return DATASETS[typeKey];
 }
 
