@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конвертер единиц измерения — Справочник конструктора</title>
+<style>
+  :root{
+    --bg: #14161a;
+    --panel: #1c1f26;
+    --panel-2: #232732;
+    --border: #2e3340;
+    --text: #e6e8ec;
+    --text-dim: #9aa1ae;
+    --accent: #4f8cff;
+    --accent-dim: #2c4a8c;
+    --ok: #4fd18b;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    padding: 24px;
+  }
+  h1{
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+  }
+  .subtitle{
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  .wrap{
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  /* переключатель категорий */
+  .tabs{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .tab{
+    padding: 8px 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 13px;
+    user-select: none;
+    transition: all .15s;
+  }
+  .tab:hover{ border-color: var(--accent-dim); color: var(--text); }
+  .tab.active{
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .row{
+    display:flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .row label{
+    width: 80px;
+    color: var(--text-dim);
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  input[type="number"], select{
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    width: 100%;
+  }
+  input[type="number"]:focus, select:focus{
+    outline: none;
+    border-color: var(--accent);
+  }
+  select{ cursor: pointer; }
+  .swap-btn{
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 16px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .swap-btn:hover{ color: var(--accent); border-color: var(--accent); }
+  .result{
+    margin-top: 8px;
+    padding: 16px;
+    background: var(--panel-2);
+    border: 1px solid var(--accent-dim);
+    border-radius: 10px;
+    text-align: center;
+  }
+  .result .value{
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ok);
+  }
+  .result .unit{
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  /* справочная таблица соотношений */
+  table{
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 12px;
+  }
+  th, td{
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    color: var(--text-dim);
+  }
+  th{ color: var(--text); font-weight: 600; }
+  .hint{
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Конвертер единиц измерения</h1>
+  <div class="subtitle">Для инженерных расчётов КЖ / КМ / АС</div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="card">
+    <div class="row">
+      <label>Значение</label>
+      <input type="number" id="inputValue" value="1" step="any">
+    </div>
+    <div class="row">
+      <label>Из</label>
+      <select id="fromUnit"></select>
+      <button class="swap-btn" id="swapBtn" title="Поменять местами">⇄</button>
+      <label style="width:auto; margin-left:0;">В</label>
+      <select id="toUnit"></select>
+    </div>
+
+    <div class="result">
+      <div class="value" id="resultValue">—</div>
+      <div class="unit" id="resultUnit"></div>
+    </div>
+
+    <table id="refTable"></table>
+    <div class="hint" id="hintText"></div>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------
+// Все величины хранятся в "базовой" единице категории,
+// коэффициенты — сколько базовых единиц в одной единице.
+// ---------------------------------------------------------
+const CATEGORIES = {
+  force: {
+    title: "Сила",
+    base: "Н",
+    units: {
+      "мкН":  1e-6,
+      "мН":   0.001,
+      "Н":    1,
+      "гс":   0.00980665,
+      "кН":   1000,
+      "МН":   1e6,
+      "кгс":  9.80665,
+      "тс":   9806.65,
+      "фунт-сила (lbf)": 4.4482216,
+      "унция-сила (ozf)": 0.278013851
+    },
+    hint: "1 тс = 9,80665 кН. Приближённо в расчётах часто округляют 1 тс ≈ 10 кН."
+  },
+  stress: {
+    title: "Напряжение / давление",
+    base: "Па",
+    units: {
+      "Па":       1,
+      "гПа":      100,
+      "кПа":      1000,
+      "мбар":     100,
+      "МПа":      1e6,
+      "Н/мм²":    1e6,
+      "ГПа":      1e9,
+      "кН/м²":    1000,
+      "кгс/см²":  98066.5,
+      "кгс/мм²":  9806650,
+      "бар":      100000,
+      "атм":      101325,
+      "psi":      6894.76,
+      "ksi":      6894757.9
+    },
+    hint: "1 МПа = 1 Н/мм² = 10,1972 кгс/см². 1 кгс/см² ≈ 0,0981 МПа."
+  },
+  distload: {
+    title: "Погонная нагрузка",
+    base: "Н/м",
+    units: {
+      "Н/м":   1,
+      "кН/м":  1000,
+      "МН/м":  1e6,
+      "кгс/м": 9.80665,
+      "тс/м":  9806.65,
+      "lbf/ft": 14.5939
+    },
+    hint: "Используется для линейных нагрузок на балки, прогоны, стены."
+  },
+  moment: {
+    title: "Момент",
+    base: "Н·м",
+    units: {
+      "Н·мм":  0.001,
+      "кН·мм": 1,
+      "Н·м":   1,
+      "кН·м":  1000,
+      "МН·м":  1e6,
+      "кгс·см": 0.0980665,
+      "кгс·м": 9.80665,
+      "тс·м":  9806.65,
+      "lbf·ft": 1.35582
+    },
+    hint: "Изгибающие и крутящие моменты в расчётах сечений."
+  },
+  length: {
+    title: "Длина",
+    base: "м",
+    units: {
+      "нм": 1e-9,
+      "мкм": 1e-6,
+      "мм": 0.001,
+      "см": 0.01,
+      "м":  1,
+      "км": 1000,
+      "дюйм (in)": 0.0254,
+      "фут (ft)":  0.3048,
+      "ярд (yd)":  0.9144,
+      "миля (mi)": 1609.344
+    },
+    hint: "Стандартные линейные размеры сечений и пролётов."
+  },
+  area: {
+    title: "Площадь",
+    base: "м²",
+    units: {
+      "мм²": 1e-6,
+      "см²": 1e-4,
+      "м²":  1,
+      "ар (сотка)": 100,
+      "га":  10000,
+      "км²": 1e6,
+      "дюйм²": 0.00064516,
+      "фут²":  0.09290304
+    },
+    hint: "Площади сечений, участков, перекрытий."
+  },
+  volume: {
+    title: "Объём",
+    base: "м³",
+    units: {
+      "мм³": 1e-9,
+      "мл":  1e-6,
+      "см³": 1e-6,
+      "л":   0.001,
+      "м³":  1,
+      "км³": 1e9,
+      "фут³": 0.0283168,
+      "галлон (US)": 0.00378541,
+      "баррель": 0.158987
+    },
+    hint: "Объёмы бетона, растворов, ёмкостей."
+  },
+  mass: {
+    title: "Масса",
+    base: "кг",
+    units: {
+      "мг": 1e-6,
+      "г":  0.001,
+      "кг": 1,
+      "ц":  100,
+      "т":  1000,
+      "фунт (lb)": 0.453592,
+      "унция (oz)": 0.0283495
+    },
+    hint: "Масса материалов, конструкций, грузов."
+  },
+  density: {
+    title: "Плотность",
+    base: "кг/м³",
+    units: {
+      "г/л":   1,
+      "кг/м³": 1,
+      "г/см³": 1000,
+      "кг/л":  1000,
+      "т/м³":  1000,
+      "фунт/фут³": 16.0185
+    },
+    hint: "1 г/см³ = 1 т/м³ = 1000 кг/м³. Используется для грунтов, растворов, сыпучих материалов."
+  },
+  speed: {
+    title: "Скорость",
+    base: "м/с",
+    units: {
+      "мм/с": 0.001,
+      "см/с": 0.01,
+      "м/с":  1,
+      "км/ч": 0.277778,
+      "фут/с": 0.3048,
+      "узел (kn)": 0.514444,
+      "миля/ч (mph)": 0.44704
+    },
+    hint: "Скорость ветра, воды, движения конструкций."
+  },
+  acceleration: {
+    title: "Ускорение",
+    base: "м/с²",
+    units: {
+      "мм/с²": 0.001,
+      "см/с²": 0.01,
+      "м/с²":  1,
+      "фут/с²": 0.3048,
+      "g (9.80665 м/с²)": 9.80665
+    },
+    hint: "g — используется при задании сейсмического ускорения (доли g)."
+  },
+  time: {
+    title: "Время",
+    base: "с",
+    units: {
+      "мс":     0.001,
+      "с":      1,
+      "мин":    60,
+      "ч":      3600,
+      "сутки":  86400,
+      "неделя": 604800,
+      "месяц (30 дн.)": 2592000,
+      "год (365 дн.)":  31536000
+    },
+    hint: "Продолжительность нагружения, времени твердения и т.п."
+  },
+  angle: {
+    title: "Углы",
+    base: "рад",
+    units: {
+      "угл. секунда": 0.00000484814,
+      "угл. минута":  0.000290888,
+      "рад":     1,
+      "градус":  0.0174533,
+      "гон (град)": 0.0157080,
+      "оборот":  6.283185307
+    },
+    hint: "1 рад = 57,2958°. Углы наклона, повороты сечений."
+  },
+  temperature: {
+    title: "Температура",
+    base: "°C",
+    isTemperature: true,
+    units: { "°C": 0, "°F": 0, "K": 0 }, // коэффициенты не используются — см. convertTemperature()
+    hint: "Пересчёт учитывает смещение шкал: °F = °C×9/5+32, K = °C+273.15."
+  }
+};
+
+let currentCategory = "force";
+
+const tabsEl = document.getElementById("tabs");
+const fromSel = document.getElementById("fromUnit");
+const toSel = document.getElementById("toUnit");
+const inputVal = document.getElementById("inputValue");
+const resultValue = document.getElementById("resultValue");
+const resultUnit = document.getElementById("resultUnit");
+const refTable = document.getElementById("refTable");
+const hintText = document.getElementById("hintText");
+const swapBtn = document.getElementById("swapBtn");
+
+// строим вкладки категорий
+Object.keys(CATEGORIES).forEach(key => {
+  const tab = document.createElement("div");
+  tab.className = "tab" + (key === currentCategory ? " active" : "");
+  tab.textContent = CATEGORIES[key].title;
+  tab.dataset.key = key;
+  tab.addEventListener("click", () => selectCategory(key));
+  tabsEl.appendChild(tab);
+});
+
+function selectCategory(key){
+  currentCategory = key;
+  tabsEl.querySelectorAll(".tab").forEach(t => {
+    t.classList.toggle("active", t.dataset.key === key);
+  });
+  buildUnitSelectors();
+  buildRefTable();
+  hintText.textContent = CATEGORIES[key].hint;
+  convert();
+}
+
+function buildUnitSelectors(){
+  const units = Object.keys(CATEGORIES[currentCategory].units);
+  fromSel.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join("");
+  toSel.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join("");
+  // по умолчанию выбираем разные единицы для наглядности
+  fromSel.selectedIndex = 0;
+  toSel.selectedIndex = Math.min(1, units.length - 1);
+}
+
+function buildRefTable(){
+  const cat = CATEGORIES[currentCategory];
+  const units = cat.units;
+  let rows = `<tr><th>Единица</th><th>В ${cat.base}</th></tr>`;
+  Object.keys(units).forEach(u => {
+    const coefText = cat.isTemperature ? "—" : units[u];
+    rows += `<tr><td>${u}</td><td>${coefText}</td></tr>`;
+  });
+  refTable.innerHTML = rows;
+}
+
+// перевод температуры: сначала приводим к Кельвинам (абсолютная шкала),
+// затем — из Кельвинов в целевую единицу
+function toKelvin(value, unit){
+  if (unit === "°C") return value + 273.15;
+  if (unit === "°F") return (value - 32) * 5/9 + 273.15;
+  return value; // K
+}
+function fromKelvin(value, unit){
+  if (unit === "°C") return value - 273.15;
+  if (unit === "°F") return (value - 273.15) * 9/5 + 32;
+  return value; // K
+}
+
+function formatNumber(result){
+  if (Math.abs(result) >= 1000 || (Math.abs(result) < 0.0001 && result !== 0)){
+    return result.toExponential(4);
+  }
+  return parseFloat(result.toFixed(6)).toString();
+}
+
+function convert(){
+  const cat = CATEGORIES[currentCategory];
+  const value = parseFloat(inputVal.value);
+  if (isNaN(value)){
+    resultValue.textContent = "—";
+    resultUnit.textContent = "";
+    return;
+  }
+
+  let result;
+  if (cat.isTemperature){
+    result = fromKelvin(toKelvin(value, fromSel.value), toSel.value);
+  } else {
+    const baseValue = value * cat.units[fromSel.value];
+    result = baseValue / cat.units[toSel.value];
+  }
+
+  const formatted = formatNumber(result);
+  resultValue.textContent = formatted;
+  resultUnit.textContent = `${value} ${fromSel.value} = ${formatted} ${toSel.value}`;
+}
+
+swapBtn.addEventListener("click", () => {
+  const tmp = fromSel.selectedIndex;
+  fromSel.selectedIndex = toSel.selectedIndex;
+  toSel.selectedIndex = tmp;
+  convert();
+});
+
+[inputVal, fromSel, toSel].forEach(el => el.addEventListener("input", convert));
+
+// инициализация
+selectCategory(currentCategory);
+</script>
+</body>
+</html>
