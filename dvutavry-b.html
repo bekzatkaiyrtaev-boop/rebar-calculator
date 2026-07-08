@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Двутавры по ГОСТ 26020-83</title>
+<title>Двутавры по ГОСТ 26020-83 — Электронный справочник конструктора</title>
 <style>
   :root {
     --bg:         #0f1117;
@@ -28,11 +28,9 @@
     line-height: 1.55;
     padding: 24px 16px 48px;
   }
-  header { text-align: center; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--border); max-width: 960px; margin-left: auto; margin-right: auto; width: 100%; }
-  header h1 { font-size: 22px; font-weight: 700; color: #fff; }
-  header p { color: var(--muted); margin-top: 4px; font-size: 12px; }
-  .backlink { display:block; margin-bottom:14px; color:var(--muted); font-size:12px; text-decoration:none; max-width: 960px; margin-left: auto; margin-right: auto; }
-  .backlink:hover { color: var(--accent); }
+  .page-title { text-align: center; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--border); max-width: 960px; margin-left: auto; margin-right: auto; width: 100%; }
+  .page-title h1 { font-size: 22px; font-weight: 700; color: #fff; }
+  .page-title p { color: var(--muted); margin-top: 4px; font-size: 12px; }
 
   .layout { max-width: 960px; margin: 0 auto; display: grid; gap: 16px; }
   .row2 { display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px; }
@@ -111,24 +109,17 @@
     color: var(--text); font-family: var(--sans); font-size: 13px; padding: 8px 12px; margin: 10px 0; outline: none;
   }
   .search-box:focus { border-color: var(--accent); }
-
-  footer {
-    max-width: 960px; margin: 24px auto 0;
-    padding: 16px 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 11px; color: var(--muted); text-align: left; line-height: 1.7;
-  }
 </style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
 </head>
 <body>
 
-<a href="index.html" class="backlink">← На главную</a>
+<div id="site-header"></div>
 
-<header>
+<div class="page-title">
   <h1>Двутавры по ГОСТ 26020-83</h1>
-</header>
+</div>
 
 <div class="layout">
 
@@ -218,10 +209,7 @@
 
 </div>
 
-<footer>
-  Калькулятор предназначен для предварительных расчётов и личного использования. Перед применением в проекте всегда сверяйте результат с действующими нормами и проверяйте у ГИПа/экспертизы. Возможны опечатки и обновления без предупреждения. Автор не несёт ответственности за использование данных инструмента.<br><br>
-  <span style="color:var(--text); font-weight:600;">С уважением, Кайыртаев Бекзат Бейсембаевич</span>
-</footer>
+<div id="site-footer"></div>
 
 <script>
 /* ══════════════════════════════════════════════════════════════
@@ -395,6 +383,9 @@ document.getElementById('gradeSelect').addEventListener('change', e => {
 fillGradeSelect();
 selectType('b');
 </script>
+
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
 
 </body>
 </html>
