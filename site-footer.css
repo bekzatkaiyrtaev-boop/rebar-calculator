@@ -1,0 +1,35 @@
+/* ══════════════════════════════════════════════════════════════
+   ОБЩИЙ ФУТЕР САЙТА — стили
+   Подключается одинаково на каждой странице:
+     <link rel="stylesheet" href="site-footer.css">
+   ══════════════════════════════════════════════════════════════ */
+
+.site-footer {
+  max-width: 960px;
+  margin: 40px auto 0;
+  padding: 20px 16px;
+  border-top: 1px solid #2e3347;
+  text-align: center;
+  color: #6b7099;
+  font-size: 12px;
+  line-height: 1.7;
+  min-height: 20px; /* держит видимую "зону" даже когда содержимого нет */
+}
+.site-footer a {
+  color: #6b7099;
+  text-decoration: none;
+  transition: color .15s;
+}
+.site-footer a:hover { color: #4f8ef7; }
+.site-footer .footer-contacts {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.site-footer .sep { color: #2e3347; }
+.site-footer .footer-copy {
+  margin-top: 6px;
+  color: #4a4f6a;
+  font-size: 11px;
+}
