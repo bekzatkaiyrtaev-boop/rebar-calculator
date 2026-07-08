@@ -55,7 +55,6 @@
     <header class="site-header">
       <h1>Электронный справочник конструктора</h1>
       <nav class="site-nav">${navHTML}</nav>
-      <div class="site-online"><span class="dot"></span><span id="onlineCount">—</span> сейчас на сайте</div>
     </header>
   `;
 
@@ -83,37 +82,9 @@
   }
 
   /* ══════════════════════════════════════════════════════════════
-     СЧЁТЧИК "СЕЙЧАС НА САЙТЕ" — пинг раз в 20 сек.
-     Публично показывается только число, никаких деталей о посетителях.
+     СЧЁТЧИК "СЕЙЧАС НА САЙТЕ" — временно отключён.
+     Бэкенд (/api/presence) и бейдж в шапке пока убраны из показа.
+     Чтобы включить обратно — верните <div class="site-online">...</div>
+     в разметку выше и код пинга (см. историю правок).
      ══════════════════════════════════════════════════════════════ */
-  const PRESENCE_BACKEND = 'https://rebar-backend-henna.vercel.app';
-  const PRESENCE_APP_KEY = 'spravochnik-km-2026-x7k9';
-
-  function getSessionId(){
-    let id = sessionStorage.getItem('sp_session_id');
-    if (!id){
-      id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
-      sessionStorage.setItem('sp_session_id', id);
-    }
-    return id;
-  }
-
-  async function pingPresence(){
-    try {
-      const resp = await fetch(`${PRESENCE_BACKEND}/api/presence`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-app-key': PRESENCE_APP_KEY },
-        body: JSON.stringify({ session_id: getSessionId(), page: location.pathname.split('/').pop() || 'index.html' })
-      });
-      if (!resp.ok) return;
-      const data = await resp.json();
-      const el = document.getElementById('onlineCount');
-      if (el && typeof data.online === 'number') el.textContent = data.online;
-    } catch (e) {
-      // тихо игнорируем — счётчик не критичен для работы сайта
-    }
-  }
-
-  pingPresence();
-  setInterval(pingPresence, 20000);
 })();
