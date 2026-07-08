@@ -18,6 +18,7 @@
     { href: "dvutavry-b.html",         title: "Двутавры по ГОСТ 26020-83" },
     { href: "dvutavry-sto.html",       title: "Двутавры по СТО АСЧМ 20-93" },
     { href: "pv-listy.html",           title: "Листы стальные просечно-вытяжные" },
+    { href: "rifl-listy.html",         title: "Листы стальные рифлёные" },
     { href: "climat.html",             title: "Климатические параметры" },
     { href: "konverter.html",          title: "Конвертер единиц измерения" }
   ];
