@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Листы стальные просечно-вытяжные — Электронный справочник конструктора</title>
+<style>
+:root {
+  --bg:       #0f1117;
+  --surface:  #1a1d27;
+  --surface2: #22263a;
+  --border:   #2e3347;
+  --accent:   #4f8ef7;
+  --green:    #7dd3a8;
+  --warn:     #f4b942;
+  --red:      #ef4444;
+  --text:     #d6daf0;
+  --muted:    #6b7099;
+  --mono:     'JetBrains Mono','Courier New',monospace;
+  --sans:     'Inter','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;padding:24px 16px 48px;}
+
+.page-wrap{max-width:960px;margin:0 auto;}
+
+.page-title{text-align:center;margin-bottom:6px;font-size:22px;font-weight:700;color:#fff;}
+.page-sub{text-align:center;color:var(--muted);font-size:12px;margin-bottom:24px;}
+.page-sub .ref{font-family:var(--mono);color:var(--accent);}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.card-header{background:var(--surface2);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.card-header .title{font-size:13px;font-weight:700;color:#fff;}
+.card-header .ref{font-family:var(--mono);font-size:10px;color:var(--accent);background:var(--bg);border:1px solid var(--border);padding:3px 8px;border-radius:4px;}
+.card-body{padding:16px;}
+
+/* ── Подбор листа ── */
+.picker-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;}
+.picker-field{flex:1;min-width:160px;}
+.picker-field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;}
+.picker-field select{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  color:var(--text);font-family:var(--sans);font-size:14px;font-weight:700;
+  padding:10px 12px;outline:none;cursor:pointer;
+}
+.picker-field select:focus{border-color:var(--accent);}
+.picker-field .result-val{
+  background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  color:var(--green);font-family:var(--mono);font-size:18px;font-weight:700;
+  padding:9px 12px;text-align:center;
+}
+
+.toggle-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.toggle-btn{
+  background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  color:var(--muted);font-size:12px;padding:7px 14px;cursor:pointer;font-family:var(--sans);
+  transition:all .15s;
+}
+.toggle-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+
+.design-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);margin-bottom:2px;}
+@media(max-width:760px){ .design-grid{ grid-template-columns:repeat(3,1fr); } }
+@media(max-width:480px){ .design-grid{ grid-template-columns:repeat(2,1fr); } }
+.design-cell{background:var(--surface);padding:14px 16px;text-align:center;}
+.design-cell .dc-label{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.design-cell .dc-val{font-size:18px;font-weight:700;font-family:var(--mono);color:#fff;}
+.design-cell.highlight-blue .dc-val{color:var(--accent);}
+.design-cell.highlight-green .dc-val{color:var(--green);font-size:22px;}
+.design-cell.highlight-warn .dc-val{color:var(--warn);}
+
+/* ── Таблица ── */
+table.datatable{width:100%;border-collapse:collapse;font-size:12px;}
+table.datatable th{background:var(--surface2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.4px;padding:8px 6px;border:1px solid var(--border);text-align:center;white-space:nowrap;}
+table.datatable td{padding:7px 6px;border:1px solid var(--border);text-align:center;color:var(--text);font-family:var(--mono);}
+table.datatable td.label{text-align:left;color:var(--muted);font-family:var(--sans);}
+table.datatable tr.current-row td{background:rgba(79,142,247,0.12);color:var(--accent);font-weight:700;}
+table.datatable td.current-col{background:rgba(79,142,247,0.12);color:var(--accent);font-weight:700;}
+table.datatable td.empty{color:var(--border);}
+
+/* ── Чертежи ── */
+.drawing{text-align:center;padding:16px;}
+.drawing img{max-width:100%;height:auto;border-radius:6px;background:#fff;padding:8px;}
+.drawing .caption{margin-top:10px;font-size:12px;color:var(--muted);font-family:var(--mono);}
+
+/* ── Текстовые разделы ── */
+.text-block{padding:16px;font-size:13px;line-height:1.8;color:var(--text);}
+.text-block p{margin-bottom:10px;}
+.text-block p:last-child{margin-bottom:0;}
+.text-block b{color:#fff;}
+.text-block .num{color:var(--accent);font-family:var(--mono);font-weight:700;margin-right:6px;}
+
+.notes{padding:14px 16px;font-size:12px;line-height:1.8;color:var(--muted);}
+.notes b{color:var(--text);}
+
+/* ── Таблица терминов / НТД ── */
+table.refs{width:100%;border-collapse:collapse;font-size:12px;}
+table.refs td{padding:8px 12px;border-bottom:1px solid var(--border);}
+table.refs td.term{color:var(--accent);font-family:var(--mono);width:35%;}
+table.refs td.def{color:var(--text);}
+
+@media(max-width:640px){
+  .picker-row{flex-direction:column;}
+}
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+<div class="page-wrap">
+
+<div id="site-header"></div>
+
+<div class="page-title">Листы стальные просечно-вытяжные</div>
+<div class="page-sub">Технические условия · <span class="ref">ТУ 36.26.11-5-89</span></div>
+
+<!-- ══════ Подбор листа ══════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Подбор листа и предельная нагрузка</span>
+    <span class="ref">Табл. 1 · п.1.2</span>
+  </div>
+  <div class="card-body">
+    <div class="picker-row">
+      <div class="picker-field">
+        <label>Номер листа</label>
+        <select id="selSheet"></select>
+      </div>
+      <div class="picker-field">
+        <label>Ширина листа, мм</label>
+        <select id="selWidth"></select>
+      </div>
+      <div class="picker-field">
+        <label id="v_loadLabel">Предельная нагрузка на 1 м длины</label>
+        <div class="result-val" id="v_load">—</div>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <button class="toggle-btn active" data-mode="point" onclick="setMode('point')">Сосредоточенная, защемл. концы</button>
+      <button class="toggle-btn" data-mode="udl" onclick="setMode('udl')">Равномерно распределённая (×2,2)</button>
+      <button class="toggle-btn" data-mode="free" onclick="setMode('free')">Свободное опирание концов (×0,5)</button>
+    </div>
+  </div>
+  <div class="design-grid">
+    <div class="design-cell"><div class="dc-label">Толщина заготовки δ</div><div class="dc-val" id="v_delta">—</div></div>
+    <div class="design-cell"><div class="dc-label">Подача Б</div><div class="dc-val" id="v_B">—</div></div>
+    <div class="design-cell"><div class="dc-label">Шаг ячейки В</div><div class="dc-val" id="v_V">—</div></div>
+    <div class="design-cell"><div class="dc-label">Толщина листа S*</div><div class="dc-val" id="v_S">—</div></div>
+    <div class="design-cell highlight-blue"><div class="dc-label">Вытяжка за ход А</div><div class="dc-val" id="v_A">—</div></div>
+    <div class="design-cell highlight-warn"><div class="dc-label">Масса 1 м²</div><div class="dc-val" id="v_mass">—</div></div>
+  </div>
+</div>
+
+<!-- ══════ Полная таблица сортамента ══════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Сортамент — предельные нагрузки, кг, при ширине листа, мм</span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="datatable" id="fullTable"></table>
+  </div>
+  <div class="notes">
+    Значения — для нагрузки, сосредоточенной по центральной линии, при защемлённых концах. Для равномерно распределённой нагрузки табличные значения умножают на <b>2,2</b>. При свободном опирании концов предельные нагрузки уменьшаются <b>вдвое</b>.
+  </div>
+</div>
+
+
+<!-- ══════ Условное обозначение ══════ -->
+<div class="card">
+  <div class="card-header"><span class="title">Условное обозначение при заказе</span></div>
+  <div class="text-block">
+    <p>Пример: лист просечно-вытяжной с формой просечки типа 1, номера 508, шириной 900 мм и длиной 2500 мм из стали Ст3сп:</p>
+    <p style="font-family:var(--mono);color:var(--accent);font-size:15px;text-align:center;padding:10px;background:var(--surface2);border-radius:6px;">Лист ПВ1 508×900×2500 Ст3сп ТУ 36.26.11-5-89</p>
+    <p>Если в заказе тип просечки не указан, завод может поставить листы любой формы.</p>
+  </div>
+</div>
+
+<!-- ══════ Условное обозначение в рабочем проекте ══════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Условное обозначение в рабочем проекте</span>
+    <span class="ref">ГОСТ 21.101-97 · форма 7</span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="datatable">
+      <tr><th style="width:8%">Поз.</th><th style="width:22%">Обозначение</th><th>Наименование</th><th style="width:10%">Кол.</th><th style="width:12%">Масса ед., кг</th><th style="width:14%">Примечание</th></tr>
+      <tr>
+        <td>5</td>
+        <td class="label">ТУ 36.26.11-5-89</td>
+        <td class="label">Лист ПВ1 508×900×2500 Ст3сп</td>
+        <td>4 шт.</td>
+        <td>47,0</td>
+        <td class="label">Настил площадки</td>
+      </tr>
+    </table>
+  </div>
+  <div class="notes">
+    На плане/разрезе элемент маркируется позиционной выноской (номер позиции в кружке или на полке), соответствующей строке спецификации. Масса единицы = масса 1 м² × площадь листа (масса 1 м² берётся из таблицы выше для соответствующего номера листа).
+  </div>
+</div>
+
+<!-- ══════ Технические требования ══════ -->
+<div class="card">
+  <div class="card-header"><span class="title">1. Технические требования</span></div>
+  <div class="text-block">
+    <p><span class="num">1.3</span>Листы изготовляются из листовой углеродистой стали по <b>ГОСТ 14637-89</b> марок Ст3кп, Ст3сп и Ст3пс по <b>ГОСТ 380-88</b>, толщиной δ 4, 5 и 6 мм. По согласованию с потребителем допускается изготовление из других марок стали.</p>
+    <p><span class="num">1.4</span>По ширине листы изготовляются размерами: <b>500, 600, 700, 800, 900, 1000, 1100, 1250 и 1400 мм</b>.</p>
+    <p><span class="num">1.5</span>По длине: немерной длины — от 2 до 3,5 м; мерной длины — в пределах немерной. Допускается наличие немерных отрезков длиной менее 2 м в количестве не более 10% от массы партии.</p>
+    <p><span class="num">1.6</span>Листы изготовляются резкой проката на заготовки шириной, равной ширине листа. Ячейки должны быть расположены вдоль направления волокон прокатки (см. Черт. 3).</p>
+    <p><span class="num">1.7.1</span>Предельные отклонения размеров: <b>10 мм</b> — по ширине листа; <b>25 мм</b> — по длине листа мерной длины.</p>
+    <p><span class="num">1.7.2</span>Предельные отклонения по величине вытяжки (А), подачи (Б), шага (В) и по длине ячейки (¾В) на готовой продукции не контролируются и обеспечиваются размерами режущего инструмента.</p>
+    <p><span class="num">1.7.4</span>Листы не должны иметь рванин, трещин напряжения длиной более 2 мм.</p>
+    <p><span class="num">1.7.5</span>Допускаются небольшие заусенцы и зазубрины размером не более 2 мм.</p>
+    <p><span class="num">1.7.6</span>На одном конце листа допускается по согласованию с потребителем непросекаемый участок, ширина которого оговаривается в заказе.</p>
+    <p><span class="num">1.8</span><b>Комплектность:</b> партия листов в размере, оговорённом в заказе; документ (сертификат), содержащий товарный знак изготовителя, номер заказа, условное обозначение листа, дату выписки, подтверждение соответствия ТУ, штамп ОТК.</p>
+    <p><span class="num">1.9</span><b>Упаковка:</b> листы увязываются в пачки массой не более 5 т. Каждая пачка обвязывается в поперечном направлении через 1,0–1,5 м не менее чем двумя обвязками (проволока по ГОСТ 3282-74). Использовать обвязки для строповки пачек не допускается. При отгрузке в районы Крайнего Севера — на одну закрутку больше.</p>
+    <p><span class="num">1.10</span><b>Маркировка:</b> на фанерные/металлические ярлыки или на непросекаемую часть верхнего листа — товарный знак изготовителя, условное обозначение листа, номер партии, масса нетто. Наносится ударным способом или несмываемой краской, высота знаков 5–20 мм.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="title">2. Правила приёмки</span></div>
+  <div class="text-block">
+    <p><span class="num">2.1</span>Листы принимаются партиями. Партия должна состоять из листов одной марки стали, одного номера, одного размера по ширине и длине.</p>
+    <p><span class="num">2.2</span>Контролю качества поверхности и геометрических размеров подвергают <b>5%</b> листов партии, но не менее трёх листов.</p>
+    <p><span class="num">2.3</span>При неудовлетворительном результате хотя бы по одному показателю проводятся повторные испытания на удвоенном количестве образцов. Результаты повторной проверки распространяются на всю партию.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="title">4. Транспортирование и хранение</span></div>
+  <div class="text-block">
+    <p><span class="num">4.1</span>Транспортирование — всеми видами транспорта в соответствии с действующими правилами перевозки, погрузки и крепления грузов.</p>
+    <p><span class="num">4.2</span>При ж/д транспорте — в открытом подвижном составе. Допускается в крытых вагонах при массе пачки не более 1 т.</p>
+    <p><span class="num">4.3–4.4</span>Хранение — в штабелях в горизонтальном положении. Пачки укладываются на подкладки (толщина ≥50 мм, ширина ≥100 мм), прокладки между пачками — толщина ≥20 мм, ширина ≥100 мм. Штабель предохраняется от атмосферных осадков.</p>
+  </div>
+</div>
+
+<p style="text-align:center;color:var(--muted);font-size:11px;margin-top:8px;">Действует в редакции с изменением № 1. Область применения — просечно-вытяжные листы для настилов, площадок и ступеней маршевых лестниц в производственных зданиях, эксплуатируемых при расчётной температуре минус 65 °С и выше.</p>
+
+</div>
+
+<div id="site-footer"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   ТУ 36.26.11-5-89 — сортамент просечно-вытяжных листов
+   ══════════════════════════════════════════════════════ */
+const WIDTHS = [500,600,700,800,900,1000,1100,1250,1400];
+
+const SHEETS = {
+  '406': { delta:4, B:6,  V:90,  S:12.7, A:10,   mass:15.7, loads:{500:470, 600:390, 700:320, 800:290, 900:260, 1000:null,1100:null,1250:null,1400:null} },
+  '506': { delta:5, B:6,  V:110, S:13.0, A:12.5, mass:16.4, loads:{500:790, 600:660, 700:560, 800:500, 900:440, 1000:400, 1100:360, 1250:320, 1400:280 } },
+  '508': { delta:5, B:8,  V:110, S:16.8, A:12.5, mass:20.9, loads:{500:1370,600:1140,700:970, 800:860, 900:760, 1000:680, 1100:620, 1250:550, 1400:490 } },
+  '510': { delta:5, B:10, V:110, S:20.5, A:12.5, mass:24.7, loads:{500:2160,600:1800,700:1520,800:1350,900:1200,1000:1080,1100:980, 1250:870, 1400:770 } },
+  '606': { delta:6, B:6,  V:125, S:13.4, A:15,   mass:17.3, loads:{500:970, 600:810, 700:680, 800:610, 900:540, 1000:490, 1100:440, 1250:390, 1400:350 } },
+  '608': { delta:6, B:8,  V:125, S:17.1, A:15,   mass:21.9, loads:{500:1910,600:1590,700:1340,800:1190,900:1060,1000:950, 1100:870, 1250:760, 1400:680 } },
+  '610': { delta:6, B:10, V:125, S:20.8, A:15,   mass:26.0, loads:{500:2880,600:2400,700:2030,800:1800,900:1600,1000:1440,1100:1310,1250:1150,1400:1030} }
+};
+const NUMBERS = Object.keys(SHEETS);
+
+let currentMode = 'point'; // point | udl | free
+
+function fmt(v){
+  if (v === null || v === undefined) return '—';
+  return v;
+}
+
+function applyMode(load){
+  if (load === null || load === undefined) return null;
+  if (currentMode === 'udl')  return Math.round(load * 2.2);
+  if (currentMode === 'free') return Math.round(load / 2 * 10) / 10;
+  return load;
+}
+
+function setMode(mode){
+  currentMode = mode;
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  const labels = {
+    point: 'Предельная нагрузка на 1 м длины (сосредоточенная, защемл. концы)',
+    udl:   'Предельная нагрузка на 1 м длины (равномерно распределённая)',
+    free:  'Предельная нагрузка на 1 м длины (своб. опирание концов)'
+  };
+  document.getElementById('v_loadLabel').textContent = labels[currentMode];
+  render();
+}
+
+function buildSelectors(){
+  const selSheet = document.getElementById('selSheet');
+  selSheet.innerHTML = NUMBERS.map(n => `<option value="${n}">${n}</option>`).join('');
+  selSheet.value = '508';
+  selSheet.addEventListener('change', () => { syncWidthOptions(); render(); });
+
+  const selWidth = document.getElementById('selWidth');
+  selWidth.addEventListener('change', render);
+
+  syncWidthOptions();
+}
+
+function syncWidthOptions(){
+  const num = document.getElementById('selSheet').value;
+  const sheet = SHEETS[num];
+  const selWidth = document.getElementById('selWidth');
+  const prevWidth = selWidth.value;
+  selWidth.innerHTML = WIDTHS
+    .filter(w => sheet.loads[w] !== null)
+    .map(w => `<option value="${w}">${w}</option>`).join('');
+  if (WIDTHS.includes(parseInt(prevWidth)) && sheet.loads[prevWidth] !== null){
+    selWidth.value = prevWidth;
+  } else {
+    selWidth.value = '900';
+  }
+}
+
+function render(){
+  const num = document.getElementById('selSheet').value;
+  const width = parseInt(document.getElementById('selWidth').value);
+  const sheet = SHEETS[num];
+
+  document.getElementById('v_delta').textContent = sheet.delta + ' мм';
+  document.getElementById('v_B').textContent = sheet.B + ' мм';
+  document.getElementById('v_V').textContent = sheet.V + ' мм';
+  document.getElementById('v_S').textContent = sheet.S + ' мм';
+  document.getElementById('v_A').textContent = sheet.A + ' мм';
+  document.getElementById('v_mass').textContent = sheet.mass + ' кг';
+
+  const rawLoad = sheet.loads[width];
+  const load = applyMode(rawLoad);
+  document.getElementById('v_load').textContent = load !== null ? load + ' кг' : '—';
+
+  renderFullTable(num, width);
+}
+
+function renderFullTable(currentNum, currentWidth){
+  const table = document.getElementById('fullTable');
+  let html = '<tr><th>Номер листа</th>' + WIDTHS.map(w => `<th>${w}</th>`).join('') + '</tr>';
+  NUMBERS.forEach(num => {
+    const sheet = SHEETS[num];
+    const isCurrentRow = num === currentNum;
+    html += `<tr class="${isCurrentRow ? 'current-row' : ''}"><td class="label">${num}</td>`;
+    WIDTHS.forEach(w => {
+      const v = sheet.loads[w];
+      const isCurrentCol = isCurrentRow && w === currentWidth;
+      if (v === null){
+        html += `<td class="empty">—</td>`;
+      } else {
+        html += `<td class="${isCurrentCol ? 'current-col' : ''}">${applyMode(v)}</td>`;
+      }
+    });
+    html += '</tr>';
+  });
+  table.innerHTML = html;
+}
+
+buildSelectors();
+render();
+</script>
+
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+
+</body>
+</html>
