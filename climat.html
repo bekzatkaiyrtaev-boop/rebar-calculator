@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Города — Климатические параметры участка строительства</title>
+<title>Климатические параметры — Электронный справочник конструктора</title>
 <style>
 :root {
   --bg:       #0f1117;
@@ -24,11 +24,20 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 
 /* ── Шапка ── */
 .page-wrap{max-width:960px;margin:0 auto;}
-.backlink{display:block;margin-bottom:14px;color:var(--muted);font-size:12px;text-decoration:none;}
-.backlink:hover{color:var(--accent);}
-header{text-align:center;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border);}
-header h1{font-size:22px;font-weight:700;color:#fff;}
-header p{color:var(--muted);margin-top:4px;font-size:12px;}
+
+.page-title{
+  font-size:22px;
+  font-weight:700;
+  color:#fff;
+  text-align:center;
+  margin-bottom:4px;
+}
+.page-subtitle{
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:24px;
+}
 
 /* ── Выбор города ── */
 .city-select-wrap{margin-bottom:24px;}
@@ -100,16 +109,16 @@ footer{max-width:960px;margin:24px auto 0;padding:16px 20px;
   .design-grid{grid-template-columns:1fr 1fr;}
 }
 </style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
 </head>
 <body>
 <div class="page-wrap">
 
-<a href="index.html" class="backlink">← На главную</a>
+<div id="site-header"></div>
 
-<header>
-  <h1>Города</h1>
-  <p>Климатические параметры участка строительства · Республика Казахстан</p>
-</header>
+<div class="page-title">Климатические параметры</div>
+<div class="page-subtitle">Участок строительства · Республика Казахстан</div>
 
 <div class="city-select-wrap">
   <label>Населённый пункт</label>
@@ -338,13 +347,10 @@ footer{max-width:960px;margin:24px auto 0;padding:16px 20px;
   </div>
 </div>
 
-<footer>
-  Калькулятор предназначен для предварительных расчётов и личного использования.
-  Перед применением в проекте всегда сверяйте результат с действующей редакцией норматива и проверяйте у ГИПа/экспертизы.<br><br>
-  <span style="color:var(--text);font-weight:600;">С уважением, Кайыртаев Бекзат Бейсембаевич</span>
-</footer>
-
 </div>
+
+<div id="site-footer"></div>
+
 <script>
 /* ══════════════════════════════════════════════════════
    Справочник конструктора — Климатические параметры
@@ -687,5 +693,8 @@ function copyClimaticParams() {
 /* ── Запуск ── */
 loadCities();
 </script>
+
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
 </body>
 </html>
