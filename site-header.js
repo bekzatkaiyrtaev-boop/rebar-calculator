@@ -51,7 +51,6 @@
   mount.innerHTML = `
     <header class="site-header">
       <h1>Электронный справочник конструктора</h1>
-      ${isCover ? '<p class="site-author">Автор: Кайыртаева Бекзата Бейсембаевича</p>' : ''}
       <nav class="site-nav">${navHTML}</nav>
     </header>
   `;
