@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Защитный слой бетона — §9.10 СТ РК EN 1992-1-1</title>
+<title>Защитный слой бетона — Электронный справочник конструктора</title>
 <style>
   /* ── Токены ── */
   :root {
@@ -34,8 +34,8 @@
     min-height: 100vh;
   }
 
-  /* ── Шапка ── */
-  header {
+  /* ── Заголовок страницы ── */
+  .page-title {
     text-align: center;
     margin-bottom: 28px;
     padding-bottom: 20px;
@@ -45,13 +45,13 @@
     margin-right: auto;
     width: 100%;
   }
-  header h1 {
+  .page-title h1 {
     font-size: 22px;
     font-weight: 700;
     letter-spacing: -.3px;
     color: #fff;
   }
-  header p {
+  .page-title p {
     color: var(--muted);
     margin-top: 4px;
     font-size: 12px;
@@ -273,15 +273,17 @@
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 </style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
 </head>
 <body>
 
-<a href="index.html" style="display:block; max-width:960px; margin:0 auto 14px; color:#6b7099; font-size:12px; text-decoration:none; font-family:var(--sans);">← На главную</a>
+<div id="site-header"></div>
 
-<header>
+<div class="page-title">
   <h1>Защитный слой бетона</h1>
   <span class="ref-badge">§9.10 СТ РК EN 1992-1-1</span>
-</header>
+</div>
 
 <div class="layout">
 
@@ -572,10 +574,7 @@
   </div>
 </div><!-- /layout -->
 
-<div class="disclaimer">
-  <p>Калькулятор предназначен для предварительных расчётов и личного использования. Перед применением в проекте всегда сверяйте результат с действующими нормами и проверяйте у ГИПа/экспертизы. Возможны опечатки и обновления без предупреждения. Автор не несёт ответственности за использование данных инструмента.</p>
-  <p style="margin-top:12px;color:var(--text);font-weight:600;">С уважением, Кайыртаев Бекзат Бейсембаевич</p>
-</div>
+<div id="site-footer"></div>
 
 <script>
 // ── Данные таблицы 4.4N ──
@@ -646,6 +645,9 @@ function showTab(id) {
 // ── Первый расчёт при загрузке ──
 calc();
 </script>
+
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
 
 </body>
 </html>
