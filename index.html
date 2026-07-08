@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Электронный справочник конструктора</title>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
 <style>
   :root {
     --bg:         #0f1117;
@@ -25,34 +27,6 @@
     font-size: 14px;
     line-height: 1.55;
     padding: 24px 16px 48px;
-  }
-
-  header {
-    text-align: center;
-    margin-bottom: 24px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-    max-width: 760px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  header .brand {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-  header h1 {
-    font-size: 26px;
-    font-weight: 800;
-    color: #fff;
-    letter-spacing: -0.3px;
-  }
-  header p {
-    color: var(--muted);
-    margin-top: 6px;
-    font-size: 13px;
   }
 
   .search-wrap { max-width: 760px; margin: 0 auto 32px; }
@@ -147,10 +121,7 @@
 </head>
 <body>
 
-<header>
-  <div class="brand">Электронный справочник конструктора</div>
-  <h1>Содержание</h1>
-</header>
+<div id="site-header"></div>
 
 <div class="search-wrap">
   <input type="text" id="search" placeholder="Поиск калькулятора по названию или пункту норматива…">
@@ -310,6 +281,11 @@ function render(filter = "") {
 document.getElementById('search').addEventListener('input', e => render(e.target.value));
 render();
 </script>
+
+<div id="site-footer"></div>
+
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
 
 </body>
 </html>
