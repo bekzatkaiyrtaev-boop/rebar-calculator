@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Об авторе — Электронный справочник конструктора</title>
+<style>
+  :root{
+    --bg: #0f1117;
+    --panel: #1a1d27;
+    --panel-border: #2e3347;
+    --accent: #4f8ef7;
+    --accent-soft: rgba(79,142,247,0.12);
+    --text: #d6daf0;
+    --text-dim: #9aa1ae;
+    --text-faint: #6b7099;
+  }
+  * { box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.7;
+  }
+  .wrap{
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  .back-link{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color: var(--text-dim);
+    text-decoration:none;
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+    transition: color .2s;
+  }
+  .back-link:hover{ color: var(--accent); }
+
+  .page-title{
+    font-size: 2rem;
+    margin: 0 0 6px;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+  .subtitle{
+    color: var(--text-dim);
+    margin: 0 0 40px;
+    font-size: 1.05rem;
+  }
+
+  section{ margin-bottom: 48px; }
+
+  .greeting{
+    font-size: 1.15rem;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+
+  p{ margin: 0 0 18px; color: var(--text); }
+  p:last-child{ margin-bottom: 0; }
+
+  .signature{
+    margin-top: 28px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  h2{
+    font-size: 1.3rem;
+    color: var(--accent);
+    margin: 0 0 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+
+  .disclaimer{
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    font-size: 0.95rem;
+    color: var(--text-dim);
+  }
+  .disclaimer p{ color: var(--text-dim); }
+
+  /* Сертификаты — горизонтальная лента */
+  .cert-strip{
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: var(--panel-border) transparent;
+  }
+  .cert-strip::-webkit-scrollbar{ height: 8px; }
+  .cert-strip::-webkit-scrollbar-track{ background: transparent; }
+  .cert-strip::-webkit-scrollbar-thumb{ background: var(--panel-border); border-radius: 4px; }
+  .cert-strip::-webkit-scrollbar-thumb:hover{ background: var(--accent); }
+
+  .cert-card{
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color .2s, transform .2s;
+    flex: 0 0 220px;
+    scroll-snap-align: start;
+  }
+  .cert-card:hover{
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .cert-image-wrap{
+    position: relative;
+    background: #fff;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .cert-image-wrap img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: none;
+  }
+  .cert-watermark{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-28deg);
+    font-size: 2.1rem;
+    font-weight: 800;
+    color: rgba(20, 30, 50, 0.16);
+    letter-spacing: 0.15em;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+  .cert-watermark.small{
+    top: 25%;
+  }
+  .cert-watermark.small2{
+    top: 75%;
+  }
+  .cert-strip-wrap{
+    position: relative;
+  }
+  .cert-nav{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--panel-border);
+    background: var(--panel);
+    color: var(--text);
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color .2s, color .2s;
+  }
+  .cert-nav:hover{
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .cert-nav-left{ left: -14px; }
+  .cert-nav-right{ right: -14px; }
+  @media (max-width: 560px){
+    .cert-nav{ display: none; } /* на мобильном — обычный свайп пальцем */
+  }
+
+  .cert-caption{
+    padding: 14px 16px 16px;
+  }
+  .cert-title{
+    font-size: 0.92rem;
+    color: var(--text);
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .cert-meta{
+    font-size: 0.82rem;
+    color: var(--text-faint);
+    margin: 0;
+  }
+
+  /* Лайтбокс */
+  .lightbox{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(4,6,12,0.92);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .lightbox.open{ display: flex; }
+  .lightbox-inner{
+    position: relative;
+    max-width: 900px;
+    max-height: 90vh;
+    width: 100%;
+  }
+  .lightbox-inner img{
+    width: 100%;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 8px;
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: none;
+  }
+  .lightbox-watermark{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-28deg);
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: rgba(255,255,255, 0.14);
+    letter-spacing: 0.2em;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .lightbox-close{
+    position: absolute;
+    top: -44px;
+    right: 0;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  .lightbox-close:hover{ color: #fff; }
+
+  /* Контакты */
+  .contacts{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .contact-pill{
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 999px;
+    padding: 10px 20px;
+    color: var(--text);
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: border-color .2s, color .2s;
+  }
+  .contact-pill:hover{
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .contact-placeholder{
+    color: var(--text-faint);
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+
+  @media (max-width: 560px){
+    .wrap{ padding: 28px 16px 60px; }
+    h1{ font-size: 1.6rem; }
+    .cert-grid{ grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  }
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div id="site-header"></div>
+
+  <h1 class="page-title">Об авторе</h1>
+
+  <!-- ===== Приветствие и биография ===== -->
+  <section>
+    <p class="greeting">Здравствуйте! Меня зовут Бекзат, и я рад, что вы заглянули на эту страницу.</p>
+
+    <p>Я бы хотел поделиться своими наработками в части расчётов строительных конструкций — тем, что накопилось за годы практической работы и может сэкономить время другим инженерам.</p>
+
+    <p>Все, что вы найдёте в этом справочнике, — не какая-то уникальная методика и не моё изобретение. Это накопленный годами практический опыт, который я решил собрать, систематизировать и оформить так, чтобы им было удобно пользоваться каждый день — так, как пользуюсь им я сам.</p>
+
+    <p>За годы работы мне довелось пройти конструкторский путь с обеих сторон: я разрабатывал проекты и проверял чужие, несколько лет проработав в госэкспертизе по конструктивной части. Работа по обе стороны — сначала как проектировщика, потом как эксперта — дала понимание трудностей, с которыми сталкивается каждая из сторон. Отсюда и родилось желание облегчить работу и проектировщикам, и экспертам, повышая качество проектной документации ещё до выхода на строительную площадку. Просматривая чужие проекты, я хорошо изучил, какие ошибки допускают проектировщики чаще всего — не только в расчётах, но и в самом проектировании: от невнимательности в вычислениях до неверной трактовки нормативных требований, от неудачных конструктивных решений до недочётов в оформлении чертежей. Многие из этих наблюдений легли в основу подсказок и примечаний, которые вы встретите в разделах справочника.</p>
+
+    <p>Отдельная тема, близкая многим казахстанским конструкторам, — переход с советских норм на Еврокоды. Те, кто годами работал по СНиП, знают, каково это: другая логика расчётов, другие коэффициенты, другая философия нормирования. Часть материалов здесь как раз призвана облегчить эту адаптацию — перевести привычные подходы на новый нормативный язык.</p>
+
+    <p>Работая над этим справочником, я старался следовать одному правилу: упрощать сложное, не теряя в точности. Здесь собраны таблицы, формулы и рабочие наработки из нормативных документов, ГОСТов, справочной и учебной литературы — то, чем инженер пользуется ежедневно, но что обычно разбросано по десяткам файлов и закладок в браузере. Часть материалов не найти в открытом доступе в интернете — некоторые данные я брал из советской технической литературы: справочников, инструкций и пособий по проектированию, которые давно стали библиографической редкостью, но при этом остаются проверенными временем и применяются по сей день. Источник указан на каждом отдельном листе, а решение о применимости той или иной методики в конкретном проекте остаётся на усмотрение проектировщика и эксперта. Авторство расчётных методик мне не принадлежит: моя роль была в том, чтобы навести порядок в этом материале и сделать его удобным для практической работы.</p>
+
+    <p>Этот справочник — моё хобби и вклад в профессиональное сообщество. Параллельно с основной работой я также беру заказы на расчёты и разработку конструктивной части проектов — если вам нужна такая помощь, буду рад обсудить сотрудничество. Контакты — ниже.</p>
+
+    <p class="signature">С уважением, Кайыртаев Бекзат Бейсембаевич</p>
+  </section>
+
+  <!-- ===== Ответственность ===== -->
+  <section>
+    <h2>Ответственность</h2>
+    <div class="disclaimer">
+      <p>Информация в этом справочнике предназначена для личного пользования, предварительных расчётов и справочных целей. Текст может содержать опечатки и периодически обновляется — автор оставляет за собой право вносить изменения, дополнять либо удалять содержимое без предупреждения.</p>
+      <p>Автор не несёт ответственности за ущерб, возникший из-за использования, неполноты или неточности представленных данных. Используя материалы справочника, вы принимаете на себя связанную с этим ответственность. Перед применением в реальном проекте все данные необходимо проверять по актуальным нормативным документам и утверждать у ГИП/экспертизы.</p>
+      <p>Если заметили опечатку или есть предложение по улучшению — пишите на почту. Справочник будет пополняться и обновляться.</p>
+    </div>
+  </section>
+
+  <!-- ===== Сертификаты ===== -->
+  <section>
+    <h2>Сертификаты и аттестаты</h2>
+    <div class="cert-strip-wrap">
+    <button class="cert-nav cert-nav-left" onclick="scrollCerts(-1)" aria-label="Прокрутить влево">‹</button>
+    <button class="cert-nav cert-nav-right" onclick="scrollCerts(1)" aria-label="Прокрутить вправо">›</button>
+    <div class="cert-strip" id="certStrip">
+
+      <div class="cert-card">
+        <div class="cert-image-wrap" onclick="openLightbox('certs/cert_glavkonstruktor_gap_2021.jpg')">
+          <img src="certs/cert_glavkonstruktor_gap_2021.jpg" alt="Квалификационный аттестат №03576 — Главный конструктор">
+          <div class="cert-watermark">КОПИЯ</div>
+        </div>
+        <div class="cert-caption">
+          <p class="cert-title">Главный конструктор: несущие и ограждающие конструкции</p>
+          <p class="cert-meta">Аттестат №03576 · 2021 г.</p>
+        </div>
+      </div>
+
+      <div class="cert-card">
+        <div class="cert-image-wrap" onclick="openLightbox('certs/cert_gap_2022.jpg')">
+          <img src="certs/cert_gap_2022.jpg" alt="Квалификационный аттестат №000999 — Главный архитектор проекта">
+          <div class="cert-watermark">КОПИЯ</div>
+        </div>
+        <div class="cert-caption">
+          <p class="cert-title">Главный архитектор проекта</p>
+          <p class="cert-meta">Аттестат №000999 · 2022 г.</p>
+        </div>
+      </div>
+
+      <div class="cert-card">
+        <div class="cert-image-wrap" onclick="openLightbox('certs/cert_expert_2017.png')">
+          <img src="certs/cert_expert_2017.png" alt="Аттестат эксперта №KZ39VJE00021902">
+          <div class="cert-watermark">КОПИЯ</div>
+        </div>
+        <div class="cert-caption">
+          <p class="cert-title">Эксперт: конструктивная часть проектно-сметной документации</p>
+          <p class="cert-meta">№ KZ39VJE00021902 · 2017 г.</p>
+        </div>
+      </div>
+
+      <div class="cert-card">
+        <div class="cert-image-wrap" onclick="openLightbox('certs/cert_tehnadzor_2022.png')">
+          <img src="certs/cert_tehnadzor_2022.png" alt="Аттестат эксперта №KZ27VJE00076923 — технический надзор">
+          <div class="cert-watermark">КОПИЯ</div>
+        </div>
+        <div class="cert-caption">
+          <p class="cert-title">Эксперт: технический надзор (несущие и ограждающие конструкции)</p>
+          <p class="cert-meta">№ KZ27VJE00076923 · 2022 г.</p>
+        </div>
+      </div>
+
+      <div class="cert-card">
+        <div class="cert-image-wrap" onclick="openLightbox('certs/cert_tehobsledovanie_2025.png')">
+          <img src="certs/cert_tehobsledovanie_2025.png" alt="Аттестат эксперта №KZ16VJE00094581 — техническое обследование">
+          <div class="cert-watermark">КОПИЯ</div>
+        </div>
+        <div class="cert-caption">
+          <p class="cert-title">Эксперт: техническое обследование надёжности и устойчивости зданий</p>
+          <p class="cert-meta">№ KZ16VJE00094581 · 2025 г.</p>
+        </div>
+      </div>
+
+      <div class="cert-card">
+        <div class="cert-image-wrap" onclick="openLightbox('certs/gramota_sharlapaev_2024.jpg')">
+          <img src="certs/gramota_sharlapaev_2024.jpg" alt="Почётная грамота Министерства индустрии и строительства РК">
+          <div class="cert-watermark">КОПИЯ</div>
+        </div>
+        <div class="cert-caption">
+          <p class="cert-title">Почётная грамота за вклад в развитие строительной отрасли РК</p>
+          <p class="cert-meta">Министерство индустрии и строительства РК · 2024 г.</p>
+        </div>
+      </div>
+
+      <div class="cert-card">
+        <div class="cert-image-wrap" onclick="openLightbox('certs/sertifikat_lira_2011.jpg')">
+          <img src="certs/sertifikat_lira_2011.jpg" alt="Сертификат ЛИРА-САПР">
+          <div class="cert-watermark">КОПИЯ</div>
+        </div>
+        <div class="cert-caption">
+          <p class="cert-title">Расчёт зданий и сооружений с использованием ПК «Лира-САПР»</p>
+          <p class="cert-meta">ProjectCom Training Center · 2011 г.</p>
+        </div>
+      </div>
+
+    </div>
+    </div>
+  </section>
+
+  <!-- ===== Контакты ===== -->
+  <section>
+    <h2>Контакты</h2>
+    <div class="contacts">
+      <!-- TODO: добавить именную почту после подключения домена -->
+      <span class="contact-placeholder">Контакты будут добавлены в ближайшее время</span>
+    </div>
+  </section>
+
+</div>
+
+<!-- Лайтбокс для просмотра сертификатов в полном размере -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" onclick="closeLightbox(event)">Закрыть ✕</button>
+    <img id="lightbox-img" src="" alt="Сертификат — просмотр">
+    <div class="lightbox-watermark">КОПИЯ</div>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+
+<script>
+  // Защита от простого сохранения изображений через правый клик
+  document.querySelectorAll('.cert-image-wrap img, #lightbox-img').forEach(function(img){
+    img.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  });
+
+  // Прокрутка ленты сертификатов кнопками-стрелками
+  function scrollCerts(direction){
+    var strip = document.getElementById('certStrip');
+    var cardWidth = 220 + 20; // ширина карточки + gap
+    strip.scrollBy({ left: direction * cardWidth * 2, behavior: 'smooth' });
+  }
+
+  function openLightbox(src){
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.add('open');
+  }
+  function closeLightbox(e){
+    // закрывать только по клику на фон или кнопку, не по самому изображению
+    if(e.target.id === 'lightbox' || e.target.classList.contains('lightbox-close')){
+      document.getElementById('lightbox').classList.remove('open');
+      document.getElementById('lightbox-img').src = '';
+    }
+  }
+</script>
+
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+/* ══════════════════════════════════════════════════════════════
+   ОБЩАЯ ШАПКА САЙТА — стили
+   Подключается одинаково на каждой странице справочника:
+     <link rel="stylesheet" href="site-header.css">
+   Цвета здесь заданы напрямую (не через переменные страницы),
+   чтобы шапка выглядела одинаково независимо от того, как
+   называются CSS-переменные на конкретной странице.
+   ══════════════════════════════════════════════════════════════ */
+
+.site-header {
+  text-align: center;
+  max-width: 960px;
+  margin: 0 auto 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #2e3347;
+}
+.site-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+.site-header .site-author {
+  color: #6b7099;
+  margin-top: 6px;
+  font-size: 13px;
+}
+.site-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.site-nav a {
+  color: #6b7099;
+  text-decoration: none;
+  font-size: 14px;
+  letter-spacing: .2px;
+  transition: color .15s;
+}
+.site-nav a:hover { color: #4f8ef7; }
+.site-nav a.current { color: #4f8ef7; pointer-events: none; }
+.site-nav a.disabled { opacity: .35; pointer-events: none; }
+.site-nav .sep { color: #2e3347; font-size: 14px; }
