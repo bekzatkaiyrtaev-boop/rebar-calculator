@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Устойчивость перегородки — Электронный справочник конструктора</title>
+<style>
+:root {
+  --bg:       #0f1117;
+  --surface:  #1a1d27;
+  --surface2: #22263a;
+  --border:   #2e3347;
+  --accent:   #4f8ef7;
+  --green:    #7dd3a8;
+  --warn:     #f4b942;
+  --red:      #ef4444;
+  --text:     #d6daf0;
+  --muted:    #6b7099;
+  --mono:     'JetBrains Mono','Courier New',monospace;
+  --sans:     'Inter','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;padding:24px 16px 48px;}
+.page-wrap{max-width:960px;margin:0 auto;}
+
+.page-title{text-align:center;margin-bottom:6px;font-size:22px;font-weight:700;color:#fff;}
+.page-sub{text-align:center;color:var(--muted);font-size:12px;margin-bottom:24px;}
+.page-sub .ref{font-family:var(--mono);color:var(--accent);}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.card-header{background:var(--surface2);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.card-header .title{font-size:13px;font-weight:700;color:#fff;}
+.card-header .ref{font-family:var(--mono);font-size:10px;color:var(--accent);background:var(--bg);border:1px solid var(--border);padding:3px 8px;border-radius:4px;}
+.card-body{padding:16px;}
+
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:600px){ .field-grid{grid-template-columns:1fr;} }
+.field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;}
+.field input, .field select{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  color:var(--text);font-family:var(--sans);font-size:14px;font-weight:600;
+  padding:10px 12px;outline:none;
+}
+.field input:focus, .field select:focus{border-color:var(--accent);}
+.field.full{grid-column:1 / -1;}
+.field .hint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5;}
+
+.scheme-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:600px){ .scheme-options{grid-template-columns:1fr;} }
+.scheme-opt{
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:12px;cursor:pointer;transition:border-color .15s;
+}
+.scheme-opt:hover{border-color:var(--accent);}
+.scheme-opt.active{border-color:var(--accent);background:rgba(79,142,247,0.08);}
+.scheme-opt .so-title{font-size:12.5px;font-weight:700;color:#fff;margin-bottom:3px;}
+.scheme-opt .so-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.scheme-opt .so-ref{font-family:var(--mono);font-size:10px;color:var(--accent);margin-top:4px;}
+
+.result-box{
+  margin-top:16px;padding:20px;border-radius:8px;text-align:center;
+  border:1px solid var(--border);background:var(--surface2);
+}
+.result-box .verdict{font-size:24px;font-weight:800;letter-spacing:.5px;margin-bottom:8px;}
+.result-box.pass{border-color:var(--green);}
+.result-box.pass .verdict{color:var(--green);}
+.result-box.fail{border-color:var(--red);}
+.result-box.fail .verdict{color:var(--red);}
+.result-box .detail{font-family:var(--mono);font-size:13px;color:var(--text);}
+.result-box .detail b{color:#fff;}
+.result-box .warn-line{margin-top:10px;color:var(--warn);font-size:12px;}
+
+table.datatable{width:100%;border-collapse:collapse;font-size:12px;}
+table.datatable th{background:var(--surface2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.4px;padding:8px 8px;border:1px solid var(--border);text-align:center;}
+table.datatable td{padding:7px 8px;border:1px solid var(--border);text-align:center;color:var(--text);font-family:var(--mono);}
+table.datatable td.label{text-align:left;color:var(--muted);font-family:var(--sans);}
+
+.text-block{padding:16px;font-size:13px;line-height:1.8;color:var(--text);}
+.text-block p{margin-bottom:10px;}
+.text-block p:last-child{margin-bottom:0;}
+.text-block b{color:#fff;}
+
+.notes{padding:14px 16px;font-size:12px;line-height:1.8;color:var(--muted);}
+.notes b{color:var(--text);}
+
+.method-tabs{display:flex;gap:8px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;}
+.method-tab{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  color:var(--muted);font-size:13px;font-weight:600;padding:9px 16px;cursor:pointer;font-family:var(--sans);
+  transition:all .15s;
+}
+.method-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.toggle-group{margin-bottom:14px;}
+.toggle-group .tg-label{
+  display:block;font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--muted);margin-bottom:6px;
+}
+.toggle-row{
+  display:flex;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:3px;gap:3px;
+}
+.toggle-btn{
+  flex:1;background:transparent;border:none;border-radius:6px;
+  color:var(--muted);font-size:13px;font-weight:600;padding:9px 12px;
+  cursor:pointer;font-family:var(--sans);transition:all .15s;text-align:center;
+}
+.toggle-btn:hover:not(.active){color:var(--text);}
+.toggle-btn.active{background:var(--accent);color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+@media(max-width:480px){ .toggle-btn{font-size:12px;padding:8px 6px;} }
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+<div class="page-wrap">
+
+<div id="site-header"></div>
+
+<div class="page-title">Устойчивость перегородки</div>
+<div class="page-sub">Устойчивость и предельная высота перегородки</div>
+
+<div class="method-tabs">
+  <button class="method-tab active" data-m="classic" onclick="selectMethod('classic')">Классический метод (кирпич)</button>
+  <button class="method-tab" data-m="en" onclick="selectMethod('en')">Eurocode — СП РК EN 1996-1-1</button>
+</div>
+
+<!-- ══════ МЕТОД 1: Классический (СНиП II-22-81, кирпичные перегородки) ══════ -->
+<div class="method-block" id="method-classic">
+
+<div class="page-sub" style="margin-top:0;">Предельные высоты устойчивых кирпичных перегородок · <span class="ref">по табл. СНиП II-22-81, из учебного пособия</span></div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="title">Подбор перегородки</span>
+  </div>
+  <div class="card-body">
+    <div class="field-grid">
+      <div class="field">
+        <label>Толщина перегородки, мм</label>
+        <select id="cT" onchange="calcClassic()">
+          <option value="65">65 (кирпич на ребро)</option>
+          <option value="88">88 (кирпич на ребро, тычком)</option>
+          <option value="120" selected>120 (в 1/2 кирпича)</option>
+          <option value="250">250 (в 1 кирпич)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Марка раствора</label>
+        <select id="cMortar" onchange="calcClassic()">
+          <option value="4">4</option>
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50" selected>50 и выше</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Высота помещения H, мм</label>
+        <input type="number" id="cH" value="3000" min="1" oninput="calcClassic()">
+      </div>
+      <div class="field">
+        <label>Длина перегородки L, мм</label>
+        <input type="number" id="cL" value="4000" min="1" oninput="calcClassic()">
+      </div>
+    </div>
+
+    <div class="toggle-group">
+      <label class="tg-label">Закрепление в уровне перекрытия</label>
+      <div class="toggle-row">
+        <button class="toggle-btn active" data-k="fixed" data-v="1" onclick="setToggle('cFixed',this)">Закреплена</button>
+        <button class="toggle-btn" data-k="fixed" data-v="0" onclick="setToggle('cFixed',this)">Не закреплена</button>
+      </div>
+    </div>
+    <div class="toggle-group">
+      <label class="tg-label">Армирование кладки</label>
+      <div class="toggle-row">
+        <button class="toggle-btn active" data-k="reinf" data-v="0" onclick="setToggle('cReinf',this)">Неармированная</button>
+        <button class="toggle-btn" data-k="reinf" data-v="1" onclick="setToggle('cReinf',this)">Армированная</button>
+      </div>
+    </div>
+    <div class="toggle-group">
+      <label class="tg-label">Проёмы в перегородке</label>
+      <div class="toggle-row">
+        <button class="toggle-btn active" data-k="open" data-v="0" onclick="setToggle('cOpen',this)">Без проёмов</button>
+        <button class="toggle-btn" data-k="open" data-v="1" onclick="setToggle('cOpen',this)">С проёмами</button>
+      </div>
+    </div>
+
+    <div class="result-box" id="cResultBox">
+      <div class="verdict" id="cVerdict">—</div>
+      <div class="detail" id="cDetail">Заполните параметры</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="title">Пояснения</span></div>
+  <div class="text-block">
+    <p><b>Категория длины</b> определяется автоматически по соотношению L и H: <b>L ≤ H</b>, <b>H &lt; L ≤ 3,5H</b>, <b>L ≥ 3,5H</b>.</p>
+    <p><b>Армирование</b> даёт коэффициент повышения ×1,2 к предельной высоте неармированной кладки того же типа.</p>
+    <p><b>Закрепление в уровне перекрытия</b> — верх перегородки должен быть надёжно закреплён к конструкции перекрытия (например, гибкими анкерами), а не просто примыкать.</p>
+    <p>Таблица относится к <b>кирпичным</b> перегородкам, включая тонкие (65 и 88 мм — кирпич на ребро), которые не покрываются Приложением F Eurocode (там нижний предел толщины — 100 мм).</p>
+  </div>
+</div>
+
+</div>
+
+<!-- ══════ МЕТОД 2: Eurocode (СП РК EN 1996-1-1) ══════ -->
+<div class="method-block" id="method-en" style="display:none;">
+
+<div class="page-sub" style="margin-top:0;">Ограничение отношения высоты/длины к толщине · <span class="ref">СП РК EN 1996-1-1:2005/2011, Приложение F</span></div>
+
+<!-- ══════ Калькулятор ══════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Проверка устойчивости</span>
+    <span class="ref">НП.3.6 · Прил. F</span>
+  </div>
+  <div class="card-body">
+
+    <div class="field-grid">
+      <div class="field">
+        <label>Толщина перегородки t, мм</label>
+        <input type="number" id="inT" value="120" min="1" oninput="calc()">
+        <div class="hint" id="tWarn"></div>
+      </div>
+      <div class="field">
+        <label>Высота помещения H, мм</label>
+        <input type="number" id="inH" value="3000" min="1" oninput="calc()">
+      </div>
+      <div class="field" id="lengthField">
+        <label>Длина перегородки L, мм</label>
+        <input type="number" id="inL" value="4000" min="1" oninput="calc()">
+      </div>
+    </div>
+
+    <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:8px;">Схема опирания</label>
+    <div class="scheme-options" id="schemeOptions"></div>
+
+    <div class="result-box" id="resultBox">
+      <div class="verdict" id="verdict">—</div>
+      <div class="detail" id="detail">Заполните параметры</div>
+      <div class="warn-line" id="warnLine" style="display:none;"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════ Справочные графики (в виде таблиц опорных точек) ══════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Опорные точки графиков (Рис. F.1–F.3)</span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="datatable" id="pointsTable"></table>
+  </div>
+  <div class="notes">
+    Между точками — линейная интерполяция (как на графике первоисточника). Значения приняты по консервативной (нижней) границе на вертикальных участках кривой.
+  </div>
+</div>
+
+<!-- ══════ Пояснения ══════ -->
+<div class="card">
+  <div class="card-header"><span class="title">Пояснения</span></div>
+  <div class="text-block">
+    <p><b>Область действия.</b> Приложение F применимо к стенам толщиной (или толщине утолщённого слоя многослойной стены) не менее <b>100 мм</b>. Ограничение действует независимо от несущей способности стены по расчёту — это отдельное требование устойчивости в предельном состоянии.</p>
+    <p><b>Закрепление только по верху.</b> Если перегородка закреплена по верху (к перекрытию), а боковые вертикальные грани свободны (нет связи с поперечными стенами) — предельная высота не зависит от длины: <b>h ≤ 30t</b> (п. 2 Приложения F).</p>
+    <p><b>Армирование.</b> Приложение F не учитывает армирование кладки как отдельный повышающий коэффициент — это чисто геометрическое ограничение устойчивости, а не расчёт несущей способности. Если перегородка армирована, её прочность может быть выше, но предельное соотношение h/t или l/t по Приложению F от этого не меняется.</p>
+    <p><b>Марка раствора.</b> Тоже не учитывается — и это не случайность. П.(1) Приложения F прямо указывает: ограничение действует «<b>независимо от несущей способности</b> рассчитываемой стены». Марка раствора влияет на прочность кладки (f<sub>k</sub>), а это отдельный расчёт по несущей способности (§6.1.2 того же СП РК EN 1996-1-1) — другая часть документа, не связанная с Приложением F.</p>
+    <p><b>Проёмы.</b> Приложение F их не рассматривает вообще — оперирует только геометрией панели (h, l, t). При наличии проёма в перегородке подход другой: не понижающим коэффициентом (как в классической таблице), а <b>разбиением стены на простенки</b> — каждый участок между/у проёма считается как отдельная панель со своей длиной l.</p>
+    <p style="color:var(--warn);"><b>Важно.</b> Приложение F — независимая <b>дополнительная</b> проверка устойчивости (защита от потери формы), которую нужно выполнить <b>вдобавок</b> к расчёту прочности кладки, а не вместо него.</p>
+    <p><b>h, l, t.</b> h — высота в свету, l — длина стены, t — толщина стены (t<sub>ef</sub> для многослойных стен с воздушным зазором).</p>
+  </div>
+</div>
+
+</div><!-- /method-en -->
+
+</div>
+
+<div id="site-footer"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   СП РК EN 1996-1-1:2005/2011 — Приложение F
+   Ограничение отношения высоты/длины к толщине стены (устойчивость)
+   Координаты точек графиков сняты вручную с оригинала пользователем.
+   ══════════════════════════════════════════════════════════════ */
+
+// Каждая кривая — массив точек [l/t, h/t], упорядоченных по возрастанию l/t.
+// На вертикальных участках (скачок) намеренно оставлены обе точки —
+// интерполяция между ними даёт консервативный (безопасный) переход.
+const CURVES = {
+  F1: { // закрепление по 4 сторонам
+    label: "Рисунок F.1 — закрепление по 4 сторонам",
+    points: [[0,80],[30,80],[30,70],[40,50],[120,30],[999,30]]
+  },
+  F2: { // 3 стороны опирания, одна свободная (одна боковая сторона закреплена)
+    label: "Рисунок F.2 — 3 стороны опирания, одна сторона свободна",
+    points: [[0,70],[20,70],[60,30],[120,30],[999,30]]
+  },
+  F3: { // 3 стороны опирания, верх свободен (обе боковые стороны закреплены, верх — нет)
+    label: "Рисунок F.3 — 3 стороны опирания, верх свободен",
+    points: [[0,80],[40,80],[40,60],[55,20],[120,15],[999,15]]
+  }
+};
+
+// Линейная интерполяция h/t_max по кривой для заданного l/t.
+// На вертикальных скачках (несколько точек с одинаковым l/t) берём
+// МЕНЬШЕЕ (более консервативное/безопасное) значение h/t.
+function maxHtFromCurve(curveKey, lt){
+  const pts = CURVES[curveKey].points;
+  if (lt <= pts[0][0]) return pts[0][1];
+  if (lt >= pts[pts.length-1][0]) return pts[pts.length-1][1];
+
+  // Собираем значения со ВСЕХ отрезков, которые содержат lt (на изломах их
+  // может быть два — например, вертикальный скачок), и берём наименьшее
+  // (консервативное/безопасное) значение.
+  let candidates = [];
+  for (let i = 0; i < pts.length - 1; i++){
+    const [l1,h1] = pts[i];
+    const [l2,h2] = pts[i+1];
+    if (lt >= l1 && lt <= l2){
+      if (l1 === l2){
+        candidates.push(Math.min(h1,h2));
+      } else {
+        const frac = (lt - l1) / (l2 - l1);
+        candidates.push(h1 + (h2 - h1) * frac);
+      }
+    }
+  }
+  return Math.min(...candidates);
+}
+
+const SCHEMES = [
+  {
+    id: 'top-only',
+    title: 'Закреплена только по верху',
+    desc: 'Боковые вертикальные грани свободны (нет связи с поперечными стенами). Длина не влияет на результат.',
+    ref: 'п.2 Прил. F — h ≤ 30t',
+    needsLength: false
+  },
+  {
+    id: 'f1',
+    title: 'Закреплена по верху и по двум боковым сторонам',
+    desc: '4 стороны опирания — верх, низ и обе боковые грани связаны с конструкциями.',
+    ref: 'Рис. F.1',
+    needsLength: true,
+    curve: 'F1'
+  },
+  {
+    id: 'f2',
+    title: 'Закреплена по верху и по одной боковой стороне',
+    desc: '3 стороны опирания, одна боковая грань свободна.',
+    ref: 'Рис. F.2',
+    needsLength: true,
+    curve: 'F2'
+  },
+  {
+    id: 'f3',
+    title: 'НЕ закреплена по верху, закреплена по двум боковым сторонам',
+    desc: '3 стороны опирания (низ + обе боковые грани), верх свободен — перегородка не доходит/не закреплена к перекрытию.',
+    ref: 'Рис. F.3',
+    needsLength: true,
+    curve: 'F3'
+  }
+];
+
+let currentScheme = 'top-only';
+
+function buildSchemeOptions(){
+  const wrap = document.getElementById('schemeOptions');
+  wrap.innerHTML = SCHEMES.map(s => `
+    <div class="scheme-opt ${s.id===currentScheme?'active':''}" data-id="${s.id}" onclick="selectScheme('${s.id}')">
+      <div class="so-title">${s.title}</div>
+      <div class="so-desc">${s.desc}</div>
+      <div class="so-ref">${s.ref}</div>
+    </div>
+  `).join('');
+}
+
+function selectScheme(id){
+  currentScheme = id;
+  document.querySelectorAll('.scheme-opt').forEach(el => el.classList.toggle('active', el.dataset.id === id));
+  const scheme = SCHEMES.find(s => s.id === id);
+  document.getElementById('lengthField').style.display = scheme.needsLength ? 'block' : 'none';
+  buildPointsTable();
+  calc();
+}
+
+function buildPointsTable(){
+  const scheme = SCHEMES.find(s => s.id === currentScheme);
+  const table = document.getElementById('pointsTable');
+  if (!scheme.needsLength){
+    table.innerHTML = `<tr><th>Правило</th></tr><tr><td>Закрепление только по верху: <b>h ≤ 30·t</b> независимо от l (п.2 Приложения F)</td></tr>`;
+    return;
+  }
+  const curve = CURVES[scheme.curve];
+  let rows = curve.points
+    .filter((p,i,arr) => i===0 || p[0] !== arr[i-1][0] || p[1] !== arr[i-1][1])
+    .filter(p => p[0] < 999);
+  let html = `<tr><th>l/t</th>${rows.map(p=>`<th>${p[0]}</th>`).join('')}</tr>`;
+  html += `<tr><td class="label">h/t</td>${rows.map(p=>`<td>${p[1]}</td>`).join('')}</tr>`;
+  table.innerHTML = html;
+}
+
+function calc(){
+  const t = parseFloat(document.getElementById('inT').value);
+  const H = parseFloat(document.getElementById('inH').value);
+  const L = parseFloat(document.getElementById('inL').value);
+  const scheme = SCHEMES.find(s => s.id === currentScheme);
+
+  const tWarn = document.getElementById('tWarn');
+  tWarn.textContent = (t && t < 100) ? '⚠ Приложение F применимо для t ≥ 100 мм' : '';
+  tWarn.style.color = 'var(--warn)';
+
+  if (!t || !H || (scheme.needsLength && !L)){
+    document.getElementById('verdict').textContent = '—';
+    document.getElementById('detail').textContent = 'Заполните параметры';
+    document.getElementById('resultBox').className = 'result-box';
+    return;
+  }
+
+  const htActual = H / t;
+  let htMax, ltActual = null;
+
+  if (!scheme.needsLength){
+    htMax = 30;
+  } else {
+    ltActual = L / t;
+    htMax = maxHtFromCurve(scheme.curve, ltActual);
+  }
+
+  const ok = htActual <= htMax;
+  const box = document.getElementById('resultBox');
+  box.className = 'result-box ' + (ok ? 'pass' : 'fail');
+  document.getElementById('verdict').textContent = ok ? 'ПРОХОДИТ' : 'НЕ ПРОХОДИТ';
+
+  let detailHtml = `h/t = ${htActual.toFixed(1)} <b>${ok?'≤':'>'}</b> h/t<sub>доп</sub> = ${htMax.toFixed(1)}`;
+  if (ltActual !== null) detailHtml += `<br>l/t = ${ltActual.toFixed(1)}`;
+  document.getElementById('detail').innerHTML = detailHtml;
+
+  const warnLine = document.getElementById('warnLine');
+  if (t < 100){
+    warnLine.style.display = 'block';
+    warnLine.textContent = 'Толщина менее 100 мм — Приложение F формально неприменимо, результат справочный.';
+  } else {
+    warnLine.style.display = 'none';
+  }
+}
+
+buildSchemeOptions();
+buildPointsTable();
+calc();
+
+/* ══════════════════════════════════════════════════════════════
+   ПЕРЕКЛЮЧАТЕЛЬ МЕТОДОВ
+   ══════════════════════════════════════════════════════════════ */
+function selectMethod(m){
+  document.querySelectorAll('.method-tab').forEach(b => b.classList.toggle('active', b.dataset.m === m));
+  document.getElementById('method-classic').style.display = (m === 'classic') ? 'block' : 'none';
+  document.getElementById('method-en').style.display = (m === 'en') ? 'block' : 'none';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   МЕТОД 1 — КЛАССИЧЕСКИЙ (кирпичные перегородки, СНиП II-22-81)
+   Таблица предельных высот устойчивых кирпичных перегородок.
+   Источник — учебное пособие (предоставлено пользователем).
+
+   Структура строки данных (8 значений):
+   [без проёмов: закр.неарм, закр.арм, незакр.неарм, незакр.арм,
+    с проёмами: закр.неарм, закр.арм, незакр.неарм, незакр.арм]
+
+   4 значения скорректированы относительно исходного текста —
+   не укладывались в закономерность "армир. = неармир. × 1,2",
+   которая точно выполняется во всех остальных ~40 проверенных ячейках:
+     t=65,  L≥3.5H, р-р25: было 2,6  → 2,06
+     t=88,  H<L≤3.5H, р-р50+: было 3,51 → 2,69
+     t=120, L≥3.5H, р-р50+: было 2,69 → 2,89
+     t=250, H<L≤3.5H, р-р25: было 5   → 4,49
+   ══════════════════════════════════════════════════════════════ */
+const CLASSIC_DATA = {
+  65: {
+    "L<=H":     { 4:[1.75,2.1,1.23,1.47,1.58,1.9,1.1,1.32], 10:[2.34,2.81,1.64,1.96,2.1,2.52,1.47,1.76], 25:[2.57,3.09,1.8,2.16,2.31,2.78,1.62,1.94], 50:[2.92,3.51,2.05,2.45,2.63,3.16,1.84,2.21] },
+    "H<L<=3.5H":{ 4:[1.58,1.9,1.1,1.32,1.42,1.7,1,1.19], 10:[2.11,2.53,1.47,1.77,1.9,2.27,1.32,1.59], 25:[2.32,2.78,1.62,1.94,2.08,2.5,1.46,1.75], 50:[2.63,3.16,1.84,2.21,2.36,2.84,1.65,2] },
+    "L>=3.5H":  { 4:[1.4,1.68,0.98,1.18,1.26,1.51,0.88,1.06], 10:[1.87,2.24,1.31,1.57,1.68,2.02,1.18,1.41], 25:[2.06,2.47,1.44,1.73,1.85,2.22,1.3,1.55], 50:[2.34,2.8,1.64,1.96,2.1,2.52,1.47,1.76] }
+  },
+  88: {
+    "L<=H":     { 4:[2.38,2.85,1.66,2,2.14,2.56,1.5,1.8], 10:[3.17,3.8,2.22,2.66,2.85,3.42,2,2.4], 25:[3.48,4.18,2.44,2.92,3.13,3.76,2.2,2.63], 50:[3.96,4.75,2.77,3.32,3.56,4.27,2.5,3] },
+    "H<L<=3.5H":{ 4:[2.14,2.56,1.5,1.79,1.92,2.3,1.34,1.61], 10:[2.85,3.42,2,2.39,2.56,3.08,1.8,2.15], 25:[3.14,3.76,2.2,2.63,2.82,3.38,1.97,2.37], 50:[3.56,4.27,2.5,2.99,3.2,3.85,2.24,2.69] },
+    "L>=3.5H":  { 4:[1.9,2.28,1.33,1.6,1.71,2.05,1.2,1.43], 10:[2.53,3.04,1.77,2.12,2.28,2.73,1.6,1.91], 25:[2.79,3.34,1.95,2.34,2.5,3.01,1.75,2.1], 50:[3.17,3.8,2.22,2.66,2.85,3.42,2,2.4] }
+  },
+  120: {
+    "L<=H":     { 4:[3.1,3.72,2.16,2.6,2.78,3.34,1.95,2.34], 10:[4.13,4.95,2.89,3.46,3.71,4.45,2.6,3.12], 25:[4.54,5.45,3.18,3.81,4.08,4.9,2.86,3.43], 50:[5.16,6.19,3.61,4.33,4.64,5.57,3.25,3.9] },
+    "H<L<=3.5H":{ 4:[2.78,3.34,1.95,2.34,2.5,3,1.75,2.1], 10:[3.71,4.45,2.6,3.12,3.34,4.01,2.34,2.8], 25:[4.09,4.9,2.86,3.43,3.67,4.41,2.57,3.09], 50:[4.64,5.57,3.25,3.9,4.18,5.01,2.92,3.51] },
+    "L>=3.5H":  { 4:[2.48,2.97,1.73,2.08,2.23,2.67,1.56,1.87], 10:[3.3,3.96,2.31,2.77,2.97,3.56,2.08,2.5], 25:[3.63,4.36,2.54,3.05,3.27,3.92,2.28,2.74], 50:[4.13,4.95,2.89,3.46,3.71,4.45,2.6,3.12] }
+  },
+  250: {
+    "L<=H":     { 4:[4.5,5.4,3.15,3.78,4.05,4.86,2.83,3.4], 10:[6,7.2,4.2,5.04,5.4,6.48,3.78,4.53], 25:[6.6,7.92,4.62,5.55,5.94,7.12,4.15,5], 50:[7.5,9,5.25,6.3,6.75,8.1,4.72,5.67] },
+    "H<L<=3.5H":{ 4:[4.05,4.86,2.83,3.4,3.64,4.37,2.55,3.06], 10:[5.4,6.48,3.78,4.53,4.86,5.83,3.4,4.08], 25:[5.94,7.12,4.15,5,5.35,6.41,3.74,4.49], 50:[6.75,8.1,4.72,5.67,6.07,7.29,4.25,5.1] },
+    "L>=3.5H":  { 4:[3.6,4.32,2.52,3.02,3.24,3.83,2.27,2.72], 10:[4.8,5.76,3.36,4.03,4.32,5.18,3.02,3.62], 25:[5.28,6.33,3.7,4.44,4.75,5.7,3.32,4], 50:[6,7.2,4.2,5.04,5.4,6.48,3.78,4.53] }
+  }
+};
+
+const cState = { fixed: 1, reinf: 0, open: 0 };
+
+function setToggle(group, btn){
+  const row = btn.parentElement;
+  row.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  cState[group.replace('c','').toLowerCase()] = parseInt(btn.dataset.v);
+  calcClassic();
+}
+
+function lengthCategory(L, H){
+  if (L <= H) return "L<=H";
+  if (L <= 3.5 * H) return "H<L<=3.5H";
+  return "L>=3.5H";
+}
+
+function calcClassic(){
+  const t = parseInt(document.getElementById('cT').value);
+  const mortar = parseInt(document.getElementById('cMortar').value);
+  const H = parseFloat(document.getElementById('cH').value);
+  const L = parseFloat(document.getElementById('cL').value);
+
+  if (!H || !L){
+    document.getElementById('cVerdict').textContent = '—';
+    document.getElementById('cDetail').textContent = 'Заполните параметры';
+    document.getElementById('cResultBox').className = 'result-box';
+    return;
+  }
+
+  const cat = lengthCategory(L, H);
+  const row = CLASSIC_DATA[t][cat][mortar];
+  // индекс в массиве: [закр.неарм, закр.арм, незакр.неарм, незакр.арм, откр.закр.неарм, откр.закр.арм, откр.незакр.неарм, откр.незакр.арм]
+  let idx = 0;
+  idx = (cState.open === 1 ? 4 : 0) + (cState.fixed === 1 ? 0 : 2) + (cState.reinf === 1 ? 1 : 0);
+  const limitH_m = row[idx];
+  const actualH_m = H / 1000;
+
+  const ok = actualH_m <= limitH_m;
+  const box = document.getElementById('cResultBox');
+  box.className = 'result-box ' + (ok ? 'pass' : 'fail');
+  document.getElementById('cVerdict').textContent = ok ? 'ПРОХОДИТ' : 'НЕ ПРОХОДИТ';
+
+  const catLabel = {"L<=H":"L ≤ H", "H<L<=3.5H":"H < L ≤ 3,5H", "L>=3.5H":"L ≥ 3,5H"}[cat];
+  document.getElementById('cDetail').innerHTML =
+    `H = ${actualH_m.toFixed(2)} м <b>${ok?'≤':'>'}</b> H<sub>доп</sub> = ${limitH_m.toFixed(2)} м` +
+    `<br>Категория длины: ${catLabel} (L=${(L/1000).toFixed(2)} м, H=${actualH_m.toFixed(2)} м)`;
+}
+
+calcClassic();
+</script>
+
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+
+</body>
+</html>
