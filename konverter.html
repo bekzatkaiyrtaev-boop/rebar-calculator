@@ -144,59 +144,13 @@
     margin-top: 16px;
     line-height: 1.5;
   }
-  /* ── Единая шапка сайта (одинаковая на всех страницах) ── */
-  .site-header{
-    text-align: center;
-    margin-bottom: 24px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-  }
-  .site-header h1{
-    font-size: 26px;
-    font-weight: 800;
-    color: #fff;
-    letter-spacing: -0.3px;
-  }
-  .site-header p{
-    color: var(--text-dim);
-    margin-top: 6px;
-    font-size: 13px;
-  }
-  .site-nav{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-top: 14px;
-    flex-wrap: wrap;
-  }
-  .site-nav a{
-    color: var(--text-dim);
-    text-decoration: none;
-    font-size: 14px;
-    letter-spacing: .2px;
-    transition: color .15s;
-  }
-  .site-nav a:hover{ color: var(--accent); }
-  .site-nav a.current{ color: var(--accent); pointer-events: none; }
-  .site-nav a.disabled{ opacity: .35; pointer-events: none; }
-  .site-nav .sep{ color: var(--border); font-size: 14px; }
 </style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
 </head>
 <body>
 <div class="wrap">
-  <header class="site-header">
-    <h1>Электронный справочник конструктора</h1>
-    <nav class="site-nav">
-      <a href="index.html">Содержание</a>
-      <span class="sep">·</span>
-      <a href="#" id="siteNavPrev" class="disabled">← Назад</a>
-      <span class="sep">·</span>
-      <a href="#" id="siteNavNext" class="disabled">Вперёд →</a>
-      <span class="sep">·</span>
-      <a href="about.html">Об авторе</a>
-    </nav>
-  </header>
+  <div id="site-header"></div>
 
   <h2 style="font-size:16px; font-weight:600; margin-bottom:16px; color:var(--text);">Конвертер единиц измерения</h2>
 
@@ -224,6 +178,8 @@
     <div class="hint" id="hintText"></div>
   </div>
 </div>
+
+<div id="site-footer"></div>
 
 <script>
 // ---------------------------------------------------------
@@ -697,50 +653,7 @@ swapBtn.addEventListener("click", () => {
 selectCategory(currentCategory);
 </script>
 
-<script>
-/* ══════════════════════════════════════════════════════════════
-   НАВИГАЦИЯ "НАЗАД / ВПЕРЁД" — единый порядок для всей шапки.
-   Этот же блок (без изменений) вставляется на каждую страницу
-   справочника. Чтобы поменять порядок страниц или добавить новую —
-   правьте массив SITE_PAGES здесь и во всех остальных файлах.
-   ══════════════════════════════════════════════════════════════ */
-const SITE_PAGES = [
-  { href: "Vedomost_elementov.html", title: "Ведомость деталей" },
-  { href: "zashitny-sloy.html",      title: "Защитный слой бетона" },
-  { href: "dvutavry-b.html",         title: "Двутавры по ГОСТ 26020-83" },
-  { href: "dvutavry-sto.html",       title: "Двутавры по СТО АСЧМ 20-93" },
-  { href: "climat.html",             title: "Климатические параметры" },
-  { href: "konverter.html",          title: "Конвертер единиц измерения" }
-];
-
-(function(){
-  const prevBtn = document.getElementById('siteNavPrev');
-  const nextBtn = document.getElementById('siteNavNext');
-  if (!prevBtn || !nextBtn) return;
-
-  const current = location.pathname.split('/').pop();
-  const idx = SITE_PAGES.findIndex(p => p.href === current);
-
-  if (idx > 0){
-    prevBtn.href = SITE_PAGES[idx - 1].href;
-    prevBtn.title = SITE_PAGES[idx - 1].title;
-    prevBtn.classList.remove('disabled');
-  } else {
-    prevBtn.classList.add('disabled');
-  }
-
-  if (idx >= 0 && idx < SITE_PAGES.length - 1){
-    nextBtn.href = SITE_PAGES[idx + 1].href;
-    nextBtn.title = SITE_PAGES[idx + 1].title;
-    nextBtn.classList.remove('disabled');
-  } else if (idx === -1){
-    nextBtn.href = SITE_PAGES[0].href;
-    nextBtn.title = SITE_PAGES[0].title;
-    nextBtn.classList.remove('disabled');
-  } else {
-    nextBtn.classList.add('disabled');
-  }
-})();
-</script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
 </body>
 </html>
