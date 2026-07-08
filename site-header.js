@@ -19,6 +19,7 @@
     { href: "dvutavry-sto.html",       title: "Двутавры по СТО АСЧМ 20-93" },
     { href: "pv-listy.html",           title: "Листы стальные просечно-вытяжные" },
     { href: "rifl-listy.html",         title: "Листы стальные рифлёные" },
+    { href: "trubi.html",              title: "Квадратные и прямоугольные трубы по ГОСТ 30245-2012" },
     { href: "peregorodka.html",        title: "Устойчивость перегородки" },
     { href: "climat.html",             title: "Климатические параметры" },
     { href: "konverter.html",          title: "Конвертер единиц измерения" }
