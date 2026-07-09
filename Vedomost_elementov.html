@@ -298,12 +298,12 @@ function calcL(s){
       return A + 2*arc + slope + C;
     }
     case 'R': {
-      const Aax=A+d, Bax=B+d;
-      return 2*(Aax+Bax) - 8*cut90 + 4*Ld90 + 2*minC(d);
+      // Хомут прямоугольный: 2A + 2B + 2C (крюки) + 2 перегиба 180° + 3 перегиба 90° (см. sketchR)
+      return 2*A + 2*B + 2*C + 2*arcLen(r,180) + 3*Ld90;
     }
     case 'H': {
-      const Aax=A+d;
-      return Aax + 2*minC(d) + 2*Ld90 - 4*cut90;
+      // Шпилька: прямой участок A + два крюка B + два перегиба 180° (=4×Ld90)
+      return A + 2*B + 4*Ld90;
     }
     case 'X': {
       if(!s.segs||s.segs.length===0) return 0;
