@@ -441,6 +441,19 @@ const CATEGORIES = {
       "°Ra": "(x−491.67)×5/9"
     }, // здесь хранится не коэффициент, а формула пересчёта x → °C (см. buildRefTable)
     hint: "Пересчёт учитывает смещение шкал: °F = °C×9/5+32, K = °C+273.15, °Ra = K×9/5 (шкала Ранкина, США)."
+  },
+  slope: {
+    title: "Уклон",
+    base: "доли (i)",
+    isSlope: true,
+    units: {
+      "доли (i)":        "x",
+      "%":               "x/100",
+      "‰":               "x/1000",
+      "соотношение 1:n": "1/x",
+      "°":               "tg(x·π/180)"
+    }, // здесь хранится не коэффициент, а формула пересчёта x → доли (см. buildRefTable)
+    hint: "Уклон i = h/l (доли). Соотношение «1:n» — вводите/читайте только число n (после двоеточия). Пример: уклон 5% = i 0,05 = 1:20 = 2,86°."
   }
 };
 
@@ -514,18 +527,21 @@ const UNIT_NAMES = {
   "угл. секунда": "угловая секунда", "угл. минута": "угловая минута", "рад": "радиан",
   "градус": "градус", "гон (град)": "гон (градиан)", "оборот": "оборот (полный угол)",
   // Температура
-  "°C": "градус Цельсия", "°F": "градус Фаренгейта", "K": "кельвин", "°Ra": "градус Ранкина"
+  "°C": "градус Цельсия", "°F": "градус Фаренгейта", "K": "кельвин", "°Ra": "градус Ранкина",
+  // Уклон
+  "доли (i)": "доли единицы (i = h/l)", "соотношение 1:n": "соотношение (уклон 1 к n)",
+  "%": "процент", "‰": "промилле", "°": "градус (угол наклона)"
 };
 
 // Единицы, которые предлагаются по умолчанию при переключении на категорию
 // (наиболее употребимые в практике КЖ/КМ/АС; для прочих категорий берётся первая единица списка)
 const DEFAULT_FROM_UNIT = {
   force: "кН", stress: "МПа", length: "м", area: "м²",
-  mass: "т", density: "т/м³", speed: "м/с", angle: "градус"
+  mass: "т", density: "т/м³", speed: "м/с", angle: "градус", slope: "%"
 };
 const DEFAULT_TO_UNIT = {
   force: "Н", stress: "кгс/см²", length: "мм", area: "см²",
-  mass: "кг", density: "кг/м³", speed: "км/ч", angle: "рад"
+  mass: "кг", density: "кг/м³", speed: "км/ч", angle: "рад", slope: "соотношение 1:n"
 };
 
 let currentCategory = "force";
@@ -610,6 +626,23 @@ function fromKelvin(value, unit){
   return value; // K
 }
 
+// перевод уклона: приводим к безразмерным долям (i = h/l), затем — в целевую единицу.
+// "Соотношение 1:n" — нелинейная (обратная) величина, поэтому не выражается коэффициентом.
+function toSlopeDecimal(value, unit){
+  if (unit === "%") return value / 100;
+  if (unit === "‰") return value / 1000;
+  if (unit === "соотношение 1:n") return value !== 0 ? 1 / value : 0;
+  if (unit === "°") return Math.tan(value * Math.PI / 180);
+  return value; // доли (i)
+}
+function fromSlopeDecimal(i, unit){
+  if (unit === "%") return i * 100;
+  if (unit === "‰") return i * 1000;
+  if (unit === "соотношение 1:n") return i !== 0 ? 1 / i : Infinity;
+  if (unit === "°") return Math.atan(i) * 180 / Math.PI;
+  return i; // доли (i)
+}
+
 function formatNumber(result){
   if (result === 0) return "0";
   if (Math.abs(result) >= 1e9 || Math.abs(result) < 1e-9){
@@ -630,14 +663,17 @@ function convert(){
   let result;
   if (cat.isTemperature){
     result = fromKelvin(toKelvin(value, fromSel.value), toSel.value);
+  } else if (cat.isSlope){
+    result = fromSlopeDecimal(toSlopeDecimal(value, fromSel.value), toSel.value);
   } else {
     const baseValue = value * cat.units[fromSel.value];
     result = baseValue / cat.units[toSel.value];
   }
 
   const formatted = formatNumber(result);
-  resultValue.textContent = formatted;
-  resultUnit.textContent = `${value} ${fromSel.value} = ${formatted} ${toSel.value}`;
+  const displayValue = (toSel.value === "соотношение 1:n") ? `1 : ${formatted}` : formatted;
+  resultValue.textContent = displayValue;
+  resultUnit.textContent = `${value} ${fromSel.value} = ${displayValue} ${toSel.value}`;
 }
 
 swapBtn.addEventListener("click", () => {
