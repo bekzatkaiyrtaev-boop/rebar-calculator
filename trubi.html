@@ -252,14 +252,13 @@ function render(){
   } else {
     grid.innerHTML = `
       <div class="design-cell"><div class="dc-label">Площадь сечения A</div><div class="dc-val">${fmt(row.A)} см²</div></div>
-      <div class="design-cell"><div class="dc-label">I<sub>x</sub></div><div class="dc-val">${fmt(row.Ix)} см⁴</div></div>
-      <div class="design-cell"><div class="dc-label">W<sub>x</sub></div><div class="dc-val">${fmt(row.Wx)} см³</div></div>
-      <div class="design-cell"><div class="dc-label">i<sub>x</sub></div><div class="dc-val">${fmt(row.ix)} см</div></div>
-      <div class="design-cell"><div class="dc-label"></div><div class="dc-val" style="opacity:0;">.</div></div>
-      <div class="design-cell"><div class="dc-label">I<sub>y</sub></div><div class="dc-val">${fmt(row.Iy)} см⁴</div></div>
-      <div class="design-cell"><div class="dc-label">W<sub>y</sub></div><div class="dc-val">${fmt(row.Wy)} см³</div></div>
-      <div class="design-cell"><div class="dc-label">i<sub>y</sub></div><div class="dc-val">${fmt(row.iy)} см</div></div>
-      <div class="design-cell highlight-warn" style="grid-column:1/-1;"><div class="dc-label">Масса 1 м</div><div class="dc-val">${fmt(row.mass)} кг</div></div>
+      <div class="design-cell"><div class="dc-label">Момент инерции I (X)</div><div class="dc-val">${fmt(row.Ix)} см⁴</div></div>
+      <div class="design-cell"><div class="dc-label">Момент сопротивления W (X)</div><div class="dc-val">${fmt(row.Wx)} см³</div></div>
+      <div class="design-cell"><div class="dc-label">Радиус инерции i (X)</div><div class="dc-val">${fmt(row.ix)} см</div></div>
+      <div class="design-cell highlight-warn"><div class="dc-label">Масса 1 м</div><div class="dc-val">${fmt(row.mass)} кг</div></div>
+      <div class="design-cell"><div class="dc-label">Момент инерции I (Y)</div><div class="dc-val">${fmt(row.Iy)} см⁴</div></div>
+      <div class="design-cell"><div class="dc-label">Момент сопротивления W (Y)</div><div class="dc-val">${fmt(row.Wy)} см³</div></div>
+      <div class="design-cell"><div class="dc-label">Радиус инерции i (Y)</div><div class="dc-val">${fmt(row.iy)} см</div></div>
     `;
   }
 
