@@ -15,6 +15,7 @@
   const SITE_PAGES = [
     { href: "Vedomost_elementov.html", title: "Ведомость деталей" },
     { href: "zashitny-sloy.html",      title: "Защитный слой бетона" },
+    { href: "ankerovka-nahlest.html",  title: "Анкеровка и нахлёст арматуры" },
     { href: "dvutavry-b.html",         title: "Двутавры по ГОСТ 26020-83" },
     { href: "dvutavry-sto.html",       title: "Двутавры по СТО АСЧМ 20-93" },
     { href: "pv-listy.html",           title: "Листы стальные просечно-вытяжные" },
