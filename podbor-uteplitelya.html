@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Подбор толщины утеплителя — Электронный справочник конструктора</title>
+<style>
+:root {
+  --bg:       #0f1117;
+  --surface:  #1a1d27;
+  --surface2: #22263a;
+  --border:   #2e3347;
+  --accent:   #4f8ef7;
+  --green:    #7dd3a8;
+  --warn:     #f4b942;
+  --red:      #c0362c;
+  --red-bg:   rgba(192,54,44,.16);
+  --red-solid:   #8a271f;
+  --green-solid: #1f5c3d;
+  --text:     #d6daf0;
+  --muted:    #6b7099;
+  --mono:     'JetBrains Mono','Courier New',monospace;
+  --sans:     'Inter','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;padding:24px 16px 48px;}
+.page-wrap{max-width:960px;margin:0 auto;}
+.page-title{font-size:22px;font-weight:700;color:#fff;text-align:center;margin-bottom:4px;}
+.page-subtitle{text-align:center;color:var(--muted);font-size:12px;margin-bottom:24px;}
+
+/* ── Карточки ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.card-header{background:var(--surface2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.card-header .title{font-size:13px;font-weight:700;color:#fff;}
+.card-header .ref{font-family:var(--mono);font-size:10px;color:var(--accent);background:var(--bg);border:1px solid var(--border);padding:3px 8px;border-radius:4px;}
+.card-body{padding:16px;}
+
+/* ── Поля ввода ── */
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+.field label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;}
+.field input[type=text],.field input[type=number],.field select{
+  width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 12px;border-radius:7px;outline:none;
+  transition:border-color .15s;
+}
+.field input:focus,.field select:focus{border-color:var(--accent);}
+.field .hint{font-size:11px;color:var(--muted);margin-top:5px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.checkbox-field{display:flex;align-items:center;gap:8px;}
+.checkbox-field input{width:16px;height:16px;accent-color:var(--accent);}
+.checkbox-field label{margin:0;text-transform:none;font-size:13px;font-weight:500;color:var(--text);}
+
+/* ── Подсказка (?) ── */
+.info-btn{
+  display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:10px;font-weight:700;
+  cursor:pointer;flex-shrink:0;
+}
+.info-btn:hover{color:var(--accent);border-color:var(--accent);}
+.tooltip-box{
+  display:none;position:absolute;z-index:200;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.5);width:320px;
+}
+.tooltip-box table{width:100%;border-collapse:collapse;font-size:11px;}
+.tooltip-box th,.tooltip-box td{padding:5px 6px;border-bottom:1px solid var(--border);text-align:center;}
+.tooltip-box th{color:var(--accent);font-weight:600;}
+.tooltip-box td:first-child,.tooltip-box th:first-child{text-align:left;color:var(--muted);}
+
+/* ── Города (комбобокс, как в climat.html) ── */
+.combo-wrap{position:relative;}
+.combo-input{padding-right:44px !important;}
+.combo-arrow{position:absolute;right:0;top:0;bottom:0;width:40px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);}
+.combo-dropdown{display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;z-index:100;background:var(--surface2);border:1px solid var(--border);border-radius:8px;max-height:420px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.combo-dropdown div{padding:9px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);}
+.combo-dropdown div:hover,.combo-dropdown div.active{background:var(--surface);}
+
+/* ── Климатика (только чтение) ── */
+.climate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--border);}
+.climate-cell{background:var(--surface);padding:12px 14px;text-align:center;}
+.climate-cell .cc-label{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.climate-cell .cc-val{font-size:17px;font-weight:700;font-family:var(--mono);color:var(--accent);}
+
+/* ── Таблица слоёв ── */
+table.layers{width:100%;border-collapse:collapse;font-size:13px;}
+table.layers th{background:var(--surface2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;}
+table.layers td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+table.layers tr.is-insulation td.radio-cell{background:var(--red-solid);}
+table.layers input[type=text],table.layers input[type=number]{
+  width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+  font-family:var(--sans);font-size:13px;padding:7px 9px;border-radius:6px;outline:none;
+}
+table.layers input:focus{border-color:var(--accent);}
+table.layers input[readonly]{opacity:.55;cursor:not-allowed;background:var(--surface2);}
+.thickness-ok input{background:var(--green-solid) !important;border-color:var(--green) !important;color:#fff !important;font-weight:700;}
+.thickness-fail input{background:var(--red-solid) !important;border-color:var(--red) !important;color:#fff !important;font-weight:700;}
+.radio-cell{text-align:center;}
+.radio-cell input{width:16px;height:16px;accent-color:var(--red);cursor:pointer;}
+.layer-actions{display:flex;gap:4px;align-items:center;justify-content:center;white-space:nowrap;}
+.icon-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:24px;height:24px;border-radius:5px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.icon-btn:hover{color:var(--accent);border-color:var(--accent);}
+.icon-btn.del:hover{color:var(--red);border-color:var(--red);}
+.thick-recommend{font-size:10px;color:var(--warn);margin-top:3px;}
+
+/* ── Визуализация ── */
+.viz-wrap{display:flex;justify-content:center;padding:20px;background:var(--surface);overflow-x:auto;}
+
+/* ── Результаты ── */
+.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);}
+.result-cell{background:var(--surface);padding:16px;text-align:center;}
+.result-cell .rc-label{font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.3;}
+.result-cell .rc-val{font-size:20px;font-weight:700;font-family:var(--mono);color:#fff;}
+.result-cell.ok .rc-val{color:var(--green);}
+.result-cell.fail .rc-val{color:var(--red);}
+.result-verdict{padding:14px 16px;text-align:center;font-size:14px;font-weight:700;}
+.result-verdict.ok{background:rgba(125,211,168,.12);color:var(--green);}
+.result-verdict.fail{background:rgba(239,68,68,.12);color:var(--red);}
+
+/* ── Использованные данные (для проверки экспертом) ── */
+table.usedparams{width:100%;border-collapse:collapse;font-size:12px;}
+table.usedparams td{padding:7px 12px;border-bottom:1px solid var(--border);}
+table.usedparams td:first-child{color:var(--muted);width:46%;}
+table.usedparams td:nth-child(2){color:var(--text);font-family:var(--mono);font-weight:600;text-align:right;}
+table.usedparams td:last-child{color:var(--accent);font-size:10px;text-align:right;width:30%;}
+
+.export-btn{background:var(--accent);border:none;color:#fff;font-size:12px;font-weight:600;padding:8px 16px;
+  border-radius:6px;cursor:pointer;font-family:var(--sans);transition:opacity .15s;}
+.export-btn:hover{opacity:.85;}
+
+@media(max-width:640px){
+  .field-row,.field-row3{grid-template-columns:1fr;}
+}
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+<div class="page-wrap">
+
+<div id="site-header"></div>
+
+<div class="page-title">Подбор толщины утеплителя</div>
+<div class="page-subtitle">Расчёт по СН РК 2.04-07-2022 и СП РК 2.04-107-2022 «Тепловая защита зданий»</div>
+
+<!-- ═══════════════ ИСХОДНЫЕ ДАННЫЕ ═══════════════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Исходные данные</span>
+  </div>
+  <div class="card-body">
+
+    <div class="field">
+      <label>Наименование объекта</label>
+      <input type="text" id="objName" placeholder="Например: Школа на 1000 мест">
+    </div>
+
+    <div class="field">
+      <label>Населённый пункт</label>
+      <div class="combo-wrap">
+        <input type="text" id="cityInput" class="combo-input" placeholder="Загрузка данных..." autocomplete="off" disabled
+          onfocus="showCityDropdown(this.value)" onblur="setTimeout(closeCityDropdown,150)">
+        <button type="button" class="combo-arrow" onclick="toggleCityDropdown()">▾</button>
+        <div id="cityDropdown" class="combo-dropdown"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Категория здания по нормам</label>
+      <select id="buildingCategory" onchange="onInputsChanged()">
+        <option value="1">Жилые, школы, гостиницы</option>
+        <option value="1m">Лечебно-профилактические, детские учреждения, дом-интернат для престарелых</option>
+        <option value="2">Общественные прочие, административные, производственные с влажным/мокрым режимом</option>
+        <option value="3">Производственные с сухим и нормальным режимом</option>
+      </select>
+      <div class="hint" id="medChildcareHint">Определяет коэффициенты a, b нормируемого R (табл. 4 СН РК 2.04-07)</div>
+    </div>
+    <div class="field">
+      <label>Тип ограждающей конструкции</label>
+      <select id="constructionType" onchange="onConstructionTypeChanged()">
+        <option value="wall">Наружная стена</option>
+        <option value="roof">Покрытие / кровля</option>
+        <option value="floorPass">Перекрытие над проездом</option>
+        <option value="floorColdBasementVent">Перекрытие над холодным подвалом (сообщ. с наружным воздухом)</option>
+        <option value="floorAtticVent">Перекрытие чердачное / над неотапливаемым подвалом со световыми проёмами</option>
+        <option value="floorColdBasementNoVent">Перекрытие над неотапливаемым подвалом без световых проёмов</option>
+      </select>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Расч. темп. внутр. воздуха t<sub>int</sub>, °C</label>
+        <input type="number" id="tInt" value="20" step="0.5" oninput="onInputsChanged()">
+      </div>
+      <div class="field" style="position:relative;">
+        <label>Отн. влажность внутр. воздуха φ<sub>int</sub>, %
+          <span class="info-btn" onclick="toggleHumidityTooltip(event)">?</span>
+        </label>
+        <input type="number" id="phiInt" value="55" step="1" oninput="onInputsChanged()">
+        <div id="humidityTooltip" class="tooltip-box">
+          <table>
+            <tr><th>Режим</th><th>до 12°C</th><th>12–24°C</th><th>&gt;24°C</th></tr>
+            <tr><td>Сухой</td><td>до 60%</td><td>до 50%</td><td>до 40%</td></tr>
+            <tr><td>Нормальный</td><td>60–75%</td><td>50–60%</td><td>40–50%</td></tr>
+            <tr><td>Влажный</td><td>св. 75%</td><td>60–75%</td><td>50–60%</td></tr>
+            <tr><td>Мокрый</td><td>—</td><td>св. 75%</td><td>св. 60%</td></tr>
+          </table>
+          <div style="font-size:10px;color:var(--muted);margin-top:8px;">По табл. 1 СП РК 2.04-107-2022, в зависимости от t<sub>int</sub> и φ<sub>int</sub></div>
+        </div>
+        <div class="hint" id="humidityAutoResult"></div>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Зона влажности района строительства</label>
+        <select id="humidityZone" onchange="onInputsChanged()">
+          <option value="dry" selected>Сухая</option>
+          <option value="normal">Нормальная</option>
+          <option value="wet">Влажная</option>
+        </select>
+        <div class="hint">По СП РК 2.04-01 вся территория РК — «сухая зона», кроме среднегорья и выше</div>
+      </div>
+      <div class="field">
+        <div class="checkbox-field" style="margin-top:28px;">
+          <input type="checkbox" id="ventGap" onchange="onInputsChanged()">
+          <label for="ventGap">Есть вентилируемая воздушная прослойка (α<sub>ext</sub> = 10,8 Вт/(м²·°C))</label>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ КЛИМАТИКА (АВТОМАТИЧЕСКИ) ═══════════════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Климатические параметры (автоматически)</span>
+    <span class="ref">СП РК 2.04-01-2017</span>
+  </div>
+  <div class="climate-grid">
+    <div class="climate-cell"><div class="cc-label">t наружного воздуха, обеспеч. 0,92</div><div class="cc-val" id="climTExt">—</div></div>
+    <div class="climate-cell"><div class="cc-label">ГСОП, °С·сут/год</div><div class="cc-val" id="climGSOP">—</div></div>
+  </div>
+  <div class="card-body" style="padding:10px 16px 14px;">
+    <div class="hint">ГСОП рассчитывается по формуле (t_int − t_от)·z_от (СН РК 2.04-07, формула 2) на основе t_int, заданной в исходных данных, и климатики отопительного периода (t_от, z_от) выбранного города — не берётся готовым значением.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ СОСТАВ КОНСТРУКЦИИ ═══════════════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Состав конструкции (снаружи → внутри)</span>
+    <button type="button" id="editorModeBtn" class="icon-btn" style="width:auto;padding:4px 10px;font-size:11px;" onclick="toggleEditorMode()" title="λ по умолчанию заблокирована от редактирования — автор может её разблокировать">🔒 λ заблокирована</button>
+  </div>
+  <div class="card-body">
+    <table class="layers" id="layersTable">
+      <thead>
+        <tr>
+          <th style="width:28px;">#</th>
+          <th>Материал</th>
+          <th style="width:110px;">λ, Вт/(м·°C)</th>
+          <th style="width:130px;">Толщина, м</th>
+          <th style="width:60px;">Утепл.</th>
+          <th style="width:110px;">Действия</th>
+        </tr>
+      </thead>
+      <tbody id="layersBody"></tbody>
+    </table>
+    <div class="hint" style="margin-top:10px;">Толщину утеплителя (строка, отмеченная радио-кнопкой «Утепл.») задаёте вручную — калькулятор проверит, выполняется ли условие R факт. ≥ R норм., и при необходимости подскажет минимальную толщину. Поиск материала по названию из справочника будет подключён после создания базы материалов — пока ввод λ вручную.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ ВИЗУАЛИЗАЦИЯ ═══════════════ -->
+<div class="card">
+  <div class="card-header"><span class="title">Схема конструкции</span></div>
+  <div class="viz-wrap" id="vizWrap"></div>
+</div>
+
+<!-- ═══════════════ ФОРМУЛА РАСЧЁТА R НОРМ. ═══════════════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Расчёт нормируемого сопротивления теплопередаче</span>
+    <span class="ref">СН РК 2.04-07-2022, п. 6.1–6.2</span>
+  </div>
+  <div class="card-body" id="formulaBlock" style="font-family:var(--mono);font-size:13px;line-height:2;">
+    <div style="color:var(--muted);">Заполните исходные данные для расчёта</div>
+  </div>
+</div>
+
+<!-- ═══════════════ ФОРМУЛА РАСЧЁТА R ФАКТ. ═══════════════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Расчёт фактического сопротивления теплопередаче</span>
+    <span class="ref">СП РК 2.04-107-2022, прил. Е</span>
+  </div>
+  <div class="card-body" id="rfactFormulaBlock" style="font-family:var(--mono);font-size:13px;line-height:2;">
+    <div style="color:var(--muted);font-family:var(--sans);">Заполните состав конструкции для расчёта</div>
+  </div>
+</div>
+
+<!-- ═══════════════ ПРОВЕРКА НА КОНДЕНСАЦИЮ ═══════════════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Проверка на конденсацию (точка росы)</span>
+    <span class="ref">СП РК 2.04-107-2022, п. 6.3.1</span>
+  </div>
+  <div class="card-body" id="dewPointBlock" style="font-family:var(--mono);font-size:13px;line-height:2;">
+    <div style="color:var(--muted);font-family:var(--sans);">Заполните состав конструкции для расчёта</div>
+  </div>
+  <div class="result-verdict" id="dewVerdict" style="display:none;"></div>
+</div>
+
+<!-- ═══════════════ РЕЗУЛЬТАТ ═══════════════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Вывод</span>
+    <button class="export-btn" onclick="exportToPdf()">Экспорт в PDF</button>
+  </div>
+  <div class="result-grid">
+    <div class="result-cell"><div class="rc-label">R норм., м²·°C/Вт</div><div class="rc-val" id="resRNorm">—</div></div>
+    <div class="result-cell" id="resRFactCell"><div class="rc-label">R факт., м²·°C/Вт</div><div class="rc-val" id="resRFact">—</div></div>
+    <div class="result-cell"><div class="rc-label">Толщина утеплителя (введена), м</div><div class="rc-val" id="resThickUser">—</div></div>
+  </div>
+  <div class="result-verdict" id="resVerdict">Заполните исходные данные и состав конструкции</div>
+  <div id="resRecommendBlock" style="display:none;padding:12px 16px;background:rgba(239,68,68,.08);border-top:1px solid var(--border);font-size:13px;color:var(--red);">
+    Рекомендация: принять толщину утеплителя не менее <strong id="resRecommendVal">—</strong> м<span id="resRecommendExtra"></span> (СН РК 2.04-07, табл. 4).
+  </div>
+</div>
+
+<!-- ═══════════════ ИСПОЛЬЗОВАННЫЕ ДАННЫЕ ═══════════════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Использованные исходные и промежуточные данные</span>
+    <span class="ref">для проверки экспертом</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <table class="usedparams" id="usedParamsTable"></table>
+  </div>
+</div>
+
+<!-- ═══════════════ ПРОФИЛЬ ТЕМПЕРАТУРЫ В ТОЛЩЕ КОНСТРУКЦИИ ═══════════════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Профиль температуры в толще конструкции</span>
+    <span class="ref">оценка риска конденсации по толщине (не только на поверхности)</span>
+  </div>
+  <div class="card-body">
+    <div class="hint" style="margin-bottom:10px;">Температура на каждой границе слоёв при расчётных зимних условиях, сопоставлена с точкой росы (пунктир). Если линия температуры уходит ниже пунктира <strong>внутри</strong> стены — конденсат может образовываться не на поверхности, а в толще утеплителя или соседнего слоя.</div>
+    <div class="viz-wrap" id="dewProfileWrap" style="overflow-x:auto;"></div>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   ПОДБОР ТОЛЩИНЫ УТЕПЛИТЕЛЯ
+   Расчёт по СН РК 2.04-07-2022 (табл. 2,3,4) и
+   СП РК 2.04-107-2022 (табл. 1,2, прил. Е)
+   ══════════════════════════════════════════════════════ */
+
+const BACKEND = 'https://rebar-backend-henna.vercel.app/api/sheet-data';
+let CITIES = [];
+let currentCity = null;
+let MATERIALS = []; // справочник материалов (book=materials)
+let editorMode = false; // режим автора — разблокирует ручное редактирование λ
+
+/* Простая защита от случайного редактирования λ обычным пользователем.
+   ВАЖНО: это не настоящая защита данных (пароль виден в исходном коде страницы) —
+   только чтобы посетитель случайно не поменял λ, думая, что это поле ввода. */
+const EDITOR_PASSWORD = 'uteplitel2026';
+
+function toggleEditorMode(){
+  if (editorMode){
+    editorMode = false;
+  } else {
+    const input = prompt('Пароль автора для редактирования λ:');
+    if (input !== EDITOR_PASSWORD){
+      if (input !== null) alert('Неверный пароль');
+      return;
+    }
+    editorMode = true;
+  }
+  const btn = document.getElementById('editorModeBtn');
+  btn.textContent = editorMode ? '🔓 λ разблокирована' : '🔒 λ заблокирована';
+  renderLayers();
+}
+
+/* ── Коэффициенты a, b нормируемого R (табл. 4 СН РК 2.04-07) ──
+   R_норм = a * ГСОП + b
+   Группы конструкций: wall / roofOrPass / atticOrColdBasement */
+const TABLE4 = {
+  1: { wall:{a:0.00035,b:1.4}, roofOrPass:{a:0.0005, b:2.2}, atticOrColdBasement:{a:0.00045,b:1.9} },
+  2: { wall:{a:0.0003, b:1.4}, roofOrPass:{a:0.0004, b:2.2}, atticOrColdBasement:{a:0.00035,b:1.9} },
+  3: { wall:{a:0.0002, b:1.0}, roofOrPass:{a:0.00025,b:1.5}, atticOrColdBasement:{a:0.0002, b:1.0} }
+};
+
+/* ── Типы конструкций: связь с группой R_норм и α_ext (табл. Е.2 СП РК) ── */
+const CONSTRUCTION_TYPES = {
+  wall:                   { rNormGroup:'wall',               alphaExt:23, label:'Наружная стена' },
+  roof:                   { rNormGroup:'roofOrPass',          alphaExt:23, label:'Покрытие / кровля' },
+  floorPass:              { rNormGroup:'roofOrPass',          alphaExt:23, label:'Перекрытие над проездом' },
+  floorColdBasementVent:  { rNormGroup:'atticOrColdBasement',  alphaExt:17, label:'Перекрытие над холодным подвалом (вент.)' },
+  floorAtticVent:         { rNormGroup:'atticOrColdBasement',  alphaExt:12, label:'Перекрытие чердачное / со свет. проёмами' },
+  floorColdBasementNoVent:{ rNormGroup:'atticOrColdBasement',  alphaExt:6,  label:'Перекрытие над неотапл. подвалом без проёмов' }
+};
+
+const ALPHA_INT = 8.7; // Вт/(м²·°C), табл. 3 СН РК 2.04-07 (стены, полы, гладкие потолки)
+const ALPHA_EXT_VENT = 10.8; // Вт/(м²·°C), при вентилируемой прослойке (прил. Е СП РК)
+
+/* ── Коэффициент n — положение конструкции относительно наружного воздуха (табл. 1 СН РК) ──
+   Используется в формуле (2) — санитарно-гигиеническое требование */
+const N_COEF = {
+  wall:1, roof:1, floorPass:1,
+  floorColdBasementVent:0.9, floorAtticVent:0.75, floorColdBasementNoVent:0.6
+};
+
+/* ── Нормируемый температурный перепад Δt_n, °C (табл. 2 СН РК) ──
+   Группы отличаются от табл. 4: стены / покрытия+чердачные / перекрытия над проездами,подвалами,подпольями.
+   Для категории 3 (производственные) табл. 2 значений не даёт — R_min не считается. */
+const DELTA_TN_GROUP = {
+  wall:'wall', roof:'roofAttic', floorPass:'floorPassBasement',
+  floorColdBasementVent:'floorPassBasement', floorAtticVent:'roofAttic', floorColdBasementNoVent:'floorPassBasement'
+};
+const DELTA_TN = {
+  1: { wall:4.0, roofAttic:3.0, floorPassBasement:2.0 },
+  2: { wall:4.5, roofAttic:4.0, floorPassBasement:2.5 }
+};
+
+/* ══════════════════════════════════════════════════════
+   ТИПОВЫЕ СОСТАВЫ КОНСТРУКЦИИ ("пироги") ПО УМОЛЧАНИЮ
+   Применяются автоматически при выборе типа конструкции,
+   пока пользователь не начал редактировать состав вручную.
+   ══════════════════════════════════════════════════════ */
+const LAYER_TEMPLATES = {
+  wall: [
+    { material:'Кладка из кирпича керамического пустотного плотностью 1400 кг/м3 (брусковый)', lambda:0.64, thickness:0.12, isInsulation:false },
+    { material:'Isver OL-K, γ=145кг/м3', lambda:0.043, thickness:0.14, isInsulation:true },
+    { material:'Кладка из кирпича керамического пустотного плотностью 1400 кг/м3 (брусковый)', lambda:0.64, thickness:0.38, isInsulation:false }
+  ],
+  roof: [
+    { material:'Кровельный ковёр (наплавляемая рулонная кровля)', lambda:0.17, thickness:0.01, isInsulation:false },
+    { material:'Утеплитель кровельный (пенополистирол/минеральная вата)', lambda:0.041, thickness:0.15, isInsulation:true },
+    { material:'Пароизоляционная плёнка', lambda:0.33, thickness:0.0002, isInsulation:false },
+    { material:'Железобетонная плита перекрытия (ГОСТ 26633)', lambda:2.04, thickness:0.20, isInsulation:false }
+  ]
+};
+
+function buildLayersFromTemplate(tpl){
+  return tpl.map((t, i) => ({ id:i+1, material:t.material, lambda:t.lambda, thickness:t.thickness, isInsulation:t.isInsulation, materialRef:null }));
+}
+
+/* ══════════════════════════════════════════════════════
+   СЛОИ КОНСТРУКЦИИ
+   ══════════════════════════════════════════════════════ */
+let layersIsUntouched = true; /* пока true — смена типа конструкции подставляет типовой состав автоматически */
+let layers = buildLayersFromTemplate(LAYER_TEMPLATES.wall);
+let nextLayerId = layers.length + 1;
+
+function onConstructionTypeChanged(){
+  const key = document.getElementById('constructionType').value;
+  if (layersIsUntouched && LAYER_TEMPLATES[key]){
+    layers = buildLayersFromTemplate(LAYER_TEMPLATES[key]);
+    nextLayerId = layers.length + 1;
+    renderLayers();
+  }
+  onInputsChanged();
+}
+
+function renderLayers(){
+  const body = document.getElementById('layersBody');
+  body.innerHTML = '';
+  layers.forEach((l, idx) => {
+    const tr = document.createElement('tr');
+    if (l.isInsulation) tr.classList.add('is-insulation');
+
+    const thicknessCell = `<input id="layerThicknessInput_${l.id}" type="number" step="0.001" value="${l.thickness}" onchange="updateLayer(${l.id},'thickness',this.value)">`;
+    const hintBtn = (l.materialRef && l.materialRef.usage_hint)
+      ? `<span class="info-btn" style="margin-left:6px;" title="${escapeXml(l.materialRef.usage_hint)}">?</span>` : '';
+
+    tr.innerHTML = `
+      <td>${idx+1}</td>
+      <td>
+        <div class="combo-wrap">
+          <input id="materialInput_${l.id}" type="text" value="${escapeXml(l.material)}" placeholder="Название материала (поиск по буквам)" autocomplete="off"
+            oninput="onMaterialInput(${l.id}, this.value)"
+            onfocus="showMaterialDropdown(${l.id}, this.value)"
+            onblur="setTimeout(()=>closeMaterialDropdown(${l.id}),150)">
+          <div id="materialDropdown_${l.id}" class="combo-dropdown"></div>
+        </div>
+        ${hintBtn}
+      </td>
+      <td><input id="layerLambdaInput_${l.id}" type="number" step="0.001" value="${l.lambda}" onchange="updateLayer(${l.id},'lambda',this.value)" ${editorMode ? '' : 'readonly title="Заблокировано. Включите режим автора (кнопка вверху таблицы), чтобы изменить λ вручную."'}></td>
+      <td id="layerThicknessCell_${l.id}">${thicknessCell}</td>
+      <td class="radio-cell"><input type="radio" name="insulationLayer" ${l.isInsulation?'checked':''} onchange="setInsulationLayer(${l.id})"></td>
+      <td class="layer-actions">
+        <button class="icon-btn" title="Добавить слой выше" onclick="addLayer(${idx})">↑+</button>
+        <button class="icon-btn" title="Добавить слой ниже" onclick="addLayer(${idx+1})">↓+</button>
+        <button class="icon-btn del" title="Удалить слой" onclick="removeLayer(${l.id})">×</button>
+      </td>`;
+    body.appendChild(tr);
+  });
+  calculate();
+  renderVisualization();
+}
+
+function updateLayer(id, field, value){
+  layersIsUntouched = false;
+  const l = layers.find(x => x.id === id);
+  if (!l) return;
+  l[field] = (field === 'material') ? value : parseFloat(value) || 0;
+  if ((field === 'material' || field === 'lambda') && l.materialRef) l.materialRef = null; // ручной ввод отвязывает от справочника
+  calculate();
+  renderVisualization();
+}
+
+/* ══════════════════════════════════════════════════════
+   КОМБОБОКС ВЫБОРА МАТЕРИАЛА (справочник, book=materials)
+   ══════════════════════════════════════════════════════ */
+function onMaterialInput(id, value){
+  updateLayer(id, 'material', value);
+  showMaterialDropdown(id, value);
+}
+
+function showMaterialDropdown(id, query){
+  const dd = document.getElementById('materialDropdown_' + id);
+  const input = document.getElementById('materialInput_' + id);
+  if (!dd) return;
+  const q = (query||'').trim().toLowerCase();
+  const matches = q.length === 0 ? MATERIALS : MATERIALS.filter(m => m.name.toLowerCase().includes(q));
+  if (!matches.length){
+    dd.innerHTML = '<div style="color:var(--muted);">Ничего не найдено</div>';
+  } else {
+    const groups = {};
+    matches.forEach(m => { (groups[m.section] = groups[m.section] || []).push(m); });
+    dd.innerHTML = Object.keys(groups).map(sec => `
+      <div style="padding:6px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);background:var(--bg);">${escapeXml(sec)}</div>
+      ${groups[sec].map(m => `<div onmousedown="event.preventDefault();selectMaterial(${id},'${m.name.replace(/'/g,"\\'")}')">${escapeXml(m.name)}</div>`).join('')}
+    `).join('');
+  }
+  if (input) positionDropdownFixed(dd, input);
+  dd.style.display = 'block';
+}
+
+/* Ставит выпадающий список поверх всего (position:fixed), чтобы его не обрезали
+   карточки с overflow:hidden — позиция считается от реального поля ввода на экране */
+function positionDropdownFixed(dd, inputEl){
+  const rect = inputEl.getBoundingClientRect();
+  dd.style.position = 'fixed';
+  dd.style.left = rect.left + 'px';
+  dd.style.top = (rect.bottom + 2) + 'px';
+  dd.style.width = rect.width + 'px';
+  dd.style.right = 'auto';
+}
+
+function closeMaterialDropdown(id){
+  const dd = document.getElementById('materialDropdown_' + id);
+  if (dd) dd.style.display = 'none';
+}
+
+function selectMaterial(id, name){
+  layersIsUntouched = false;
+  const mat = MATERIALS.find(m => m.name === name);
+  const l = layers.find(x => x.id === id);
+  if (!mat || !l) return;
+  l.material = mat.name;
+  l.materialRef = mat;
+  l.lambda = mat.lambda_a || l.lambda; /* временно; calculate() подставит λ_А/λ_Б по условиям эксплуатации */
+  closeMaterialDropdown(id);
+  renderLayers();
+}
+
+/* Подбор толщины утеплителя из справочника материала (мм → м):
+   1) если есть одна доступная толщина ≥ требуемой — берём её;
+   2) если нет — подбираем комбинацию из ДВУХ слоёв (сумма толщин ≥ требуемой), минимизируя суммарную толщину;
+   3) если thicknesses не заданы — возвращаем null (без привязки, любая толщина). */
+function pickAvailableThickness(matRef, minThicknessM){
+  if (!matRef || !matRef.thicknesses) return null;
+  const options = String(matRef.thicknesses).split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n)).sort((a,b) => a-b);
+  if (!options.length) return null;
+  const minMM = minThicknessM * 1000;
+
+  const single = options.find(o => o >= minMM - 1e-6);
+  if (single != null) return { layers:[single], totalMM: single };
+
+  /* Ни один слой не покрывает требуемую толщину — ищем пару слоёв с минимальной суммой */
+  let best = null;
+  for (const a of options){
+    for (const b of options){
+      const sum = a + b;
+      if (sum >= minMM - 1e-6 && (!best || sum < best.totalMM)){
+        best = { layers:[a,b].sort((x,y) => y-x), totalMM: sum };
+      }
+    }
+  }
+  return best; /* null, если даже двух максимальных слоёв недостаточно */
+}
+
+function setInsulationLayer(id){
+  layersIsUntouched = false;
+  layers.forEach(l => l.isInsulation = (l.id === id));
+  renderLayers();
+}
+
+function addLayer(atIndex){
+  layersIsUntouched = false;
+  const newLayer = { id:nextLayerId++, material:'', lambda:0, thickness:0, isInsulation:false, materialRef:null };
+  layers.splice(atIndex, 0, newLayer);
+  renderLayers();
+}
+
+function removeLayer(id){
+  layersIsUntouched = false;
+  if (layers.length <= 1) return;
+  layers = layers.filter(l => l.id !== id);
+  if (!layers.some(l => l.isInsulation)) layers[0].isInsulation = true;
+  renderLayers();
+}
+
+/* ══════════════════════════════════════════════════════
+   ВЛАЖНОСТНЫЙ РЕЖИМ — автоопределение по табл. 1 СП РК
+   ══════════════════════════════════════════════════════ */
+function detectHumidityMode(tInt, phiInt){
+  let thresholds;
+  if (tInt <= 12) thresholds = { dry:60, normal:75, wet:100 };
+  else if (tInt <= 24) thresholds = { dry:50, normal:60, wet:75 };
+  else thresholds = { dry:40, normal:50, wet:60 };
+  if (phiInt <= thresholds.dry) return 'dry';
+  if (phiInt <= thresholds.normal) return 'normal';
+  if (phiInt <= thresholds.wet) return 'wet';
+  return 'raw';
+}
+const HUMIDITY_LABELS = { dry:'Сухой', normal:'Нормальный', wet:'Влажный', raw:'Мокрый' };
+
+function toggleHumidityTooltip(e){
+  e.stopPropagation();
+  const box = document.getElementById('humidityTooltip');
+  box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+}
+document.addEventListener('click', () => { document.getElementById('humidityTooltip').style.display = 'none'; });
+
+/* ── Условия эксплуатации А/Б (табл. 2 СП РК) — влажностный режим × зона влажности ── */
+function getOperatingConditions(humidityMode, zone){
+  if (humidityMode === 'wet' || humidityMode === 'raw') return 'Б';
+  if (humidityMode === 'normal') return (zone === 'dry') ? 'А' : 'Б';
+  return (zone === 'wet') ? 'Б' : 'А'; // сухой режим
+}
+
+/* ══════════════════════════════════════════════════════
+   ГЛАВНЫЙ РАСЧЁТ
+   ══════════════════════════════════════════════════════ */
+function onInputsChanged(){ calculate(); }
+
+function calculate(){
+  const tInt = parseFloat(document.getElementById('tInt').value) || 0;
+  const phiInt = parseFloat(document.getElementById('phiInt').value) || 0;
+  const category = document.getElementById('buildingCategory').value; // '1' | '1m' | '2' | '3'
+  const catForTables = (category === '1m') ? '1' : category; /* табл. 4 и табл. 2 СН РК не разделяют 1 и 1m — коэффициенты те же */
+  const medChildcare = category === '1m'; /* лечебно-профилактическое/детское/дом-интернат — период ГСОП ≤10°C */
+  const constrKey = document.getElementById('constructionType').value;
+  const zone = document.getElementById('humidityZone').value;
+  const ventGap = document.getElementById('ventGap').checked;
+
+  const humidityMode = detectHumidityMode(tInt, phiInt);
+  document.getElementById('humidityAutoResult').textContent = 'Режим помещения: ' + HUMIDITY_LABELS[humidityMode] + ' (автоопределение по t_int/φ_int)';
+  const opCond = getOperatingConditions(humidityMode, zone);
+
+  /* Автоподстановка λ_А/λ_Б для слоёв, привязанных к справочнику материалов */
+  layers.forEach(l => {
+    if (!l.materialRef) return;
+    const lam = (opCond === 'Б') ? l.materialRef.lambda_b : l.materialRef.lambda_a;
+    if (lam != null && !isNaN(lam)) {
+      l.lambda = lam;
+      const inp = document.getElementById('layerLambdaInput_' + l.id);
+      if (inp) inp.value = lam;
+    }
+  });
+
+  const constr = CONSTRUCTION_TYPES[constrKey];
+  const alphaExt = ventGap ? ALPHA_EXT_VENT : constr.alphaExt;
+  const Rsi = 1 / ALPHA_INT;
+  const Rse = 1 / alphaExt;
+
+  /* ГСОП не хранится в таблице климатики готовым числом — считаем по формуле
+     ГСОП = (t_int - t_от) * z_от. Период t_от/z_от:
+     ≤10°C — для лечебно-профилактических/детских учреждений/домов-интернатов (категория 1m);
+     ≤8°C — во всех остальных случаях (СН РК 2.04-07). Если данных ≤10°C для
+     города нет в таблице — используется ≤8°C с пометкой в подсказке. */
+  let gsop = null;
+  let gsopPeriodUsed = null;
+  if (currentCity){
+    const has10 = medChildcare && currentCity.heat_t_10 != null && currentCity.heat_t_10 !== '' &&
+                  currentCity.heat_dur_10 != null && currentCity.heat_dur_10 !== '';
+    const tOt = parseRuNumber(has10 ? currentCity.heat_t_10 : currentCity.heat_t_8);
+    const zOt = parseRuNumber(has10 ? currentCity.heat_dur_10 : currentCity.heat_dur_8);
+    if (!isNaN(tOt) && !isNaN(zOt)){
+      gsop = (tInt - tOt) * zOt;
+      gsopPeriodUsed = has10 ? '≤10°C' : '≤8°C';
+    }
+  }
+  const medHint = document.getElementById('medChildcareHint');
+  if (medChildcare && gsopPeriodUsed === '≤8°C' && currentCity){
+    medHint.textContent = `Нет данных ≤10°C для города «${currentCity.name}» в таблице климатики — использован период ≤8°C`;
+    medHint.style.color = 'var(--warn)';
+  } else if (medChildcare){
+    medHint.textContent = 'Для этой категории t_от/z_от берутся по периоду ≤10°C (СН РК 2.04-07)';
+    medHint.style.color = '';
+  } else {
+    medHint.textContent = 'Определяет коэффициенты a, b нормируемого R (табл. 4 СН РК 2.04-07)';
+    medHint.style.color = '';
+  }
+
+  let RNormBase = null;
+  let coef = null;
+  if (gsop != null && !isNaN(gsop)){
+    coef = TABLE4[catForTables][constr.rNormGroup];
+    RNormBase = coef.a * gsop + coef.b;
+  }
+
+  /* Формула (2) СН РК — санитарно-гигиеническое требование (не допустить конденсата) */
+  let RMin = null;
+  const tExt = currentCity ? parseRuNumber(currentCity.t_cold_5d_92) : null;
+  const dtnGroup = DELTA_TN_GROUP[constrKey];
+  const deltaTn = DELTA_TN[catForTables] ? DELTA_TN[catForTables][dtnGroup] : null;
+  if (tExt != null && !isNaN(tExt) && deltaTn != null){
+    const n = N_COEF[constrKey];
+    RMin = n * (tInt - tExt) / (deltaTn * ALPHA_INT);
+  }
+
+  /* Итоговое нормируемое R — не менее наибольшего из формул (1) и (2), п. 6.2 СН РК 2.04-07 */
+  const RNorm = (RNormBase != null)
+    ? ((RMin != null) ? Math.max(RNormBase, RMin) : RNormBase)
+    : null;
+
+  function renderFormula(html){ document.getElementById('formulaBlock').innerHTML = html; }
+  function clearFormula(){ renderFormula('<div style="color:var(--muted);font-family:var(--sans);">Заполните исходные данные для расчёта</div>'); }
+  function renderRFactFormula(html){ document.getElementById('rfactFormulaBlock').innerHTML = html; }
+  function clearRFactFormula(){ renderRFactFormula('<div style="color:var(--muted);font-family:var(--sans);">Заполните состав конструкции для расчёта</div>'); }
+
+  /* Сумма термосопротивлений всех слоёв, кроме утеплителя */
+  let sumROther = 0;
+  let hasIncompleteLayer = false;
+  const insLayer = layers.find(l => l.isInsulation);
+  layers.forEach(l => {
+    if (l.isInsulation) return;
+    if (!l.lambda || l.thickness == null) { hasIncompleteLayer = true; return; }
+    sumROther += l.thickness / l.lambda;
+  });
+
+  document.getElementById('climGSOP').textContent = (gsop != null && !isNaN(gsop)) ? Math.round(gsop) : '—';
+
+  if (RNorm != null && coef != null){
+    const catLabels = { 1:'Жилые/школы/гостиницы', '1m':'Лечебно-профилактич./детские/дом-интернат', 2:'Общественные прочие/производств. влажные', 3:'Производственные сухие/нормальные' };
+    const groupLabels = { wall:'стен', roofOrPass:'покрытий и перекрытий над проездами', atticOrColdBasement:'перекрытий чердачных / над неотапл. подпольями' };
+    const dtnGroupLabels = { wall:'стен', roofAttic:'покрытий и чердачных перекрытий', floorPassBasement:'перекрытий над проездами/подвалами/подпольями' };
+
+    let formulaHtml = `
+      <div style="color:var(--accent);font-family:var(--sans);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Формула (1) — по энергоэффективности</div>
+      <div>R<sub>req</sub> = a · ГСОП + b &nbsp;<span style="color:var(--muted);font-family:var(--sans);font-size:11px;">(табл. 4 СН РК, группа «${groupLabels[constr.rNormGroup]}», категория: ${catLabels[category]})</span></div>
+      <div>a = ${coef.a},&nbsp; b = ${coef.b},&nbsp; ГСОП = ${gsop.toFixed(0)} °С·сут/год &nbsp;<span style="color:var(--muted);font-family:var(--sans);font-size:11px;">(период ${gsopPeriodUsed})</span></div>
+      <div>R<sub>req</sub> = ${coef.a} × ${gsop.toFixed(0)} + ${coef.b} = <strong>${RNormBase.toFixed(3)} м²·°C/Вт</strong></div>`;
+
+    if (RMin != null){
+      formulaHtml += `
+      <div style="margin-top:10px;color:var(--accent);font-family:var(--sans);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Формула (2) — санитарно-гигиеническое требование</div>
+      <div>R<sub>min</sub> = n · (t<sub>в</sub> − t<sub>н</sub>) / (Δt<sub>н</sub> · α<sub>в</sub>) &nbsp;<span style="color:var(--muted);font-family:var(--sans);font-size:11px;">(п. 6.2 СН РК, n — табл. 1, Δt<sub>н</sub> — табл. 2, для «${dtnGroupLabels[dtnGroup]}»)</span></div>
+      <div>n = ${N_COEF[constrKey]},&nbsp; t<sub>в</sub> = ${tInt}°C,&nbsp; t<sub>н</sub> = ${tExt}°C,&nbsp; Δt<sub>н</sub> = ${deltaTn}°C,&nbsp; α<sub>в</sub> = ${ALPHA_INT}</div>
+      <div>R<sub>min</sub> = ${N_COEF[constrKey]} × (${tInt} − ${tExt}) / (${deltaTn} × ${ALPHA_INT}) = <strong>${RMin.toFixed(3)} м²·°C/Вт</strong></div>
+      <div style="margin-top:10px;">R<sub>норм</sub> = max(R<sub>req</sub>, R<sub>min</sub>) = max(${RNormBase.toFixed(3)}, ${RMin.toFixed(3)}) = <strong style="color:var(--accent);">${RNorm.toFixed(3)} м²·°C/Вт</strong>
+        <span style="color:var(--muted);font-family:var(--sans);font-size:11px;"> — определяющей оказалась ${RMin > RNormBase ? 'формула (2), санитарно-гигиеническая' : 'формула (1), по энергоэффективности'}</span>
+      </div>`;
+    } else {
+      formulaHtml += `
+      <div style="margin-top:8px;color:var(--muted);font-family:var(--sans);font-size:11px;">Формула (2) для категории «${catLabels[category]}» не определена в табл. 2 СН РК — используется только R<sub>req</sub>.</div>`;
+    }
+
+    renderFormula(formulaHtml);
+  } else {
+    clearFormula();
+  }
+
+  const resVerdict = document.getElementById('resVerdict');
+  const recommendBlock = document.getElementById('resRecommendBlock');
+
+  if (RNorm == null){
+    document.getElementById('resRNorm').textContent = '—';
+    resVerdict.textContent = 'Выберите город для загрузки ГСОП';
+    resVerdict.className = 'result-verdict';
+    recommendBlock.style.display = 'none';
+    updateUsedParamsTable(null);
+    clearFormula();
+    clearRFactFormula();
+    document.getElementById('dewPointBlock').innerHTML = '<div style="color:var(--muted);font-family:var(--sans);">Заполните состав конструкции для расчёта</div>';
+    document.getElementById('dewVerdict').style.display = 'none';
+    renderVisualization();
+    return;
+  }
+  if (!insLayer || !insLayer.lambda){
+    document.getElementById('resRNorm').textContent = RNorm.toFixed(2);
+    resVerdict.textContent = 'Укажите слой утеплителя (радио-кнопка) и его λ';
+    resVerdict.className = 'result-verdict';
+    recommendBlock.style.display = 'none';
+    updateUsedParamsTable(null);
+    clearRFactFormula();
+    document.getElementById('dewPointBlock').innerHTML = '<div style="color:var(--muted);font-family:var(--sans);">Заполните состав конструкции для расчёта</div>';
+    document.getElementById('dewVerdict').style.display = 'none';
+    renderVisualization();
+    return;
+  }
+
+  /* R факт. по толщине утеплителя, которую задал пользователь */
+  const RFact = Rsi + Rse + sumROther + (insLayer.thickness || 0) / insLayer.lambda;
+
+  /* Минимально необходимая толщина утеплителя для выполнения R норм. (для рекомендации) */
+  const RRequiredIns = RNorm - Rsi - Rse - sumROther;
+  const thicknessMin = Math.max(RRequiredIns, 0) * insLayer.lambda;
+
+  document.getElementById('resRNorm').textContent = RNorm.toFixed(2);
+  document.getElementById('resRFact').textContent = RFact.toFixed(2);
+  document.getElementById('resThickUser').textContent = (insLayer.thickness || 0).toFixed(3);
+
+  /* Формула R факт. с разбивкой по слоям, снаружи → внутри */
+  const layerRows = layers.map((l,i) => {
+    const th = (l.id === insLayer.id) ? insLayer.thickness : l.thickness;
+    const lam = l.lambda || 0;
+    const Ri = lam ? (th||0) / lam : 0;
+    const name = (l.material && l.material.trim()) ? l.material : ('слой ' + (i+1));
+    return `<div style="font-size:12px;">R<sub>${i+1}</sub> (${escapeXml(name)}) = ${(th||0).toFixed(3)} / ${lam.toFixed(3)} = <strong>${Ri.toFixed(3)}</strong> м²·°C/Вт</div>`;
+  }).join('');
+  renderRFactFormula(`
+    <div>R<sub>0</sub> = R<sub>si</sub> + ΣR<sub>i</sub> + R<sub>se</sub> &nbsp;<span style="color:var(--muted);font-family:var(--sans);font-size:11px;">(прил. Е, формула Е.3 СП РК 2.04-107)</span></div>
+    <div>R<sub>si</sub> = 1 / α<sub>int</sub> = 1 / ${ALPHA_INT} = ${Rsi.toFixed(3)} м²·°C/Вт</div>
+    <div>R<sub>se</sub> = 1 / α<sub>ext</sub> = 1 / ${alphaExt} = ${Rse.toFixed(3)} м²·°C/Вт</div>
+    <div style="margin:6px 0;">Термосопротивление слоёв R<sub>i</sub> = δ<sub>i</sub> / λ<sub>i</sub>:</div>
+    ${layerRows}
+    <div style="margin-top:6px;">R<sub>0</sub> = ${Rsi.toFixed(3)} + ${sumROther.toFixed(3) /*прочие*/} + ${((insLayer.thickness||0)/insLayer.lambda).toFixed(3)} + ${Rse.toFixed(3)} = <strong style="color:var(--accent);">${RFact.toFixed(3)} м²·°C/Вт</strong></div>
+  `);
+
+  /* ── Проверка на конденсацию: τ_si ≥ t_р (СП РК, п. 6.3.1) ── */
+  if (tExt != null && !isNaN(tExt)){
+    const tDew = dewPointC(tInt, phiInt);
+    const tauSi = tInt - (Rsi / RFact) * (tInt - tExt);
+    const dewOk = tauSi >= tDew - 1e-9;
+    document.getElementById('dewPointBlock').innerHTML = `
+      <div>t<sub>р</sub> (точка росы) — по формуле Магнуса, из t<sub>int</sub> = ${tInt}°C и φ<sub>int</sub> = ${phiInt}% &nbsp;→&nbsp; <strong>${tDew.toFixed(1)}°C</strong></div>
+      <div style="margin-top:8px;">τ<sub>si</sub> = t<sub>в</sub> − (R<sub>si</sub> / R<sub>факт</sub>) × (t<sub>в</sub> − t<sub>н</sub>) &nbsp;<span style="color:var(--muted);font-family:var(--sans);font-size:11px;">(температура внутр. поверхности при расчётных зимних условиях)</span></div>
+      <div>τ<sub>si</sub> = ${tInt} − (${Rsi.toFixed(3)} / ${RFact.toFixed(3)}) × (${tInt} − ${tExt}) = <strong style="color:var(--accent);">${tauSi.toFixed(1)}°C</strong></div>
+    `;
+    const dewVerdict = document.getElementById('dewVerdict');
+    dewVerdict.style.display = 'block';
+    dewVerdict.className = 'result-verdict ' + (dewOk ? 'ok' : 'fail');
+    dewVerdict.textContent = dewOk
+      ? `Условие τ_si ≥ t_р выполнено (${tauSi.toFixed(1)}°C ≥ ${tDew.toFixed(1)}°C) — конденсата на внутренней поверхности не будет`
+      : `Условие τ_si ≥ t_р НЕ выполняется (${tauSi.toFixed(1)}°C < ${tDew.toFixed(1)}°C) — риск конденсата на внутренней поверхности`;
+
+    renderDewProfile(tInt, tExt, tDew, Rsi, Rse, RFact, insLayer);
+  } else {
+    document.getElementById('dewPointBlock').innerHTML = '<div style="color:var(--muted);font-family:var(--sans);">Выберите город для загрузки t наружного воздуха</div>';
+    document.getElementById('dewVerdict').style.display = 'none';
+    document.getElementById('dewProfileWrap').innerHTML = '';
+  }
+
+  const ok = RFact >= RNorm - 1e-9;
+  const cell = document.getElementById('resRFactCell');
+  cell.className = 'result-cell ' + (ok ? 'ok' : 'fail');
+  resVerdict.className = 'result-verdict ' + (ok ? 'ok' : 'fail');
+  resVerdict.textContent = ok
+    ? `Условие R факт. ≥ R норм. выполнено (${RFact.toFixed(2)} ≥ ${RNorm.toFixed(2)} м²·°C/Вт)`
+    : `Условие R факт. ≥ R норм. НЕ выполняется (${RFact.toFixed(2)} < ${RNorm.toFixed(2)} м²·°C/Вт)`;
+
+  const insThickCell = document.getElementById('layerThicknessCell_' + insLayer.id);
+  if (insThickCell) insThickCell.className = ok ? 'thickness-ok' : 'thickness-fail';
+
+  if (ok){
+    recommendBlock.style.display = 'none';
+  } else {
+    recommendBlock.style.display = 'block';
+    const avail = pickAvailableThickness(insLayer.materialRef, thicknessMin);
+    if (avail && avail.layers.length === 1){
+      document.getElementById('resRecommendVal').textContent = (avail.layers[0]/1000).toFixed(3);
+      document.getElementById('resRecommendExtra').textContent = ` (ближайший доступный типоразмер «${insLayer.materialRef.name}»)`;
+    } else if (avail && avail.layers.length === 2){
+      document.getElementById('resRecommendVal').textContent = (avail.totalMM/1000).toFixed(3);
+      document.getElementById('resRecommendExtra').textContent =
+        ` — одного слоя из доступных толщин «${insLayer.materialRef.name}» недостаточно; уложить в 2 слоя: ${avail.layers[0]} + ${avail.layers[1]} мм (суммарно ${avail.totalMM} мм)`;
+    } else if (insLayer.materialRef && insLayer.materialRef.thicknesses){
+      document.getElementById('resRecommendVal').textContent = thicknessMin.toFixed(3);
+      document.getElementById('resRecommendExtra').textContent =
+        ` — даже двух максимальных доступных слоёв «${insLayer.materialRef.name}» недостаточно, нужен другой материал или больше слоёв`;
+    } else {
+      document.getElementById('resRecommendVal').textContent = thicknessMin.toFixed(3);
+      document.getElementById('resRecommendExtra').textContent = '';
+    }
+  }
+
+  updateUsedParamsTable({ tInt, phiInt, humidityMode, opCond, gsop, RNorm, RNormBase, RMin, alphaExt, Rsi, Rse,
+    tExt: currentCity ? currentCity.t_cold_5d_92 : null, sumROther, thicknessUser: insLayer.thickness || 0,
+    thicknessMin, RFact, ok, category, constrKey });
+
+  renderVisualization();
+}
+
+function updateUsedParamsTable(d){
+  const table = document.getElementById('usedParamsTable');
+  if (!d){ table.innerHTML = '<tr><td colspan="3" style="color:var(--muted);">Заполните все исходные данные</td></tr>'; return; }
+  const rows = [
+    ['t наружного воздуха, °C', d.tExt != null ? d.tExt : '—', 'СП РК 2.04-01, табл. 3.1'],
+    ['ГСОП, °С·сут/год', d.gsop != null ? d.gsop : '—', 'СП РК 2.04-01, табл. 3.1'],
+    ['Влажностный режим помещения', HUMIDITY_LABELS[d.humidityMode], 'СП РК 2.04-107, табл. 1'],
+    ['Условия эксплуатации конструкции', d.opCond, 'СП РК 2.04-107, табл. 2'],
+    ['α внутр. поверхности, Вт/(м²·°C)', ALPHA_INT, 'СН РК 2.04-07, табл. 3'],
+    ['α наружн. поверхности, Вт/(м²·°C)', d.alphaExt, 'СП РК 2.04-107, табл. Е.2'],
+    ['R si, м²·°C/Вт', d.Rsi.toFixed(3), '1 / α внутр.'],
+    ['R se, м²·°C/Вт', d.Rse.toFixed(3), '1 / α наружн.'],
+    ['Сумма R прочих слоёв, м²·°C/Вт', d.sumROther.toFixed(3), 'Σ δ / λ'],
+    ['R req (формула 1, энергоэффективность), м²·°C/Вт', d.RNormBase != null ? d.RNormBase.toFixed(3) : '—', 'СН РК 2.04-07, табл. 4'],
+    ['R min (формула 2, санитарно-гигиен.), м²·°C/Вт', d.RMin != null ? d.RMin.toFixed(3) : 'не определено для категории', 'СН РК 2.04-07, п. 6.2, формула (2)'],
+    ['R норм. итоговое = max(R req, R min), м²·°C/Вт', d.RNorm.toFixed(3), 'СН РК 2.04-07, п. 6.2'],
+    ['Толщина утеплителя (введена пользователем), м', d.thicknessUser.toFixed(3), 'Задано вручную'],
+    ['Минимально необходимая толщина утеплителя, м', d.thicknessMin.toFixed(3), 'Подбор по R норм.'],
+    ['R факт. (по введённой толщине), м²·°C/Вт', d.RFact.toFixed(2), 'R si+R se+ΣR слоёв'],
+    ['Условие R факт. ≥ R норм.', d.ok ? 'Выполнено' : 'НЕ выполнено', 'СН РК 2.04-07, п. 6.1']
+  ];
+  table.innerHTML = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   ВИЗУАЛИЗАЦИЯ — изометрическая схема слоёв
+   ══════════════════════════════════════════════════════ */
+function renderVisualization(){
+  const wrap = document.getElementById('vizWrap');
+  const n = layers.length;
+  const boxW = 380, depth = 60;
+  const targetBoxH = Math.max(200, n * 34); /* целевая суммарная высота диаграммы */
+  const bevel = 9; /* высота скоса верхней грани — заметно меньше минимальной высоты слоя, чтобы не перекрывать тонкие слои целиком */
+  const minLayerH = 28; /* минимум — чтобы помещалась одна строка "материал, δ = ..." */
+
+  /* Высота каждого слоя пропорциональна его реальной толщине; если толщины ещё не заданы — делим поровну */
+  const thicknesses = layers.map(l => l.thickness || 0);
+  const thicknessSum = thicknesses.reduce((a,b) => a+b, 0);
+  let layerHeights;
+  if (thicknessSum > 0){
+    layerHeights = thicknesses.map(th => Math.max(minLayerH, (th/thicknessSum) * targetBoxH));
+  } else {
+    layerHeights = layers.map(() => targetBoxH / n);
+  }
+  const boxH = layerHeights.reduce((a,b) => a+b, 0);
+
+  const svgH = boxH + 130;
+  const svgW = 660;
+  let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">`;
+  const ox = 160, oy = 50;
+  const maxNameChars = Math.floor((boxW - 24) / 5.8); /* ограничение подписи по ширине передней грани, шрифт 10px */
+
+  /* Границы слоёв (накопительная толщина, м) — для шкалы слева */
+  const boundaries = [0];
+  let cumTh = 0;
+  thicknesses.forEach(th => { cumTh += th; boundaries.push(cumTh); });
+
+  /* Позиции и цвета слоёв считаем заранее — рисуем в 3 прохода (грани, потом скосы, потом текст),
+     чтобы верхний (внешний) слой гарантированно перекрывал нижний (внутренний) на стыке */
+  const layerY = [];
+  let yCursor = oy;
+  layers.forEach((l, i) => { layerY.push(yCursor); yCursor += layerHeights[i]; });
+  const colorOf = (l, i) => l.isInsulation ? '#8a271f' : (i % 2 === 0 ? '#3a3f5c' : '#2e3347');
+
+  /* 1) передние грани всех слоёв */
+  layers.forEach((l, i) => {
+    svg += `<rect x="${ox}" y="${layerY[i]}" width="${boxW}" height="${layerHeights[i]}" fill="${colorOf(l,i)}" stroke="#0f1117" stroke-width="1"/>`;
+  });
+
+  /* 2) торец справа — окрашен по слоям так же, как фасад, с лёгким затемнением для эффекта тени */
+  layers.forEach((l, i) => {
+    const y = layerY[i], h = layerHeights[i];
+    const color = colorOf(l, i);
+    const pts = `${ox+boxW},${y} ${ox+boxW+depth*0.5},${y-bevel} ${ox+boxW+depth*0.5},${y-bevel+h} ${ox+boxW},${y+h}`;
+    svg += `<polygon points="${pts}" fill="${color}" stroke="#0f1117" stroke-width="1"/>`;
+    svg += `<polygon points="${pts}" fill="#000000" opacity="0.28"/>`; /* затемнение торца для объёма */
+  });
+
+  /* 3) крышка сверху — только у самого внешнего (первого) слоя: это единственная физически видимая сверху поверхность */
+  {
+    const y = layerY[0];
+    const color = colorOf(layers[0], 0);
+    svg += `<polygon points="${ox},${y} ${ox+depth*0.5},${y-bevel} ${ox+boxW+depth*0.5},${y-bevel} ${ox+boxW},${y}" fill="${color}" stroke="#0f1117" stroke-width="1"/>`;
+  }
+
+  /* 4) подписи — поверх всего, в одну строку */
+  layers.forEach((l, i) => {
+    const h = layerHeights[i];
+    const midY = layerY[i] + h/2;
+    const rawName = l.material && l.material.trim() ? l.material : '—';
+    const thickText = l.thickness ? l.thickness.toFixed(3)+' м' : '—';
+    const fullLabel = truncateText(`${rawName}, δ = ${thickText}`, maxNameChars);
+    const textColor = l.isInsulation ? '#fff' : '#c8cce0';
+    svg += `<text x="${ox+12}" y="${midY+4}" font-size="10" font-weight="600" fill="${textColor}" font-family="Inter,sans-serif">${escapeXml(fullLabel)}</text>`;
+  });
+
+
+  /* Шкала толщины слева — засечки и накопительная толщина на каждой границе слоя */
+  const scaleX = ox - 60;
+  svg += `<line x1="${scaleX}" y1="${oy}" x2="${scaleX}" y2="${oy+boxH}" stroke="#3a3f5c" stroke-width="1"/>`;
+  let by = oy;
+  boundaries.forEach((cum, i) => {
+    const y = by;
+    svg += `<line x1="${scaleX-4}" y1="${y}" x2="${scaleX+4}" y2="${y}" stroke="#6b7099" stroke-width="1"/>`;
+    svg += `<line x1="${scaleX+4}" y1="${y}" x2="${ox}" y2="${y}" stroke="#3a3f5c" stroke-width="1" stroke-dasharray="2,3"/>`;
+    svg += `<text x="${scaleX-8}" y="${y+3}" text-anchor="end" font-size="9" fill="#8b90b3" font-family="Inter,sans-serif">${cum.toFixed(3)}</text>`;
+    if (i < layerHeights.length) by += layerHeights[i];
+  });
+  svg += `<text x="${scaleX}" y="${oy-14}" text-anchor="middle" font-size="9" fill="#6b7099" font-family="Inter,sans-serif">толщина, м</text>`;
+
+  /* стрелки теплового потока: снизу тепло (красные), сверху холод (синие) */
+  svg += `<line x1="${ox+20}" y1="${oy+boxH+25}" x2="${ox+20}" y2="${oy+boxH+5}" stroke="#ef4444" stroke-width="2" marker-end="url(#arrowRed)"/>`;
+  svg += `<line x1="${ox+boxW-20}" y1="${oy+boxH+25}" x2="${ox+boxW-20}" y2="${oy+boxH+5}" stroke="#ef4444" stroke-width="2" marker-end="url(#arrowRed)"/>`;
+  svg += `<line x1="${ox+boxW/2}" y1="${oy-40}" x2="${ox+boxW/2}" y2="${oy-15}" stroke="#4f8ef7" stroke-width="2" marker-end="url(#arrowBlue)"/>`;
+  svg += `<text x="${ox+boxW/2}" y="${oy-46}" text-anchor="middle" font-size="10" fill="#4f8ef7" font-family="Inter,sans-serif">холод</text>`;
+  svg += `<text x="${ox+boxW/2}" y="${oy+boxH+40}" text-anchor="middle" font-size="10" fill="#ef4444" font-family="Inter,sans-serif">тепло</text>`;
+
+  svg += `<defs>
+    <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ef4444"/></marker>
+    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#4f8ef7"/></marker>
+  </defs>`;
+  svg += `</svg>`;
+  wrap.innerHTML = svg;
+}
+
+function truncateText(str, maxLen){
+  if (!str || str.length <= maxLen) return str;
+  return str.slice(0, Math.max(1, maxLen - 1)) + '…';
+}
+
+function escapeXml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ══════════════════════════════════════════════════════
+   ЗАГРУЗКА ГОРОДОВ (климатика — Google Sheets через бэкенд)
+   ══════════════════════════════════════════════════════ */
+async function loadCities(){
+  const input = document.getElementById('cityInput');
+  try {
+    const res = await fetch(`${BACKEND}?book=climat&sheet=climat_kz`, { headers:{ 'x-app-key':'spravochnik-km-2026-x7k9' } });
+    const json = await res.json();
+    CITIES = (json.records || []).sort((a,b) => a.name.localeCompare(b.name,'ru'));
+    input.disabled = false;
+    input.placeholder = 'Введите название или выберите из списка...';
+    const astana = CITIES.find(c => c.name === 'Астана');
+    selectCity(astana ? 'Астана' : (CITIES[0] && CITIES[0].name));
+  } catch(e){
+    input.placeholder = 'Ошибка загрузки — обновите страницу';
+    console.error('Ошибка загрузки климатических данных:', e);
+  }
+}
+
+function selectCity(name){
+  if (!name) return;
+  document.getElementById('cityInput').value = name;
+  closeCityDropdown();
+  currentCity = CITIES.find(c => c.name === name);
+  if (!currentCity) return;
+  document.getElementById('climTExt').textContent = (currentCity.t_cold_5d_92 != null) ? currentCity.t_cold_5d_92 + '°C' : '—';
+  calculate();
+}
+
+let cityDropdownOpen = false;
+function showCityDropdown(query){
+  const dd = document.getElementById('cityDropdown');
+  const input = document.getElementById('cityInput');
+  const q = (query||'').trim().toLowerCase();
+  const matches = q.length === 0 ? CITIES : CITIES.filter(c => c.name.toLowerCase().startsWith(q));
+  dd.innerHTML = matches.length
+    ? matches.map(c => `<div onmousedown="event.preventDefault();selectCity('${c.name.replace(/'/g,"\\'")}')">${c.name}</div>`).join('')
+    : '<div style="color:var(--muted);">Ничего не найдено</div>';
+  if (input) positionDropdownFixed(dd, input);
+  dd.style.display = 'block';
+  cityDropdownOpen = true;
+}
+function closeCityDropdown(){ document.getElementById('cityDropdown').style.display = 'none'; cityDropdownOpen = false; }
+function toggleCityDropdown(){
+  const input = document.getElementById('cityInput');
+  cityDropdownOpen ? closeCityDropdown() : (input.focus(), showCityDropdown(''));
+}
+document.getElementById('cityInput').addEventListener('input', function(){ showCityDropdown(this.value); });
+
+/* ══════════════════════════════════════════════════════
+   ЭКСПОРТ В PDF — через нативный диалог печати браузера
+   (пользователь выбирает "Сохранить как PDF" — надёжнее и
+   проще, чем тянуть внешние библиотеки; PDF также сложнее
+   редактировать задним числом, чем .docx)
+   ══════════════════════════════════════════════════════ */
+function selText(id){
+  const el = document.getElementById(id);
+  return el && el.selectedOptions && el.selectedOptions[0] ? el.selectedOptions[0].textContent : '—';
+}
+
+function exportToPdf(){
+  const objNameRaw = document.getElementById('objName').value.trim();
+  const objName = objNameRaw || 'Без названия'; /* используется в теле отчёта (раздел "Исходные данные") */
+  const titleSuffix = objNameRaw ? ` — ${objNameRaw}` : '';
+  const cityName = currentCity ? currentCity.name : '—';
+
+  const w = window.open('', '_blank');
+  if (!w){ alert('Браузер заблокировал всплывающее окно. Разрешите всплывающие окна для этого сайта и повторите.'); return; }
+
+  /* ── Раздел 1: исходные данные ── */
+  const initialDataRows = [
+    ['Наименование объекта', objName],
+    ['Населённый пункт', cityName],
+    ['Категория здания по нормам', selText('buildingCategory')],
+    ['Тип ограждающей конструкции', selText('constructionType')],
+    ['Расчётная температура внутреннего воздуха t\u1D62\u2099\u209C, °C', document.getElementById('tInt').value],
+    ['Относительная влажность внутреннего воздуха φ\u1D62\u2099\u209C, %', document.getElementById('phiInt').value],
+    ['Влажностный режим помещения', document.getElementById('humidityAutoResult').textContent.replace('Режим помещения: ','').replace(/\s*\(автоопределение.*\)/,'')],
+    ['Зона влажности района строительства', selText('humidityZone')],
+    ['Вентилируемая воздушная прослойка', document.getElementById('ventGap').checked ? 'Да' : 'Нет'],
+    ['Расчётная температура наружного воздуха (обеспеч. 0,92), °C', document.getElementById('climTExt').textContent]
+  ];
+  const initialDataHtml = initialDataRows.map(r =>
+    `<div class="datarow"><span class="datalbl">${escapeXml(r[0])}:</span> <span class="dataval">${escapeXml(String(r[1]))}</span></div>`
+  ).join('');
+
+  /* ── Раздел 2: состав конструкции (строим заново из данных, не из полей ввода) ── */
+  const layerRows = layers.map((l, i) => {
+    const name = (l.material && l.material.trim()) ? l.material : '—';
+    const lam = l.lambda ? l.lambda.toFixed(3) : '—';
+    const th = l.thickness ? l.thickness.toFixed(3) : '—';
+    const mark = l.isInsulation ? ' <em>(утеплитель — расчётный слой)</em>' : '';
+    return `<tr${l.isInsulation ? ' style="font-weight:600;"' : ''}>
+      <td class="c">${i+1}</td><td>${escapeXml(name)}${mark}</td>
+      <td class="c">${lam}</td><td class="c">${th}</td></tr>`;
+  }).join('');
+
+  /* ── Раздел 3: расчётная часть — переиспользуем уже вычисленные формулы, но перекрашиваем в чёрно-белую печатную тему ── */
+  const formulaHtml = document.getElementById('formulaBlock').innerHTML;
+  const rfactFormulaHtml = document.getElementById('rfactFormulaBlock').innerHTML;
+  const dewHtml = document.getElementById('dewPointBlock').innerHTML;
+  const dewVerdictEl = document.getElementById('dewVerdict');
+  const dewVerdictText = dewVerdictEl.style.display !== 'none' ? dewVerdictEl.textContent : '';
+
+  /* ── Раздел 4: вывод ── */
+  const rNorm = document.getElementById('resRNorm').textContent;
+  const rFact = document.getElementById('resRFact').textContent;
+  const thickUser = document.getElementById('resThickUser').textContent;
+  const ok = document.getElementById('resVerdict').className.includes('ok');
+  const recommendEl = document.getElementById('resRecommendBlock');
+  const recommendText = recommendEl.style.display !== 'none' ? recommendEl.textContent.trim() : '';
+
+  const reportHtml = `<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<title>Подбор толщины утеплителя${titleSuffix}</title>
+<style>
+  @page{ margin:18mm 16mm; }
+  *{box-sizing:border-box;}
+  body{
+    font-family:'Times New Roman',Georgia,serif;color:#111;background:#fff;
+    max-width:820px;margin:0 auto;padding:20px;font-size:13px;line-height:1.55;
+  }
+  h1{font-size:18px;text-align:center;margin:0 0 4px;letter-spacing:.3px;}
+  .subtitle{text-align:center;color:#444;font-size:12px;margin-bottom:22px;}
+  h2{font-size:14px;margin:26px 0 10px;padding-bottom:4px;}
+  .datarow{padding:4px 0;font-size:12.5px;}
+  .datalbl{color:#333;}
+  .dataval{font-weight:600;}
+  table{width:100%;border-collapse:collapse;margin-bottom:6px;}
+  td,th{border:1px solid #999;padding:6px 9px;font-size:12.5px;vertical-align:top;}
+  th{background:#eee;font-weight:700;text-align:left;}
+  td.lbl{width:62%;}
+  td.val{text-align:right;font-weight:600;}
+  td.c{text-align:center;width:60px;}
+  .formula-block{margin:6px 0 16px;}
+  .formula-block, .formula-block *{
+    font-family:'Courier New',monospace !important;color:#111 !important;
+    background:transparent !important;font-size:12.5px !important;line-height:2 !important;
+  }
+  .verdict{margin-top:14px;padding:10px 14px;border:1.5px solid #111;font-weight:700;font-size:13px;}
+  .verdict.ok{background:#e3f5e9;border-color:#1f5c3d;color:#1f5c3d;}
+  .verdict.fail{background:#fbe6e4;border-color:#8a271f;color:#8a271f;}
+  .recommend{margin-top:8px;padding:8px 14px;border:1px dashed #666;font-size:12.5px;}
+  .subhead{font-weight:700;margin:14px 0 6px;font-size:13px;}
+  .report-footer{margin-top:34px;padding-top:8px;border-top:1px solid #ccc;text-align:center;font-size:11.5px;color:#777;}
+  @media print{
+    body{padding:0;}
+    .report-footer{position:fixed;bottom:6mm;left:0;right:0;border-top:none;}
+    body{padding-bottom:14mm;}
+  }
+</style>
+</head><body>
+  <h1>ПОДБОР ТОЛЩИНЫ УТЕПЛИТЕЛЯ</h1>
+
+  <h2>1. Исходные данные</h2>
+  <div>${initialDataHtml}</div>
+
+  <h2>2. Состав конструкции (снаружи → внутри)</h2>
+  <table>
+    <tr><th class="c">№</th><th>Материал</th><th class="c">λ, Вт/(м·°C)</th><th class="c">Толщина, м</th></tr>
+    ${layerRows}
+  </table>
+
+  <h2>3. Расчётная часть</h2>
+  <div class="subhead">3.1. Нормируемое сопротивление теплопередаче</div>
+  <div class="formula-block">${formulaHtml}</div>
+  <div class="subhead">3.2. Фактическое сопротивление теплопередаче</div>
+  <div class="formula-block">${rfactFormulaHtml}</div>
+  <div class="subhead">3.3. Проверка на конденсацию (точка росы)</div>
+  <div class="formula-block">${dewHtml}</div>
+  ${dewVerdictText ? `<div style="font-weight:600;margin-top:4px;">${escapeXml(dewVerdictText)}</div>` : ''}
+
+  <h2>4. Вывод</h2>
+  <table>
+    <tr><td class="lbl">R норм., м²·°C/Вт</td><td class="val">${escapeXml(rNorm)}</td></tr>
+    <tr><td class="lbl">R факт. (по введённой толщине утеплителя), м²·°C/Вт</td><td class="val">${escapeXml(rFact)}</td></tr>
+    <tr><td class="lbl">Толщина утеплителя (принята), м</td><td class="val">${escapeXml(thickUser)}</td></tr>
+  </table>
+  <div class="verdict ${ok?'ok':'fail'}">${ok ? 'Условие R факт. ≥ R норм. ВЫПОЛНЕНО' : 'Условие R факт. ≥ R норм. НЕ ВЫПОЛНЕНО'}</div>
+  ${recommendText ? `<div class="recommend">${escapeXml(recommendText)}</div>` : ''}
+
+  <div class="report-footer">Документ сформирован автоматически в «Электронном справочнике конструктора» · автор проекта — Кайыртаев Б.Б.</div>
+
+</body></html>`;
+
+  w.document.open();
+  w.document.write(reportHtml);
+  w.document.close();
+  /* небольшая задержка — чтобы шрифты успели отрисоваться перед диалогом печати */
+  setTimeout(() => { w.focus(); w.print(); }, 400);
+}
+
+/* ══════════════════════════════════════════════════════
+   ЗАГРУЗКА СПРАВОЧНИКА МАТЕРИАЛОВ (book=materials)
+   ══════════════════════════════════════════════════════ */
+/* Парсинг чисел, где разделитель дробной части — запятая (как в казахстанских таблицах: "0,037") */
+/* Точка росы, °C — формула Магнуса, из температуры t (°C) и отн. влажности phi (%) */
+function dewPointC(t, phi){
+  const b = 17.62, c = 243.12;
+  const gamma = Math.log(phi/100) + (b*t)/(c+t);
+  return (c*gamma) / (b-gamma);
+}
+
+/* График профиля температуры по толщине конструкции (изнутри наружу), сопоставленный с точкой росы */
+function renderDewProfile(tInt, tExt, tDew, Rsi, Rse, RTotal, insLayer){
+  const wrap = document.getElementById('dewProfileWrap');
+
+  /* Общая физическая толщина стены (без учёта воздушных плёнок Rsi/Rse — у них нет толщины) */
+  const totalThickness = layers.reduce((sum,l) => sum + (l.thickness||0), 0) || 0.001;
+  const margin = Math.max(totalThickness*0.10, 0.01); /* небольшой отступ слева/справа под точки воздуха (условно, не в масштабе) */
+
+  /* Точки профиля: t_в(воздух) -> τ_si(на пов-ти, x=0) -> границы слоёв изнутри наружу (x = накопит. толщина) -> τ_se -> t_н(воздух) */
+  const points = [{ x:-margin, t:tInt, label:'t_в', full:'Внутренний воздух' }];
+  points.push({ x:0, t: tInt - (Rsi/RTotal)*(tInt-tExt), label:'τ_si', full:'Внутренняя поверхность' });
+
+  const insideOut = [...layers].reverse(); /* layers хранятся снаружи→внутри, для профиля идём внутри→наружу */
+  let Rcum = Rsi, xCum = 0;
+  insideOut.forEach((l, idx) => {
+    const th = (l.id === insLayer.id) ? insLayer.thickness : l.thickness;
+    const Ri = l.lambda ? (th||0) / l.lambda : 0;
+    Rcum += Ri;
+    xCum += (th||0);
+    const t = tInt - (Rcum/RTotal)*(tInt-tExt);
+    const layerNum = layers.length - idx;
+    const fullName = (l.material && l.material.trim()) ? l.material : ('слой ' + layerNum);
+    points.push({ x:xCum, t, label:'сл.'+layerNum, full:fullName, isIns: l.id === insLayer.id });
+  });
+  points.push({ x:totalThickness+margin, t:tExt, label:'t_н', full:'Наружный воздух' });
+
+  /* Масштабирование в SVG-координаты */
+  const W = 640, H = 340, padL = 55, padR = 20, padT = 34, padB = 46;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const tMin = Math.min(tExt, tDew) - 5, tMax = Math.max(tInt, tDew) + 5;
+  const xMin = -margin, xMax = totalThickness + margin;
+  const xOf = x => padL + ((x - xMin) / (xMax - xMin)) * plotW;
+  const yOf = t => padT + (1 - (t - tMin) / (tMax - tMin)) * plotH;
+
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+
+  /* Сетка по оси Y (температура) */
+  const stepY = 10;
+  for (let t = Math.ceil(tMin/stepY)*stepY; t <= tMax; t += stepY){
+    const y = yOf(t);
+    svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#2e3347" stroke-width="1"/>`;
+    svg += `<text x="${padL-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#6b7099" font-family="Inter,sans-serif">${t}°C</text>`;
+  }
+
+  /* Числовая шкала толщины снизу (0 → общая толщина стены), с равномерными делениями */
+  const niceSteps = [0.01,0.02,0.025,0.05,0.1,0.2,0.25,0.5,1];
+  let stepX = niceSteps.find(s => totalThickness/s <= 8) || 1;
+  for (let x = 0; x <= totalThickness + 1e-9; x += stepX){
+    const px = xOf(x);
+    svg += `<line x1="${px}" y1="${padT}" x2="${px}" y2="${H-padB}" stroke="#22263a" stroke-width="1"/>`;
+    svg += `<text x="${px}" y="${H-padB+30}" text-anchor="middle" font-size="9" fill="#8b90b3" font-family="Inter,sans-serif">${x.toFixed(2)}</text>`;
+  }
+  svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#3a3f5c" stroke-width="1"/>`;
+  svg += `<text x="${(padL+W-padR)/2}" y="${H-8}" text-anchor="middle" font-size="10" fill="#6b7099" font-family="Inter,sans-serif">толщина стены, м</text>`;
+
+  /* Вертикальные пунктирные линии на границах слоёв — чтобы видеть, в каком именно слое проходит точка росы */
+  points.forEach(p => {
+    const x = xOf(p.x);
+    svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}" stroke="#3a3f5c" stroke-width="1" stroke-dasharray="3,3"/>`;
+  });
+
+  /* Заливка зоны риска конденсации: сегменты, где кривая температуры ниже точки росы */
+  for (let i = 0; i < points.length-1; i++){
+    const p1 = points[i], p2 = points[i+1];
+    const b1 = p1.t < tDew, b2 = p2.t < tDew;
+    if (!b1 && !b2) continue;
+    let x1 = p1.x, y1t = p1.t, x2 = p2.x, y2t = p2.t;
+    if (b1 !== b2){
+      /* линейная интерполяция точки пересечения с t_р */
+      const frac = (tDew - p1.t) / (p2.t - p1.t);
+      const xCross = p1.x + frac * (p2.x - p1.x);
+      if (b1){ x2 = xCross; y2t = tDew; } else { x1 = xCross; y1t = tDew; }
+    }
+    svg += `<polygon points="${xOf(x1)},${yOf(y1t)} ${xOf(x2)},${yOf(y2t)} ${xOf(x2)},${yOf(tDew)} ${xOf(x1)},${yOf(tDew)}" fill="#ef4444" opacity="0.18"/>`;
+  }
+
+  /* Линия точки росы (пунктир) */
+  svg += `<line x1="${padL}" y1="${yOf(tDew)}" x2="${W-padR}" y2="${yOf(tDew)}" stroke="#4f8ef7" stroke-width="2" stroke-dasharray="6,4"/>`;
+  svg += `<text x="${W-padR}" y="${yOf(tDew)-6}" text-anchor="end" font-size="10" fill="#4f8ef7" font-family="Inter,sans-serif">точка росы, ${tDew.toFixed(1)}°C</text>`;
+
+  /* Линия температуры — на оси реальной толщины наклон разный в каждом слое (зависит от λ), поэтому линия ломаная, не прямая */
+  const poly = points.map(p => `${xOf(p.x)},${yOf(p.t)}`).join(' ');
+  svg += `<polyline points="${poly}" fill="none" stroke="#ef4444" stroke-width="2.5"/>`;
+
+  /* Точки и подписи — разводим по вертикали, если соседние точки слишком близко по X (иначе подписи наложатся) */
+  const xs = points.map(p => xOf(p.x));
+  const topOffset = [], bottomOffset = [];
+  let lastPx = -Infinity, toggleT = 0, toggleB = 0;
+  xs.forEach(px => {
+    if (px - lastPx < 42){ toggleT = 1 - toggleT; toggleB = 1 - toggleB; } else { toggleT = 0; toggleB = 0; }
+    topOffset.push(toggleT);
+    bottomOffset.push(toggleB);
+    lastPx = px;
+  });
+
+  points.forEach((p, i) => {
+    const below = p.t < tDew;
+    const px = xOf(p.x), py = yOf(p.t);
+    svg += `<circle cx="${px}" cy="${py}" r="4" fill="${below ? '#ef4444' : '#7dd3a8'}" stroke="#0f1117" stroke-width="1"/>`;
+    svg += `<text x="${px}" y="${py - 10 - topOffset[i]*14}" text-anchor="middle" font-size="9" font-weight="600" fill="${below?'#ef4444':'#c8cce0'}" font-family="Inter,sans-serif">${p.t.toFixed(1)}°C</text>`;
+    svg += `<text x="${px}" y="${padT-16+bottomOffset[i]*13}" text-anchor="middle" font-size="9" fill="#8b90b3" font-family="Inter,sans-serif">${escapeXml(p.label)}</text>`;
+  });
+
+  /* Легенда слоёв под графиком — полные названия, чтобы не перегружать сам график */
+  const legendItems = points.filter(p => p.label.startsWith('сл.'))
+    .map(p => `<span style="color:var(--muted);">${p.label}</span> — ${escapeXml(truncateText(p.full, 40))}${p.isIns ? ' <span style="color:var(--red);">(утеплитель)</span>' : ''}`)
+    .join('<br>');
+
+  svg += `</svg>`;
+  wrap.innerHTML = `<div>${svg}<div style="font-family:var(--sans);font-size:11px;line-height:1.9;color:var(--text);margin-top:8px;padding:0 8px;">${legendItems}</div></div>`;
+}
+
+function parseRuNumber(v){
+  if (v == null || v === '') return 0;
+  const n = parseFloat(String(v).replace(',', '.'));
+  return isNaN(n) ? 0 : n;
+}
+
+async function loadMaterials(){
+  try {
+    const res = await fetch(`${BACKEND}?book=materials&sheet=materials_kz`, { headers:{ 'x-app-key':'spravochnik-km-2026-x7k9' } });
+    const json = await res.json();
+    MATERIALS = (json.records || [])
+      .filter(m => m.name)
+      .map(m => ({
+        section: m.section || 'Без раздела',
+        name: m.name,
+        lambda_a: parseRuNumber(m.lambda_a),
+        lambda_b: parseRuNumber(m.lambda_b),
+        density: m.density,
+        thicknesses: m.thicknesses,
+        note: m.note,
+        usage_hint: m.usage_hint
+      }));
+  } catch(e){
+    console.error('Ошибка загрузки справочника материалов:', e);
+  }
+}
+
+/* ── Запуск ── */
+renderLayers();
+loadCities();
+loadMaterials();
+</script>
+
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+</body>
+</html>
