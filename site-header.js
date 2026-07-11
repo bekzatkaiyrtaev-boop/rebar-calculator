@@ -24,6 +24,7 @@
     { href: "peregorodka.html",        title: "Устойчивость перегородки" },
     { href: "peremychki.html",         title: "Подбор перемычек" },
     { href: "podbor-uteplitelya.html", title: "Подбор толщины утеплителя" },
+    { href: "progony-1225-2.html",     title: "Прогоны и опорные плиты" },
     { href: "climat.html",             title: "Климатические параметры" },
     { href: "konverter.html",          title: "Конвертер единиц измерения" }
   ];
