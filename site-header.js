@@ -15,14 +15,13 @@
   const SITE_PAGES = [
     { href: "Vedomost_elementov.html", title: "Ведомость деталей" },
     { href: "zashitny-sloy.html",      title: "Защитный слой бетона" },
-    { href: "ankerovka-nahlest.html",  title: "Анкеровка и нахлёст арматуры" },
     { href: "dvutavry-b.html",         title: "Двутавры по ГОСТ 26020-83" },
     { href: "dvutavry-sto.html",       title: "Двутавры по СТО АСЧМ 20-93" },
     { href: "pv-listy.html",           title: "Листы стальные просечно-вытяжные" },
     { href: "rifl-listy.html",         title: "Листы стальные рифлёные" },
     { href: "trubi.html",              title: "Квадратные и прямоугольные трубы по ГОСТ 30245-2012" },
     { href: "peregorodka.html",        title: "Устойчивость перегородки" },
-    { href: "podbor-uteplitelya.html", title: "Подбор толщины утеплителя" },
+    { href: "peremychki.html",         title: "Подбор перемычек" },
     { href: "climat.html",             title: "Климатические параметры" },
     { href: "konverter.html",          title: "Конвертер единиц измерения" }
   ];
