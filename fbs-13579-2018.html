@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Блоки ФБС — ГОСТ 13579-2018 | ЭСК</title>
+
+<!-- ==================== ОФОРМЛЕНИЕ ==================== -->
+<style>
+:root {
+  --bg: #14171c;
+  --bg-elevated: #1c2028;
+  --bg-elevated-2: #232833;
+  --border: #2c313d;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa3b2;
+  --accent: #4c8dff;
+  --accent-hover: #6ba0ff;
+  --success-text: #7fd99a;
+  --radius: 10px;
+  --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  line-height: 1.5;
+}
+
+.page { max-width: 1000px; margin: 0 auto; padding: 32px 20px 64px; }
+.page-header { margin-bottom: 8px; text-align: center; }
+.page-header h1 { font-size: 1.5rem; margin: 0 0 4px; font-weight: 600; }
+.page-header p { margin: 0; color: var(--text-secondary); font-size: 0.9rem; }
+
+.intro {
+  max-width: 720px;
+  margin: 16px auto 24px;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.tab-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b0e13;
+}
+
+.tab-btn:not(.active):hover { border-color: var(--accent); color: var(--text-primary); }
+
+.filters {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-field label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.filter-field select {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-family: inherit;
+}
+
+.filter-field select:focus { outline: none; border-color: var(--accent); }
+
+.no-rows {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 16px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+table.ref {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 820px;
+  font-size: 0.88rem;
+}
+
+table.ref th, table.ref td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+table.ref thead th {
+  background: var(--bg-elevated-2);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+table.ref td.marka {
+  text-align: left;
+  font-weight: 600;
+  color: var(--success-text);
+  min-width: 150px;
+}
+
+table.ref tbody tr:nth-child(even) { background: var(--bg-elevated-2); }
+
+.density-note {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  margin-top: 12px;
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== ИНТЕРФЕЙС ==================== -->
+<div class="page">
+
+  <header class="page-header">
+    <h1>Блоки бетонные для стен подвалов (ФБС)</h1>
+    <p>ГОСТ 13579-2018</p>
+  </header>
+
+  <p class="intro">
+    Сплошные блоки прямоугольного сечения длиной 2380, 1180 и 880 мм. Марка блока: длина/100 . ширина/100 . высота/100
+    (например, ФБС 24.3.6 — L 2380 мм, b 300 мм, h 580 мм). Данные — по маркировке монтажных петель и расходу материалов —
+    зависят от вида бетона, поэтому переключайте вкладку.
+  </p>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="t">Тяжёлый бетон (Т)</button>
+    <button class="tab-btn" data-tab="l">Лёгкий бетон (Л)</button>
+    <button class="tab-btn" data-tab="s">Силикатный бетон (С)</button>
+  </div>
+
+  <div class="filters">
+    <div class="filter-field">
+      <label for="filter-length">Длина L, мм</label>
+      <select id="filter-length"><option value="">Все</option></select>
+    </div>
+    <div class="filter-field">
+      <label for="filter-width">Ширина b, мм</label>
+      <select id="filter-width"><option value="">Все</option></select>
+    </div>
+    <div class="filter-field">
+      <label for="filter-height">Высота h, мм</label>
+      <select id="filter-height"><option value="">Все</option></select>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="ref">
+      <thead>
+        <tr>
+          <th>Марка блока</th>
+          <th>L, мм</th>
+          <th>b, мм</th>
+          <th>h, мм</th>
+          <th>Класс бетона</th>
+          <th>Монтажная петля</th>
+          <th>Кол-во петель, шт</th>
+          <th>Бетон, м³</th>
+          <th>Сталь, кг</th>
+          <th>Масса, т</th>
+        </tr>
+      </thead>
+      <tbody id="fbs-body"></tbody>
+    </table>
+  </div>
+
+  <p class="density-note" id="density-note"></p>
+
+</div>
+
+<!-- ==================== ЛОГИКА ==================== -->
+<script>
+(function () {
+
+  // Данные из ГОСТ 13579-2018, таблицы 2 (Т), 3 (Л), 4 (С) — только блоки ФБС (сплошные).
+  // Размеры L/b/h взяты из таблицы 1 по коду марки (длина.ширина.высота, /100).
+  // Зашито напрямую в код — таблица небольшая, отдельный лист в Google Sheets не заводили.
+
+  const DIMENSIONS = {
+    '24.3.6': { length: 2380, width: 300, height: 580 },
+    '24.4.6': { length: 2380, width: 400, height: 580 },
+    '24.5.6': { length: 2380, width: 500, height: 580 },
+    '24.6.6': { length: 2380, width: 600, height: 580 },
+    '12.4.6': { length: 1180, width: 400, height: 580 },
+    '12.5.6': { length: 1180, width: 500, height: 580 },
+    '12.6.6': { length: 1180, width: 600, height: 580 },
+    '12.4.3': { length: 1180, width: 400, height: 280 },
+    '12.5.3': { length: 1180, width: 500, height: 280 },
+    '12.6.3': { length: 1180, width: 600, height: 280 },
+    '9.3.6':  { length: 880,  width: 300, height: 580 },
+    '9.4.6':  { length: 880,  width: 400, height: 580 },
+    '9.5.6':  { length: 880,  width: 500, height: 580 },
+    '9.6.6':  { length: 880,  width: 600, height: 580 },
+  };
+
+  // code -> { concreteClass, loopMarka, loopQty, concreteM3, steelKg, massT }
+  const DATA = {
+    t: {
+      density: 'тяжёлого бетона средней плотности 2400 кг/м³',
+      rows: [
+        ['24.3.6', 'В7,5', 'П2а', 2, 0.406, 1.46, 0.97],
+        ['24.4.6', 'В7,5', 'П2а', 2, 0.543, 1.46, 1.30],
+        ['24.5.6', 'В7,5', 'П3',  2, 0.679, 2.36, 1.63],
+        ['24.6.6', 'В7,5', 'П3',  2, 0.815, 2.36, 1.96],
+        ['12.4.6', 'В7,5', 'П2',  2, 0.265, 1.46, 0.64],
+        ['12.5.6', 'В7,5', 'П2',  2, 0.331, 1.46, 0.79],
+        ['12.6.6', 'В7,5', 'П2',  2, 0.398, 1.46, 0.96],
+        ['12.4.3', 'В7,5', 'П4',  2, 0.127, 0.74, 0.31],
+        ['12.5.3', 'В7,5', 'П4',  2, 0.159, 0.74, 0.38],
+        ['12.6.3', 'В7,5', 'П4',  2, 0.191, 0.74, 0.46],
+        ['9.3.6',  'В7,5', 'П1',  2, 0.146, 0.76, 0.35],
+        ['9.4.6',  'В7,5', 'П1',  2, 0.195, 0.76, 0.47],
+        ['9.5.6',  'В7,5', 'П1',  2, 0.244, 0.76, 0.59],
+        ['9.6.6',  'В7,5', 'П2',  2, 0.293, 1.46, 0.70],
+      ],
+    },
+    l: {
+      density: 'лёгкого бетона средней плотности 1800 кг/м³',
+      rows: [
+        ['24.3.6', 'В7,5', 'П2а', 2, 0.406, 1.46, 0.73],
+        ['24.4.6', 'В7,5', 'П2а', 2, 0.543, 1.46, 0.98],
+        ['24.5.6', 'В7,5', 'П2а', 2, 0.679, 1.46, 1.22],
+        ['24.6.6', 'В7,5', 'П3',  2, 0.815, 2.36, 1.47],
+        ['12.4.6', 'В7,5', 'П1',  2, 0.265, 0.76, 0.48],
+        ['12.5.6', 'В7,5', 'П2',  2, 0.331, 1.46, 0.60],
+        ['12.6.6', 'В7,5', 'П2',  2, 0.398, 0.74, 0.72],
+        ['12.4.3', 'В7,5', 'П4',  2, 0.127, 0.74, 0.23],
+        ['12.5.3', 'В7,5', 'П4',  2, 0.159, 0.74, 0.29],
+        ['12.6.3', 'В7,5', 'П4',  2, 0.191, 0.74, 0.35],
+        ['9.3.6',  'В7,5', 'П1',  2, 0.146, 0.76, 0.26],
+        ['9.4.6',  'В7,5', 'П1',  2, 0.195, 0.76, 0.35],
+        ['9.5.6',  'В7,5', 'П1',  2, 0.244, 0.76, 0.44],
+        ['9.6.6',  'В7,5', 'П1',  2, 0.293, 0.76, 0.53],
+      ],
+    },
+    s: {
+      density: 'силикатного бетона средней плотности 2000 кг/м³',
+      rows: [
+        ['24.3.6', 'В15', 'П2а', 2, 0.406, 1.46, 0.81],
+        ['24.4.6', 'В15', 'П2а', 2, 0.543, 1.46, 1.09],
+        ['24.5.6', 'В15', 'П2а', 2, 0.679, 1.46, 1.36],
+        ['24.6.6', 'В15', 'П3',  2, 0.815, 2.36, 1.63],
+        ['12.4.6', 'В15', 'П1',  2, 0.265, 0.76, 0.53],
+        ['12.5.6', 'В15', 'П2',  2, 0.331, 1.46, 0.66],
+        ['12.6.6', 'В15', 'П2',  2, 0.398, 1.46, 0.80],
+        ['12.4.3', 'В15', 'П2а', 2, 0.127, 0.74, 0.25],
+        ['12.5.3', 'В15', 'П2а', 2, 0.159, 0.74, 0.32],
+        ['12.6.3', 'В15', 'П2а', 2, 0.191, 0.74, 0.38],
+        ['9.3.6',  'В15', 'П1',  2, 0.146, 0.76, 0.29],
+        ['9.4.6',  'В15', 'П1',  2, 0.195, 0.76, 0.39],
+        ['9.5.6',  'В15', 'П1',  2, 0.244, 0.76, 0.49],
+        ['9.6.6',  'В15', 'П1',  2, 0.293, 0.76, 0.59],
+      ],
+    },
+  };
+
+  const tbody = document.getElementById('fbs-body');
+  const densityNote = document.getElementById('density-note');
+  const filterLength = document.getElementById('filter-length');
+  const filterWidth = document.getElementById('filter-width');
+  const filterHeight = document.getElementById('filter-height');
+
+  let currentTab = 't';
+
+  function populateFilters() {
+    const lengths = [...new Set(Object.values(DIMENSIONS).map((d) => d.length))].sort((a, b) => a - b);
+    const widths = [...new Set(Object.values(DIMENSIONS).map((d) => d.width))].sort((a, b) => a - b);
+    const heights = [...new Set(Object.values(DIMENSIONS).map((d) => d.height))].sort((a, b) => a - b);
+
+    lengths.forEach((v) => filterLength.appendChild(new Option(v, v)));
+    widths.forEach((v) => filterWidth.appendChild(new Option(v, v)));
+    heights.forEach((v) => filterHeight.appendChild(new Option(v, v)));
+  }
+
+  function render(tab) {
+    currentTab = tab;
+    const { density, rows } = DATA[tab];
+
+    const lengthFilter = filterLength.value;
+    const widthFilter = filterWidth.value;
+    const heightFilter = filterHeight.value;
+
+    const filteredRows = rows.filter(([code]) => {
+      const dim = DIMENSIONS[code];
+      if (lengthFilter && String(dim.length) !== lengthFilter) return false;
+      if (widthFilter && String(dim.width) !== widthFilter) return false;
+      if (heightFilter && String(dim.height) !== heightFilter) return false;
+      return true;
+    });
+
+    if (filteredRows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" class="no-rows">Нет марок под заданные размеры</td></tr>';
+      densityNote.textContent = '';
+      return;
+    }
+
+    tbody.innerHTML = filteredRows
+      .map(([code, concreteClass, loopMarka, loopQty, concreteM3, steelKg, massT]) => {
+        const dim = DIMENSIONS[code];
+        return `
+          <tr>
+            <td class="marka">ФБС ${code}-${tab.toUpperCase()}</td>
+            <td>${dim.length}</td>
+            <td>${dim.width}</td>
+            <td>${dim.height}</td>
+            <td>${concreteClass}</td>
+            <td>${loopMarka}</td>
+            <td>${loopQty}</td>
+            <td>${concreteM3}</td>
+            <td>${steelKg}</td>
+            <td>${massT}</td>
+          </tr>
+        `;
+      })
+      .join('');
+
+    densityNote.textContent = `Значения массы приведены с учётом изготовления блоков из ${density}.`;
+  }
+
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      render(btn.dataset.tab);
+    });
+  });
+
+  [filterLength, filterWidth, filterHeight].forEach((sel) => {
+    sel.addEventListener('change', () => render(currentTab));
+  });
+
+  populateFilters();
+  render('t');
+
+})();
+</script>
+
+</body>
+</html>

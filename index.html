@@ -57,11 +57,48 @@
     font-size: 15px;
     font-weight: 700;
     color: #fff;
+    cursor: pointer;
+    user-select: none;
   }
+  .toc-section-title:hover { color: var(--accent); }
   .toc-section-title .num {
     color: var(--accent);
     font-family: var(--mono);
     min-width: 24px;
+  }
+
+  .chevron {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--muted);
+    transition: transform .15s;
+    transform: rotate(0deg);
+  }
+  .chevron.is-collapsed { transform: rotate(-90deg); }
+
+  .toc-group-title {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 4px 6px 30px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: var(--muted);
+    margin-top: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toc-group-title:hover { color: var(--accent); }
+  .toc-group-title .num {
+    font-family: var(--mono);
+    color: var(--accent);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .toc-group-title:first-of-type {
+    margin-top: 0;
   }
 
   .toc-item {
@@ -73,6 +110,9 @@
     color: var(--text);
     border-radius: 6px;
     transition: background .12s;
+  }
+  .toc-item.toc-item-nested {
+    padding-left: 58px;
   }
   .toc-item:hover { background: var(--surface); }
   .toc-item:hover .toc-title { color: var(--accent); }
@@ -177,6 +217,29 @@ const SECTIONS = [
         desc: "Расчёт c_min и c_nom по классу конструкции, условиям среды и допуску на отклонение.",
         ref: "СТ РК EN 1992-1-1 · §9.10",
         href: "zashitny-sloy.html"
+      },
+      {
+        group: "Сборные железобетонные конструкции",
+        items: [
+          {
+            title: "Прогоны и опорные плиты",
+            desc: "Сортамент железобетонных прогонов и опорных плит: размеры, класс бетона, расход материалов, масса, расчётная нагрузка.",
+            ref: "Серия 1.225-2, выпуск 12",
+            href: "progony-1225-2.html"
+          },
+          {
+            title: "Подбор перемычек",
+            desc: "Матричный подбор сборных перемычек по ширине проёма, толщине стены (кладке) и расчётной нагрузке.",
+            ref: "Серия 1.038.1-1",
+            href: "peremychki.html"
+          },
+          {
+            title: "Блоки ФБС",
+            desc: "Блоки бетонные для стен подвалов: размеры, класс бетона, монтажные петли, расход материалов, масса — по видам бетона (тяжёлый/лёгкий/силикатный).",
+            ref: "ГОСТ 13579-2018",
+            href: "fbs-13579-2018.html"
+          }
+        ]
       }
     ]
   },
@@ -225,22 +288,16 @@ const SECTIONS = [
         href: "peregorodka.html"
       },
       {
-        title: "Подбор перемычек",
-        desc: "Матричный подбор сборных перемычек по ширине проёма, толщине стены (кладке) и расчётной нагрузке.",
-        ref: "Серия 1.038.1-1",
-        href: "peremychki.html"
-      },
-      {
         title: "Подбор толщины утеплителя",
         desc: "Расчёт термического сопротивления ограждающей конструкции, проверка на конденсацию (включая профиль температуры в толще стены).",
         ref: "СН РК 2.04-07-2022",
         href: "podbor-uteplitelya.html"
       },
       {
-        title: "Прогоны и опорные плиты",
-        desc: "Сортамент железобетонных прогонов и опорных плит: размеры, класс бетона, расход материалов, масса, расчётная нагрузка.",
-        ref: "Серия 1.225-2, выпуск 12",
-        href: "progony-1225-2.html"
+        title: "Кирпич и камень керамические",
+        desc: "Конструктор условного обозначения, виды и размеры, марки прочности, классы плотности, расчётное сопротивление сжатию кладки.",
+        ref: "ГОСТ 530-2012",
+        href: "kirpich-530-2012.html"
       }
     ]
   },
@@ -263,35 +320,54 @@ const SECTIONS = [
   }
 ];
 
+/* ── Состояние "свёрнуто/развёрнуто" — только в памяти вкладки ── */
+const collapsed = new Set(); // хранит id свёрнутых разделов/подразделов
+
+function toggleCollapse(id) {
+  if (collapsed.has(id)) collapsed.delete(id);
+  else collapsed.add(id);
+  render(document.getElementById('search').value);
+}
+
+function chevron(id) {
+  return `<span class="chevron ${collapsed.has(id) ? 'is-collapsed' : ''}">▾</span>`;
+}
+
 function render(filter = "") {
   const container = document.getElementById('toc');
   container.innerHTML = "";
   const q = filter.trim().toLowerCase();
   let totalShown = 0;
 
+  // Проверка соответствия одного калькулятора поисковому запросу
+  const matches = (it) => !q ||
+    it.title.toLowerCase().includes(q) ||
+    it.desc.toLowerCase().includes(q) ||
+    it.ref.toLowerCase().includes(q);
+
   SECTIONS.forEach((section, sIdx) => {
     const sectionNum = sIdx + 1;
+    const sectionId = `s${sectionNum}`;
 
-    const filteredItems = section.items.filter(it =>
-      !q ||
-      it.title.toLowerCase().includes(q) ||
-      it.desc.toLowerCase().includes(q) ||
-      it.ref.toLowerCase().includes(q)
-    );
-    // Пустой раздел (пока без калькуляторов) скрываем только во время поиска —
-    // в обычном режиме содержания он остаётся виден с пометкой "пока пусто"
-    if (filteredItems.length === 0 && (q || section.items.length > 0)) return;
-    totalShown += filteredItems.length || 1;
+    // Собираем "плоский" список калькуляторов раздела (включая вложенные
+    // в группы) — чтобы проверить, есть ли вообще что показать при поиске
+    const flatItems = [];
+    section.items.forEach(it => it.group ? flatItems.push(...it.items) : flatItems.push(it));
+    const anyMatch = flatItems.some(matches);
+
+    if (!anyMatch && (q || flatItems.length > 0)) return;
+    totalShown += flatItems.filter(matches).length || 1;
 
     const sectionEl = document.createElement('div');
     sectionEl.className = 'toc-section';
 
     const sectionTitle = document.createElement('div');
     sectionTitle.className = 'toc-section-title';
-    sectionTitle.innerHTML = `<span class="num">${sectionNum}.</span><span>${section.title}</span>`;
+    sectionTitle.innerHTML = `${chevron(sectionId)}<span class="num">${sectionNum}.</span><span>${section.title}</span>`;
+    sectionTitle.addEventListener('click', () => toggleCollapse(sectionId));
     sectionEl.appendChild(sectionTitle);
 
-    if (section.items.length === 0) {
+    if (flatItems.length === 0) {
       const empty = document.createElement('div');
       empty.style.cssText = 'padding:4px 4px 4px 34px; color:var(--muted); font-size:12px; font-style:italic;';
       empty.textContent = 'Пока нет калькуляторов';
@@ -300,23 +376,44 @@ function render(filter = "") {
       return;
     }
 
-    filteredItems.forEach((it) => {
-      // Номер элемента считаем по его РЕАЛЬНОЙ позиции в исходном
-      // (нефильтрованном) массиве раздела — чтобы при поиске номера
-      // не "прыгали", а оставались как в полном содержании
-      const itemIdx = section.items.indexOf(it);
-      const itemNum = `${sectionNum}.${itemIdx + 1}`;
+    // Раздел свёрнут — показываем только заголовок раздела
+    if (collapsed.has(sectionId) && !q) {
+      container.appendChild(sectionEl);
+      return;
+    }
 
-      const a = document.createElement('a');
-      a.className = 'toc-item';
-      a.href = it.href;
-      a.innerHTML = `
-        <span class="num">${itemNum}</span>
-        <span class="toc-title">${it.title}</span>
-        <span class="dots"></span>
-        <span class="ref">${it.ref}</span>
-      `;
-      sectionEl.appendChild(a);
+    let topCounter = 0; // номер верхнеуровневого элемента/группы внутри раздела
+
+    section.items.forEach((entry) => {
+      if (entry.group) {
+        // ── Подраздел (группа) ──
+        const groupFiltered = entry.items.filter(matches);
+        if (groupFiltered.length === 0 && q) return;
+
+        topCounter++;
+        const groupNum = `${sectionNum}.${topCounter}`;
+        const groupId = `${sectionId}-g${topCounter}`;
+
+        const groupTitle = document.createElement('div');
+        groupTitle.className = 'toc-group-title';
+        groupTitle.innerHTML = `${chevron(groupId)}<span class="num">${groupNum}</span><span>${entry.group}</span>`;
+        groupTitle.addEventListener('click', () => toggleCollapse(groupId));
+        sectionEl.appendChild(groupTitle);
+
+        if (collapsed.has(groupId) && !q) return;
+
+        groupFiltered.forEach((it) => {
+          const itemIdx = entry.items.indexOf(it);
+          const itemNum = `${groupNum}.${itemIdx + 1}`;
+          sectionEl.appendChild(makeItemEl(it, itemNum, true));
+        });
+      } else {
+        // ── Обычный пункт раздела ──
+        if (!matches(entry)) return;
+        topCounter++;
+        const itemNum = `${sectionNum}.${topCounter}`;
+        sectionEl.appendChild(makeItemEl(entry, itemNum, false));
+      }
     });
 
     container.appendChild(sectionEl);
@@ -325,6 +422,19 @@ function render(filter = "") {
   if (totalShown === 0) {
     container.innerHTML = `<div class="no-results">Ничего не найдено по запросу «${filter}»</div>`;
   }
+}
+
+function makeItemEl(it, itemNum, nested) {
+  const a = document.createElement('a');
+  a.className = nested ? 'toc-item toc-item-nested' : 'toc-item';
+  a.href = it.href;
+  a.innerHTML = `
+    <span class="num">${itemNum}</span>
+    <span class="toc-title">${it.title}</span>
+    <span class="dots"></span>
+    <span class="ref">${it.ref}</span>
+  `;
+  return a;
 }
 
 document.getElementById('search').addEventListener('input', e => render(e.target.value));
