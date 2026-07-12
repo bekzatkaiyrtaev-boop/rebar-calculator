@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Подсчёт количества перемычек — Электронный справочник конструктора</title>
+
+<!-- ==================== ОФОРМЛЕНИЕ ==================== -->
+<style>
+:root {
+  --bg: #14171c;
+  --bg-elevated: #1c2028;
+  --bg-elevated-2: #232833;
+  --border: #2c313d;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa3b2;
+  --accent: #4c8dff;
+  --accent-hover: #6ba0ff;
+  --success-bg: #16261d;
+  --success-border: #2f5c3f;
+  --success-text: #7fd99a;
+  --fail-text: #ea8888;
+  --radius: 10px;
+  --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  line-height: 1.5;
+}
+
+.page { max-width: 1380px; margin: 0 auto; padding: 32px 20px 64px; }
+.page-header { margin-bottom: 24px; text-align: center; }
+.page-header h1 { font-size: 1.6rem; margin: 0; font-weight: 600; }
+
+.error-msg { color: var(--fail-text); font-size: 0.88rem; margin: 0 0 12px; }
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 28px 0 12px;
+  color: var(--text-primary);
+}
+
+.explication-title { text-align: center; }
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+table.vedomost {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 640px;
+  font-size: 0.88rem;
+}
+
+table.vedomost th, table.vedomost td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: center;
+  vertical-align: top;
+}
+
+table.vedomost thead th {
+  background: var(--bg-elevated-2);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+
+.in-wall-total.warning {
+  color: var(--fail-text);
+  text-decoration: underline wavy var(--fail-text);
+}
+
+td.col-position { width: 170px; text-align: center; vertical-align: top; }
+td.col-materials-cell { text-align: left; vertical-align: top; }
+td.col-remove { width: 40px; text-align: center; vertical-align: top; }
+
+.position-label {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-primary);
+  user-select: none;
+  display: block;
+  margin-bottom: 6px;
+}
+.position-label:hover { color: var(--accent); }
+
+.position-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.position-field {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.position-value {
+  color: var(--success-text);
+  cursor: pointer;
+}
+.position-value:hover { color: var(--accent); text-decoration: underline; }
+
+.materials-full-view {
+  padding: 4px 0;
+}
+
+.materials-summary {
+  color: var(--text-primary);
+  font-size: 0.88rem;
+}
+
+.btn-remove-row {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+.btn-remove-row:hover { border-color: var(--fail-text); color: var(--fail-text); background: rgba(234, 136, 136, 0.1); }
+
+.btn-toggle-row {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  margin-bottom: 6px;
+  display: block;
+}
+.btn-toggle-row:hover { border-color: var(--accent); color: var(--accent); }
+
+/* --- Позиции материала внутри строки проёма --- */
+/* Все позиции одного проёма выглядят как одна ячейка с несколькими строками:
+   .materials-list — общая рамка, .material-item — просто ряды внутри неё (display: contents),
+   поэтому все ряды выравниваются по одним и тем же колонкам общего грида. */
+
+.materials-list {
+  display: grid;
+  grid-template-columns: 116px 76px 76px 1fr 76px 76px 26px;
+  gap: 4px 8px;
+  align-items: center;
+}
+
+.material-item { display: contents; }
+
+.material-item > * {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.material-item:not(:last-child) > * {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.materials-list select {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  padding: 3px 16px 3px 2px;
+  color: var(--success-text);
+  font-size: 0.82rem;
+  font-family: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%), linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+  background-position: right 6px top 55%, right 2px top 55%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* Нативный выпадающий список браузер рисует сам (обычно светлый фон) —
+   явно задаём тёмный текст для option, иначе может быть белый на белом */
+.materials-list select option {
+  color: #111;
+  background: #fff;
+}
+
+.materials-list input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  padding: 3px 2px;
+  color: var(--success-text);
+  font-size: 0.82rem;
+  font-family: inherit;
+}
+.materials-list select:hover,
+.materials-list input:hover { border-bottom-color: var(--border); }
+.materials-list select:focus,
+.materials-list input:focus { outline: none; border-bottom-color: var(--accent); }
+.materials-list input.mat-custom-mass {
+  text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.materials-list input.mat-custom-mass::-webkit-outer-spin-button,
+.materials-list input.mat-custom-mass::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.materials-list input.mat-width-display { color: var(--text-secondary); cursor: default; }
+
+.cell-empty { display: block; }
+
+.marka-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.qty-inline {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.qty-inline input.mat-qty {
+  width: 40px;
+  padding: 2px 4px;
+  text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.qty-inline input.mat-qty::-webkit-outer-spin-button,
+.qty-inline input.mat-qty::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.btn-remove-item {
+  background: transparent;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+.btn-remove-item:hover { border-color: var(--fail-text); color: var(--fail-text); }
+
+.btn-add-material {
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+  align-self: flex-start;
+}
+.btn-add-material:hover { border-color: var(--accent); }
+
+.no-options-hint { color: var(--fail-text); font-size: 0.78rem; margin: 0; }
+
+.toolbar { display: flex; gap: 10px; margin-top: 14px; }
+
+.btn-primary, .btn-secondary {
+  border: none;
+  border-radius: 6px;
+  padding: 9px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-primary { background: var(--accent); color: #0b0e13; }
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-secondary { background: var(--bg-elevated-2); color: var(--text-primary); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent); }
+
+.btn-file-label { display: inline-flex; align-items: center; cursor: pointer; }
+
+table.explication {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  font-size: 0.9rem;
+}
+
+table.explication th, table.explication td {
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+table.explication thead th {
+  background: var(--success-bg);
+  color: var(--success-text);
+  font-weight: 600;
+  text-align: center;
+  padding: 18px 12px;
+}
+
+table.explication tbody tr:nth-child(even) { background: var(--bg-elevated-2); }
+
+table.explication td.num { text-align: center; }
+table.explication td.src-custom { color: var(--text-secondary); font-size: 0.8rem; }
+
+.explication-empty {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 16px;
+  text-align: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+tfoot.explication-total td {
+  font-weight: 700;
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- ==================== ИНТЕРФЕЙС ==================== -->
+<div class="page">
+
+  <div id="site-header"></div>
+
+  <header class="page-header">
+    <h1>Подсчёт количества перемычек</h1>
+  </header>
+
+  <p id="load-error" class="error-msg" hidden>Не удалось загрузить данные серии 1.038.1-1. Проверьте соединение.</p>
+
+  <div class="section-title" style="text-align:center">Ведомость перемычек</div>
+
+  <div class="table-wrap">
+    <table class="vedomost">
+      <thead>
+        <tr>
+          <th style="width:110px">Марка</th>
+          <th>Материалы на 1 проём</th>
+          <th style="width:40px"></th>
+        </tr>
+      </thead>
+      <tbody id="vedomost-body"></tbody>
+    </table>
+  </div>
+
+  <div class="toolbar">
+    <button id="btn-add-row" class="btn-secondary">+ Добавить проём</button>
+    <button id="btn-export-excel" class="btn-secondary">⭳ Скачать в Excel</button>
+    <label class="btn-secondary btn-file-label">
+      ⭱ Загрузить из Excel
+      <input type="file" id="input-import-excel" accept=".xlsx,.xls" hidden>
+    </label>
+  </div>
+  <p id="import-status" class="error-msg" hidden></p>
+
+  <div class="section-title explication-title">Экспликация перемычек</div>
+
+  <div id="explication-wrap"></div>
+
+</div>
+
+<div id="site-footer"></div>
+
+<!-- ==================== ЛОГИКА ==================== -->
+<script>
+(function () {
+
+  // --- Константы ---
+  const API_URL = 'https://rebar-backend-henna.vercel.app/api/sheet-data';
+  const APP_SECRET = 'spravochnik-km-2026-x7k9';
+  const CATALOG_WIDTHS = [120, 250, 380, 510]; // ширины, встречающиеся в серии 1.038.1-1
+  const VYPUSK_ORDER = [
+    'Выпуск_1', 'Выпуск_2', 'Выпуск_3', 'Выпуск_4', 'Выпуск_5',
+    'Выпуск_6', 'Выпуск_7', 'Выпуск_8', 'Выпуск_9', 'Выпуск_10', 'Выпуск_11',
+  ];
+
+  // Прогоны и опорные плиты серии 1.225-2, выпуск 12 — та же справочная страница,
+  // данные зашиты напрямую (масса переведена из тонн в кг, нагрузка — из тс/м в кгс/м)
+  const PROGONY = [
+    { marka: 'ПРГ 60.2.5-4 АIII',   length_mm: 5980, width_mm: 200, bearing_mm: 200, load_kgf_m: 4000, massKg: 1500 },
+    { marka: 'ПРГ 60.2.5-4 АIII-1', length_mm: 5980, width_mm: 200, bearing_mm: 200, load_kgf_m: 4000, massKg: 1500 },
+    { marka: 'ПРГ 36.1.4-4 АIII',   length_mm: 3580, width_mm: 120, bearing_mm: 180, load_kgf_m: 4000, massKg: 430 },
+    { marka: 'ПРГ 32.1.4-4 АIII',   length_mm: 3180, width_mm: 120, bearing_mm: 180, load_kgf_m: 4000, massKg: 380 },
+    { marka: 'ПРГ 28.1.4-4 АIII',   length_mm: 2780, width_mm: 120, bearing_mm: 180, load_kgf_m: 4000, massKg: 250 },
+    { marka: 'ПРГ 60.2.5-4 АtV',    length_mm: 5980, width_mm: 120, bearing_mm: 200, load_kgf_m: 4000, massKg: 1500 },
+    { marka: 'ПРГ 36.1.4-4 АIV',    length_mm: 3580, width_mm: 120, bearing_mm: 180, load_kgf_m: 4000, massKg: 430 },
+    { marka: 'ПРГ 32.1.4-4 АIV',    length_mm: 3180, width_mm: 120, bearing_mm: 180, load_kgf_m: 4000, massKg: 380 },
+    { marka: 'ПРГ 28.1.3-4 АIV',    length_mm: 2780, width_mm: 120, bearing_mm: 180, load_kgf_m: 4000, massKg: 250 },
+  ];
+
+  const OPORNYE_PLITY = [
+    { marka: 'ОП 4.4 - АIII', massKg: 50 },
+    { marka: 'ОП 5.2 - АIII', massKg: 50 },
+    { marka: 'ОП 5.4 - АIII', massKg: 70 },
+    { marka: 'ОП 6.2 - АIII', massKg: 90 },
+    { marka: 'ОП 6.4 - АIII', massKg: 140 },
+  ];
+
+  let ALL_RECORDS = [];
+  let ROWS = []; // строки-проёмы: { id, position, openingWidth, wallThickness (инф.), quantity, items, collapsed }
+  let rowIdCounter = 1;
+  let itemIdCounter = 1;
+
+  // item (позиция материала на 1 проём):
+  // catalog: { id, mode:'catalog', itemWidth, selectedKey, itemQty }
+  // custom:  { id, mode:'custom', customName, customMass, itemQty }
+
+  // --- Вспомогательные функции ---
+
+  function parseRuNumber(value) {
+    if (value === undefined || value === null) return null;
+    const str = String(value).trim();
+    if (str === '' || str === '-' || str === '—') return null;
+    const normalized = str.replace(/\s/g, '').replace(',', '.');
+    const num = Number(normalized);
+    return Number.isFinite(num) ? num : null;
+  }
+
+  async function loadPeremychkiData() {
+    const url = `${API_URL}?book=climat&sheet=peremychki_1038`;
+    const response = await fetch(url, { headers: { 'x-app-key': APP_SECRET } });
+    if (!response.ok) throw new Error(`Ошибка загрузки данных: ${response.status}`);
+
+    const json = await response.json();
+    const rawRecords = json.records || [];
+
+    ALL_RECORDS = rawRecords
+      .map((r) => ({
+        vypusk: r.vypusk || '',
+        marka: r.marka || '',
+        length_mm: parseRuNumber(r.length_mm),
+        width_mm: parseRuNumber(r.width_mm),
+        height_mm: parseRuNumber(r.height_mm),
+        mass_kg: parseRuNumber(r.mass_kg),
+        min_bearing_mm: parseRuNumber(r.min_bearing_mm),
+        load_calc_total_kgf_m: parseRuNumber(r.load_calc_total_kgf_m),
+      }))
+      .filter((r) => r.marka && r.length_mm && r.width_mm);
+  }
+
+  // Варианты по всем выпускам для конкретной ширины и нагрузки позиции (не всей стены!).
+  // На каждую серию (выпуск) — максимум 2 варианта наименьшей длины, удовлетворяющих требованиям.
+  // Ширина перемычки не может быть больше толщины стены (одна деталь физически не влезет).
+  // Если толщина стены не задана — ограничений нет.
+  function getAvailableCatalogWidths(row) {
+    if (!row.wallThickness) return CATALOG_WIDTHS;
+    const filtered = CATALOG_WIDTHS.filter((w) => w <= row.wallThickness);
+    return filtered.length > 0 ? filtered : CATALOG_WIDTHS;
+  }
+
+  function buildOptionsForItemWidth(row, itemWidth, itemLoad) {
+    if (!row.openingWidth || !itemWidth) return [];
+    const options = [];
+    VYPUSK_ORDER.forEach((vypusk) => {
+      const candidates = ALL_RECORDS.filter((r) => r.vypusk === vypusk && r.width_mm === itemWidth);
+      let fitting = candidates.filter(
+        (r) => r.min_bearing_mm !== null && r.length_mm >= row.openingWidth + 2 * r.min_bearing_mm
+      );
+      if (itemLoad > 0) {
+        fitting = fitting.filter((r) => r.load_calc_total_kgf_m !== null && r.load_calc_total_kgf_m >= itemLoad);
+      }
+      fitting.sort((a, b) => a.length_mm - b.length_mm);
+      fitting.slice(0, 2).forEach((r) => options.push({ key: vypusk + '|' + r.marka, vypusk, ...r }));
+    });
+    return options;
+  }
+
+  // Подбор подходящих прогонов: длина ≥ пролёт + 2×опирание, нагрузка марки ≥ заданной у позиции.
+  function buildProgonyOptions(row, itemLoad) {
+    if (!row.openingWidth) return [];
+    let candidates = PROGONY.filter((p) => p.length_mm >= row.openingWidth + 2 * p.bearing_mm);
+    if (itemLoad > 0) {
+      candidates = candidates.filter((p) => p.load_kgf_m >= itemLoad);
+    }
+    candidates.sort((a, b) => a.length_mm - b.length_mm);
+    return candidates;
+  }
+
+  // --- Работа с DOM ---
+
+  const vedomostBody = document.getElementById('vedomost-body');
+  const explicationWrap = document.getElementById('explication-wrap');
+  const loadError = document.getElementById('load-error');
+
+  function createRow() {
+    const row = {
+      id: rowIdCounter++,
+      position: 'ПР' + (ROWS.length + 1),
+      openingWidth: 910,
+      wallThickness: 120, // информационное поле — суммарная толщина стены, не привязано к списку
+      quantity: 1,
+      items: [],
+      collapsed: true,
+    };
+    // По умолчанию сразу добавляем одну позицию — перемычку шириной 120 мм
+    row.items.push(createItem('catalog'));
+    ROWS.push(row);
+    return row;
+  }
+
+  function createItem(mode) {
+    const item = {
+      id: itemIdCounter++,
+      mode: mode, // 'catalog' | 'progony' | 'oplity' | 'custom'
+      itemWidth: CATALOG_WIDTHS[0],
+      load: 0,
+      selectedKey: null,
+      customName: '',
+      customMass: null,
+      customWidth: null,
+      itemQty: 1,
+    };
+    if (mode === 'progony') item.selectedKey = null; // подставится при рендере, когда известен проём строки
+    if (mode === 'oplity') {
+      if (OPORNYE_PLITY.length > 0) item.selectedKey = OPORNYE_PLITY[0].marka;
+      item.itemQty = 2; // опорные плиты всегда ставятся парой
+    }
+    return item;
+  }
+
+  // Краткое имя позиции материала для сводки в свёрнутом виде (без резолва — просто то, что выбрано)
+  function getItemSummaryName(row, item) {
+    if (item.mode === 'catalog') {
+      const options = buildOptionsForItemWidth(row, item.itemWidth, item.load);
+      const option = options.find((o) => o.key === item.selectedKey);
+      return option ? option.marka : null;
+    }
+    if (item.mode === 'progony') {
+      const options = buildProgonyOptions(row, item.load);
+      const p = options.find((x) => x.marka === item.selectedKey);
+      return p ? p.marka : null;
+    }
+    if (item.mode === 'oplity') {
+      const p = OPORNYE_PLITY.find((x) => x.marka === item.selectedKey);
+      return p ? p.marka : null;
+    }
+    const name = (item.customName || '').trim();
+    return name || null;
+  }
+
+  function buildMaterialsSummaryHtml(row) {
+    const lines = row.items
+      .map((item) => {
+        const name = getItemSummaryName(row, item);
+        if (!name) return null;
+        const text = item.itemQty > 1 ? `${name} -${item.itemQty} шт` : name;
+        return { text, isOplity: item.mode === 'oplity' };
+      })
+      .filter(Boolean)
+      // Опорные подушки (плиты) — всегда в конце списка
+      .sort((a, b) => (a.isOplity === b.isOplity ? 0 : a.isOplity ? 1 : -1));
+
+    if (lines.length === 0) return '<span class="no-options-hint">материалы не выбраны</span>';
+    return lines.map((l) => `<div>${l.text}</div>`).join('');
+  }
+
+  function renderRow(row) {
+    const mainTr = document.createElement('tr');
+    mainTr.dataset.rowId = row.id;
+    mainTr.innerHTML = `
+      <td class="col-position">
+        <span class="position-label" title="Клик — переименовать">${row.position}</span>
+        <div class="position-fields">
+          <div class="position-field"><span class="in-opening position-value" title="Клик — изменить">${row.openingWidth ?? '—'}</span> мм</div>
+          <div class="position-field"><span class="in-wall-total position-value" title="Клик — изменить">${row.wallThickness ?? '—'}</span> мм</div>
+          <div class="position-field"><span class="in-qty position-value" title="Клик — изменить">${row.quantity}</span> шт</div>
+        </div>
+      </td>
+      <td class="col-materials-cell">
+        <div class="materials-summary-view"></div>
+        <div class="materials-full-view" hidden>
+          <div class="materials-list"></div>
+          <button class="btn-add-material" style="margin-top:8px">+ материал</button>
+        </div>
+      </td>
+      <td class="col-remove">
+        <button class="btn-toggle-row" title="Показать/скрыть материалы">▾</button>
+        <button class="btn-remove-row" title="Удалить проём">×</button>
+      </td>
+    `;
+
+    vedomostBody.appendChild(mainTr);
+
+    const materialsCell = mainTr.querySelector('.col-materials-cell');
+    const summaryView = mainTr.querySelector('.materials-summary-view');
+    const fullView = mainTr.querySelector('.materials-full-view');
+    const positionLabel = mainTr.querySelector('.position-label');
+    const toggleBtn = mainTr.querySelector('.btn-toggle-row');
+
+    function updateSummaryView() {
+      summaryView.innerHTML = `<div class="materials-summary">${buildMaterialsSummaryHtml(row)}</div>`;
+    }
+
+    function setCollapsed(collapsed) {
+      row.collapsed = collapsed;
+      summaryView.hidden = !collapsed;
+      fullView.hidden = collapsed;
+      toggleBtn.textContent = collapsed ? '▸' : '▾';
+      if (collapsed) updateSummaryView();
+    }
+
+    positionLabel.addEventListener('click', () => {
+      const next = window.prompt('Марка проёма:', row.position);
+      if (next !== null && next.trim()) {
+        row.position = next.trim();
+        positionLabel.textContent = row.position;
+        renderExplication();
+      }
+    });
+
+    toggleBtn.addEventListener('click', () => setCollapsed(!row.collapsed));
+
+    mainTr.querySelector('.btn-remove-row').addEventListener('click', () => {
+      ROWS = ROWS.filter((r) => r.id !== row.id);
+      mainTr.remove();
+      renderExplication();
+    });
+
+    const openingEl = mainTr.querySelector('.in-opening');
+    openingEl.addEventListener('click', () => {
+      const next = window.prompt('Ширина проёма, мм:', row.openingWidth ?? '');
+      if (next === null) return;
+      row.openingWidth = Number(next) || null;
+      openingEl.textContent = row.openingWidth ?? '—';
+      renderMaterials(row, materialsCell);
+      if (row.collapsed) updateSummaryView();
+    });
+
+    const wallEl = mainTr.querySelector('.in-wall-total');
+    wallEl.addEventListener('click', () => {
+      const next = window.prompt('Толщина стены, мм:', row.wallThickness ?? '');
+      if (next === null) return;
+      row.wallThickness = Number(next) || null;
+      wallEl.textContent = row.wallThickness ?? '—';
+      renderMaterials(row, materialsCell);
+      if (row.collapsed) updateSummaryView();
+    });
+
+    const qtyEl = mainTr.querySelector('.in-qty');
+    qtyEl.addEventListener('click', () => {
+      const next = window.prompt('Количество проёмов, шт:', row.quantity);
+      if (next === null) return;
+      row.quantity = Number(next) || 0;
+      qtyEl.textContent = row.quantity;
+      renderExplication();
+      if (row.collapsed) updateSummaryView();
+    });
+
+    materialsCell.querySelector('.btn-add-material').addEventListener('click', () => {
+      const item = createItem('catalog');
+      const options = buildOptionsForItemWidth(row, item.itemWidth, item.load);
+      if (options.length > 0) item.selectedKey = options[0].key;
+      row.items.push(item);
+      renderMaterials(row, materialsCell);
+      renderExplication();
+    });
+
+    renderMaterials(row, materialsCell);
+    setCollapsed(row.collapsed);
+
+    return mainTr;
+  }
+
+  // Точечно обновляет select с маркой перемычки, не трогая остальные поля позиции —
+  // иначе при вводе нагрузки поле теряло бы фокус на каждое нажатие клавиши.
+  function refreshCatalogSelect(itemEl, options, item) {
+    const select = itemEl.querySelector('.mat-catalog');
+    if (!select) return;
+    if (options.length === 0) {
+      select.outerHTML = '<select class="mat-catalog" disabled><option>нет подходящей марки</option></select>';
+      return;
+    }
+    select.disabled = false;
+    select.innerHTML = options
+      .map((opt) => `<option value="${opt.key}" ${opt.key === item.selectedKey ? 'selected' : ''}>${opt.vypusk.replace('_', ' ')}: ${opt.marka}</option>`)
+      .join('');
+  }
+
+  function refreshProgonySelect(itemEl, options, item) {
+    const select = itemEl.querySelector('.mat-simple');
+    if (!select) return;
+    if (options.length === 0) {
+      select.outerHTML = '<select class="mat-simple" disabled><option>нет подходящего прогона</option></select>';
+      return;
+    }
+    select.disabled = false;
+    select.innerHTML = options
+      .map((p) => `<option value="${p.marka}" ${p.marka === item.selectedKey ? 'selected' : ''}>${p.marka}</option>`)
+      .join('');
+    const widthDisplay = itemEl.querySelector('.mat-width-display');
+    if (widthDisplay) {
+      const selected = options.find((p) => p.marka === item.selectedKey);
+      widthDisplay.value = selected ? selected.width_mm + ' мм' : '—';
+    }
+  }
+
+  function renderMaterials(row, tr) {
+    const list = tr.querySelector('.materials-list');
+    list.innerHTML = '';
+
+    if (row.items.length === 0) {
+      const hint = document.createElement('p');
+      hint.className = 'no-options-hint';
+      hint.textContent = 'Нажмите «+ материал» — добавьте одну или несколько позиций, набирающих нужную толщину стены';
+      list.appendChild(hint);
+    }
+
+    row.items.forEach((item) => {
+      const itemEl = document.createElement('div');
+      itemEl.className = 'material-item';
+
+      const modeSelectHtml = `
+        <select class="mat-mode">
+          <option value="catalog" ${item.mode === 'catalog' ? 'selected' : ''}>Перемычка</option>
+          <option value="progony" ${item.mode === 'progony' ? 'selected' : ''}>Прогон</option>
+          <option value="oplity" ${item.mode === 'oplity' ? 'selected' : ''}>Опорная плита</option>
+          <option value="custom" ${item.mode === 'custom' ? 'selected' : ''}>Вручную</option>
+        </select>
+      `;
+
+      const qtyReadonly = item.mode === 'oplity';
+      const qtyRowHtml = `<span class="qty-inline">(<input type="number" class="mat-qty" min="1" step="1" value="${item.itemQty}"${qtyReadonly ? ' readonly title="Опорные плиты всегда ставятся парой"' : ''}>&nbsp;шт.)</span>`;
+
+      let widthHtml = '<span class="cell-empty"></span>';
+      let loadHtml = '<span class="cell-empty"></span>';
+      let markaHtml = '';
+      let massHtml = '<span class="cell-empty"></span>';
+
+      if (item.mode === 'catalog') {
+        const availableWidths = getAvailableCatalogWidths(row);
+        if (!availableWidths.includes(item.itemWidth)) {
+          item.itemWidth = availableWidths[availableWidths.length - 1];
+        }
+        widthHtml = `
+          <select class="mat-width">
+            ${availableWidths.map((w) => `<option value="${w}" ${w === item.itemWidth ? 'selected' : ''}>${w} мм</option>`).join('')}
+          </select>
+        `;
+        loadHtml = `<input type="number" class="mat-load" min="0" step="10" value="${item.load}" title="Расчётная нагрузка, кгс/м (0 — не учитывать)">`;
+
+        const options = buildOptionsForItemWidth(row, item.itemWidth, item.load);
+        if (!options.some((o) => o.key === item.selectedKey)) {
+          item.selectedKey = options.length > 0 ? options[0].key : null;
+        }
+        const emptyMsg = !row.openingWidth ? 'укажите ширину проёма' : 'нет подходящей марки';
+        markaHtml = options.length === 0
+          ? `<select class="mat-catalog" disabled><option>${emptyMsg}</option></select>`
+          : `<select class="mat-catalog">
+              ${options.map((opt) => `<option value="${opt.key}" ${opt.key === item.selectedKey ? 'selected' : ''}>${opt.vypusk.replace('_', ' ')}: ${opt.marka}</option>`).join('')}
+            </select>`;
+      } else if (item.mode === 'progony') {
+        const progonyOptions = buildProgonyOptions(row, item.load);
+        if (!progonyOptions.some((p) => p.marka === item.selectedKey)) {
+          item.selectedKey = progonyOptions.length > 0 ? progonyOptions[0].marka : null;
+        }
+        const selectedProgony = progonyOptions.find((p) => p.marka === item.selectedKey);
+        widthHtml = `<input type="text" class="mat-width-display" value="${selectedProgony ? selectedProgony.width_mm + ' мм' : '—'}" readonly title="Ширина берётся из выбранной марки прогона">`;
+        loadHtml = `<input type="number" class="mat-load" min="0" step="10" value="${item.load}" title="Расчётная нагрузка, кгс/м (0 — не учитывать)">`;
+        const emptyMsg = !row.openingWidth ? 'укажите ширину проёма' : 'нет подходящего прогона';
+        markaHtml = progonyOptions.length === 0
+          ? `<select class="mat-simple" disabled><option>${emptyMsg}</option></select>`
+          : `<select class="mat-simple">
+              ${progonyOptions.map((p) => `<option value="${p.marka}" ${p.marka === item.selectedKey ? 'selected' : ''}>${p.marka}</option>`).join('')}
+            </select>`;
+      } else if (item.mode === 'oplity') {
+        markaHtml = `
+          <select class="mat-simple">
+            ${OPORNYE_PLITY.map((p) => `<option value="${p.marka}" ${p.marka === item.selectedKey ? 'selected' : ''}>${p.marka}</option>`).join('')}
+          </select>
+        `;
+      } else {
+        widthHtml = `<input type="number" class="mat-custom-width" min="0" step="10" placeholder="ширина, мм" value="${item.customWidth ?? ''}" title="Только для сравнения с толщиной стены">`;
+        markaHtml = `<input type="text" class="mat-custom-name" placeholder="например, Уголок 100×100×8" value="${item.customName}">`;
+        massHtml = `<input type="number" class="mat-custom-mass" placeholder="масса, кг" step="0.1" value="${item.customMass ?? ''}">`;
+      }
+
+      itemEl.innerHTML = `
+        ${modeSelectHtml}
+        ${widthHtml}
+        ${loadHtml}
+        <div class="marka-wrap">${markaHtml}</div>
+        ${massHtml}
+        ${qtyRowHtml}
+        <button class="btn-remove-item" title="Удалить позицию">×</button>
+      `;
+
+      list.appendChild(itemEl);
+
+      itemEl.querySelector('.mat-mode').addEventListener('change', (e) => {
+        item.mode = e.target.value;
+        if (item.mode === 'catalog') {
+          const options = buildOptionsForItemWidth(row, item.itemWidth, item.load);
+          item.selectedKey = options.length > 0 ? options[0].key : null;
+        } else if (item.mode === 'progony') {
+          item.selectedKey = null;
+        } else if (item.mode === 'oplity') {
+          item.selectedKey = OPORNYE_PLITY.length > 0 ? OPORNYE_PLITY[0].marka : null;
+          item.itemQty = 2;
+        }
+        renderMaterials(row, tr);
+        renderExplication();
+      });
+
+      if (item.mode === 'catalog') {
+        const widthSelect = itemEl.querySelector('.mat-width');
+        widthSelect.addEventListener('change', (e) => {
+          item.itemWidth = Number(e.target.value);
+          const options = buildOptionsForItemWidth(row, item.itemWidth, item.load);
+          item.selectedKey = options.length > 0 ? options[0].key : null;
+          renderMaterials(row, tr);
+          renderExplication();
+        });
+
+        itemEl.querySelector('.mat-load').addEventListener('input', (e) => {
+          item.load = Number(e.target.value) || 0;
+          const options = buildOptionsForItemWidth(row, item.itemWidth, item.load);
+          if (!options.some((o) => o.key === item.selectedKey)) {
+            item.selectedKey = options.length > 0 ? options[0].key : null;
+          }
+          refreshCatalogSelect(itemEl, options, item);
+          renderExplication();
+        });
+
+        const catalogSelect = itemEl.querySelector('.mat-catalog');
+        if (catalogSelect && !catalogSelect.disabled) {
+          catalogSelect.addEventListener('change', (e) => {
+            item.selectedKey = e.target.value;
+            renderExplication();
+          });
+        }
+      } else if (item.mode === 'progony') {
+        itemEl.querySelector('.mat-load').addEventListener('input', (e) => {
+          item.load = Number(e.target.value) || 0;
+          const options = buildProgonyOptions(row, item.load);
+          if (!options.some((p) => p.marka === item.selectedKey)) {
+            item.selectedKey = options.length > 0 ? options[0].marka : null;
+          }
+          refreshProgonySelect(itemEl, options, item);
+          renderExplication();
+        });
+        itemEl.querySelector('.mat-simple').addEventListener('change', (e) => {
+          item.selectedKey = e.target.value;
+          renderMaterials(row, tr);
+          renderExplication();
+        });
+      } else if (item.mode === 'oplity') {
+        itemEl.querySelector('.mat-simple').addEventListener('change', (e) => {
+          item.selectedKey = e.target.value;
+          renderExplication();
+        });
+      } else {
+        itemEl.querySelector('.mat-custom-width').addEventListener('input', (e) => {
+          item.customWidth = e.target.value === '' ? null : Number(e.target.value);
+          updateWallWarning(row, tr);
+        });
+        itemEl.querySelector('.mat-custom-name').addEventListener('input', (e) => {
+          item.customName = e.target.value;
+          renderExplication();
+        });
+        itemEl.querySelector('.mat-custom-mass').addEventListener('input', (e) => {
+          item.customMass = e.target.value === '' ? null : Number(e.target.value);
+          renderExplication();
+        });
+      }
+
+      itemEl.querySelector('.mat-qty').addEventListener('input', (e) => {
+        item.itemQty = Number(e.target.value) || 0;
+        updateWallWarning(row, tr);
+        renderExplication();
+      });
+
+      itemEl.querySelector('.btn-remove-item').addEventListener('click', () => {
+        row.items = row.items.filter((it) => it.id !== item.id);
+        renderMaterials(row, tr);
+        renderExplication();
+      });
+    });
+
+    updateWallWarning(row, tr);
+  }
+
+  // Сравнивает толщину стены с суммой ширин перемычек и подобранных прогонов.
+  // Только предупреждение (подсветка поля красным) — расчёт при этом не блокируется.
+  function updateWallWarning(row, tr) {
+    const mainTr = vedomostBody.querySelector(`tr[data-row-id="${row.id}"]`);
+    const wallInput = mainTr ? mainTr.querySelector('.in-wall-total') : null;
+    if (!wallInput) return;
+    if (!row.wallThickness) {
+      wallInput.classList.remove('warning');
+      return;
+    }
+
+    const widthSum = row.items.reduce((sum, item) => {
+      const qty = item.itemQty || 0;
+      if (item.mode === 'catalog') return sum + (item.itemWidth || 0) * qty;
+      if (item.mode === 'progony') {
+        const options = buildProgonyOptions(row, item.load);
+        const p = options.find((x) => x.marka === item.selectedKey);
+        return sum + (p ? p.width_mm : 0) * qty;
+      }
+      if (item.mode === 'custom') return sum + (item.customWidth || 0) * qty;
+      return sum; // опорные плиты в сумму ширин не входят
+    }, 0);
+
+    wallInput.classList.toggle('warning', row.wallThickness < widthSum);
+  }
+
+  function addRow() {
+    const row = createRow();
+    renderRow(row);
+  }
+
+  // --- Групповая экспликация ---
+
+  function computeExplicationList() {
+    const groups = {}; // ключ -> { design, name, mass_kg, qty, isCustom }
+
+    ROWS.forEach((row) => {
+      if (!row.quantity) return;
+
+      row.items.forEach((item) => {
+        let name, massKg, design;
+
+        if (item.mode === 'catalog') {
+          const options = buildOptionsForItemWidth(row, item.itemWidth, item.load);
+          const option = options.find((o) => o.key === item.selectedKey);
+          if (!option) return;
+          name = option.marka;
+          massKg = option.mass_kg;
+          const vypuskNum = option.vypusk.replace('Выпуск_', '');
+          design = `Серия 1.038.1-1 Вып.${vypuskNum}`;
+        } else if (item.mode === 'progony') {
+          const options = buildProgonyOptions(row, item.load);
+          const p = options.find((x) => x.marka === item.selectedKey);
+          if (!p) return;
+          name = p.marka;
+          massKg = p.massKg;
+          design = 'Серия 1.225-2 Вып.12';
+        } else if (item.mode === 'oplity') {
+          const p = OPORNYE_PLITY.find((x) => x.marka === item.selectedKey);
+          if (!p) return;
+          name = p.marka;
+          massKg = p.massKg;
+          design = 'Серия 1.225-2 Вып.12';
+        } else {
+          name = (item.customName || '').trim();
+          if (!name) return;
+          massKg = item.customMass;
+          design = '';
+        }
+
+        const key = item.mode + ':' + design + ':' + name;
+        if (!groups[key]) {
+          groups[key] = { design, name, mass_kg: massKg, qty: 0, isCustom: item.mode === 'custom' };
+        }
+        groups[key].qty += item.itemQty * row.quantity;
+      });
+    });
+
+    // Порядок как в исходной ведомости: перемычки/прогоны/плиты по алфавиту, ручные позиции — в конце
+    return Object.values(groups).sort((a, b) => {
+      if (a.isCustom !== b.isCustom) return a.isCustom ? 1 : -1;
+      return a.name.localeCompare(b.name, 'ru');
+    });
+  }
+
+  function renderExplication() {
+    const list = computeExplicationList();
+
+    if (list.length === 0) {
+      explicationWrap.innerHTML = '<div class="explication-empty">Заполните ведомость выше — экспликация соберётся автоматически</div>';
+      return;
+    }
+
+    const rowsHtml = list
+      .map((g, i) => `
+        <tr>
+          <td class="num">${i + 1}</td>
+          <td>${g.design || ''}</td>
+          <td>${g.name}</td>
+          <td class="num">${g.qty}</td>
+          <td class="num">${g.mass_kg !== null && g.mass_kg !== undefined ? g.mass_kg : ''}</td>
+          <td></td>
+        </tr>
+      `)
+      .join('');
+
+    explicationWrap.innerHTML = `
+      <table class="explication">
+        <colgroup>
+          <col style="width:8.11%">
+          <col style="width:32.43%">
+          <col style="width:35.14%">
+          <col style="width:5.41%">
+          <col style="width:8.11%">
+          <col style="width:10.81%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="num">Поз.</th>
+            <th>Обозначение</th>
+            <th>Наименование</th>
+            <th class="num">Кол.</th>
+            <th class="num">Масса, ед., кг</th>
+            <th>Примечание</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    `;
+  }
+
+  document.getElementById('btn-add-row').addEventListener('click', addRow);
+
+  // --- Инициализация ---
+
+  // --- Экспорт / импорт в Excel ---
+  // Лист "Данные" — техническая копия ROWS/items построчно, по ней восстанавливается ведомость при загрузке.
+  // Лист "Экспликация" — человекочитаемая сводка, как в таблице на странице.
+
+  function exportToExcel() {
+    const dataRows = [];
+    ROWS.forEach((row) => {
+      if (row.items.length === 0) {
+        dataRows.push({
+          rowId: row.id, position: row.position, openingWidth: row.openingWidth ?? '', wallThickness: row.wallThickness ?? '', quantity: row.quantity,
+          itemId: '', mode: '', itemWidth: '', load: '', selectedKey: '', customName: '', customMass: '', customWidth: '', itemQty: '',
+        });
+        return;
+      }
+      row.items.forEach((item) => {
+        dataRows.push({
+          rowId: row.id, position: row.position, openingWidth: row.openingWidth ?? '', wallThickness: row.wallThickness ?? '', quantity: row.quantity,
+          itemId: item.id, mode: item.mode, itemWidth: item.itemWidth ?? '', load: item.load ?? '', selectedKey: item.selectedKey ?? '',
+          customName: item.customName ?? '', customMass: item.customMass ?? '', customWidth: item.customWidth ?? '', itemQty: item.itemQty,
+        });
+      });
+    });
+
+    const explicationList = computeExplicationList();
+    const explicationRows = explicationList.map((g, i) => ({
+      'Поз.': i + 1,
+      'Обозначение': g.design || '',
+      'Наименование': g.name,
+      'Кол.': g.qty,
+      'Масса, ед., кг': g.mass_kg ?? '',
+      'Примечание': '',
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const wsExplication = XLSX.utils.json_to_sheet(explicationRows);
+    XLSX.utils.book_append_sheet(wb, wsExplication, 'Экспликация');
+    const wsData = XLSX.utils.json_to_sheet(dataRows);
+    XLSX.utils.book_append_sheet(wb, wsData, 'Данные (не редактировать)');
+
+    const today = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `Ведомость перемычек ${today}.xlsx`);
+  }
+
+  function importFromExcel(file) {
+    const importStatus = document.getElementById('import-status');
+    importStatus.hidden = true;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const wb = XLSX.read(e.target.result, { type: 'array' });
+        const sheetName = wb.SheetNames.find((n) => n.startsWith('Данные')) || wb.SheetNames[wb.SheetNames.length - 1];
+        const sheet = wb.Sheets[sheetName];
+        const dataRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+        if (dataRows.length === 0) throw new Error('Лист с данными пуст или не найден');
+
+        // Группируем строки файла по rowId, восстанавливаем ROWS и items
+        const rowsById = {};
+        const rowOrder = [];
+        dataRows.forEach((r) => {
+          const rid = r.rowId;
+          if (!(rid in rowsById)) {
+            rowsById[rid] = {
+              id: rowIdCounter++,
+              position: String(r.position || 'ПР'),
+              openingWidth: r.openingWidth === '' ? null : Number(r.openingWidth),
+              wallThickness: r.wallThickness === '' ? null : Number(r.wallThickness),
+              quantity: Number(r.quantity) || 1,
+              items: [],
+              collapsed: true,
+            };
+            rowOrder.push(rid);
+          }
+          if (r.mode) {
+            rowsById[rid].items.push({
+              id: itemIdCounter++,
+              mode: r.mode,
+              itemWidth: r.itemWidth === '' ? CATALOG_WIDTHS[0] : Number(r.itemWidth),
+              load: r.load === '' ? 0 : Number(r.load),
+              selectedKey: r.selectedKey === '' ? null : String(r.selectedKey),
+              customName: r.customName || '',
+              customMass: r.customMass === '' ? null : Number(r.customMass),
+              customWidth: r.customWidth === '' ? null : Number(r.customWidth),
+              itemQty: Number(r.itemQty) || 1,
+            });
+          }
+        });
+
+        // Очищаем текущую ведомость и вставляем восстановленную
+        vedomostBody.innerHTML = '';
+        ROWS = rowOrder.map((rid) => rowsById[rid]);
+        ROWS.forEach((row) => renderRow(row));
+        renderExplication();
+
+        importStatus.className = 'section-note';
+        importStatus.textContent = `Загружено проёмов: ${ROWS.length}. Можно продолжать редактирование.`;
+        importStatus.hidden = false;
+      } catch (err) {
+        importStatus.className = 'error-msg';
+        importStatus.textContent = 'Не удалось прочитать файл: ' + err.message + '. Убедитесь, что загружаете файл, ранее скачанный отсюда же.';
+        importStatus.hidden = false;
+        console.error(err);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  document.getElementById('btn-export-excel').addEventListener('click', exportToExcel);
+  document.getElementById('input-import-excel').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) importFromExcel(file);
+    e.target.value = '';
+  });
+
+  async function init() {
+    try {
+      await loadPeremychkiData();
+      addRow();
+      renderExplication();
+    } catch (err) {
+      loadError.hidden = false;
+      console.error(err);
+    }
+  }
+
+  init();
+
+})();
+</script>
+
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+
+</body>
+</html>
