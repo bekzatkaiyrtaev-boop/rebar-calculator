@@ -27,6 +27,7 @@
     { href: "peregorodka.html",        title: "Устойчивость перегородки" },
     { href: "podbor-uteplitelya.html", title: "Подбор толщины утеплителя" },
     { href: "kirpich-530-2012.html",   title: "Кирпич и камень керамические по ГОСТ 530-2012" },
+    { href: "silikat-379-2015.html",   title: "Кирпич, камни, блоки и плиты перегородочные силикатные по ГОСТ 379-2015" },
     { href: "climat.html",             title: "Климатические параметры" },
     { href: "konverter.html",          title: "Конвертер единиц измерения" }
   ];
