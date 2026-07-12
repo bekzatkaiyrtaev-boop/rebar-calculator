@@ -16,9 +16,9 @@
     { href: "Vedomost_elementov.html", title: "Ведомость деталей" },
     { href: "ankerovka-nahlest.html",  title: "Анкеровка и нахлёст арматуры" },
     { href: "zashitny-sloy.html",      title: "Защитный слой бетона" },
-    { href: "progony-1225-2.html",     title: "Прогоны и опорные плиты" },
-    { href: "peremychki.html",         title: "Подбор перемычек" },
-    { href: "fbs-13579-2018.html",     title: "Блоки ФБС" },
+    { href: "progony-1225-2.html",     title: "Железобетонные прогоны и опорные плиты" },
+    { href: "peremychki.html",         title: "Подбор перемычек по серии 1.038.1-1" },
+    { href: "fbs-13579-2018.html",     title: "Блоки бетонные для стен подвалов (ФБС)" },
     { href: "dvutavry-b.html",         title: "Двутавры по ГОСТ 26020-83" },
     { href: "dvutavry-sto.html",       title: "Двутавры по СТО АСЧМ 20-93" },
     { href: "pv-listy.html",           title: "Листы стальные просечно-вытяжные" },
@@ -26,7 +26,7 @@
     { href: "trubi.html",              title: "Квадратные и прямоугольные трубы по ГОСТ 30245-2012" },
     { href: "peregorodka.html",        title: "Устойчивость перегородки" },
     { href: "podbor-uteplitelya.html", title: "Подбор толщины утеплителя" },
-    { href: "kirpich-530-2012.html",   title: "Кирпич и камень керамические" },
+    { href: "kirpich-530-2012.html",   title: "Кирпич и камень керамические по ГОСТ 530-2012" },
     { href: "climat.html",             title: "Климатические параметры" },
     { href: "konverter.html",          title: "Конвертер единиц измерения" }
   ];
