@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Блоки ФБС — ГОСТ 13579-2018 | ЭСК</title>
+<title>Блоки ФБС — ГОСТ 13579-2018 — Электронный справочник конструктора</title>
 
 <!-- ==================== ОФОРМЛЕНИЕ ==================== -->
 <style>
@@ -153,11 +153,15 @@ table.ref tbody tr:nth-child(even) { background: var(--bg-elevated-2); }
   margin-top: 12px;
 }
 </style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
 </head>
 <body>
 
 <!-- ==================== ИНТЕРФЕЙС ==================== -->
 <div class="page">
+
+  <div id="site-header"></div>
 
   <header class="page-header">
     <h1>Блоки бетонные для стен подвалов (ФБС)</h1>
@@ -214,6 +218,8 @@ table.ref tbody tr:nth-child(even) { background: var(--bg-elevated-2); }
   <p class="density-note" id="density-note"></p>
 
 </div>
+
+<div id="site-footer"></div>
 
 <!-- ==================== ЛОГИКА ==================== -->
 <script>
@@ -381,6 +387,10 @@ table.ref tbody tr:nth-child(even) { background: var(--bg-elevated-2); }
 
 })();
 </script>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
 
 </body>
 </html>
