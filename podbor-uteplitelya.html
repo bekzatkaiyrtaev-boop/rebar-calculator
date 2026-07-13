@@ -143,6 +143,12 @@ table.usedparams td:last-child{color:var(--accent);font-size:10px;text-align:rig
 <div class="page-title">Подбор толщины утеплителя</div>
 <div class="page-subtitle">Расчёт по СН РК 2.04-07-2022 и СП РК 2.04-107-2022 «Тепловая защита зданий»</div>
 
+<div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px;">
+  <button class="export-btn" onclick="exportDataFile()">💾 Сохранить данные расчёта</button>
+  <button class="export-btn" style="background:var(--surface2);color:var(--accent);border:1px solid var(--border);" onclick="document.getElementById('importFileInput').click()">📂 Загрузить данные расчёта</button>
+  <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importDataFile(this)">
+</div>
+
 <!-- ═══════════════ ИСХОДНЫЕ ДАННЫЕ ═══════════════ -->
 <div class="card">
   <div class="card-header">
@@ -1091,6 +1097,102 @@ document.getElementById('cityInput').addEventListener('input', function(){ showC
    проще, чем тянуть внешние библиотеки; PDF также сложнее
    редактировать задним числом, чем .docx)
    ══════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   СОХРАНЕНИЕ / ЗАГРУЗКА ДАННЫХ РАСЧЁТА (.json)
+   В отличие от PDF (готовый плоский документ, обратно не
+   читается) — этот файл хранит именно введённые значения,
+   чтобы можно было позже загрузить, поправить и пересчитать.
+   ══════════════════════════════════════════════════════ */
+function exportDataFile(){
+  const objName = document.getElementById('objName').value.trim();
+  const data = {
+    format: 'esk-uteplitel-data',
+    version: 1,
+    savedAt: new Date().toISOString(),
+    objName: objName,
+    city: currentCity ? currentCity.name : '',
+    buildingCategory: document.getElementById('buildingCategory').value,
+    constructionType: document.getElementById('constructionType').value,
+    tInt: document.getElementById('tInt').value,
+    phiInt: document.getElementById('phiInt').value,
+    humidityZone: document.getElementById('humidityZone').value,
+    ventGap: document.getElementById('ventGap').checked,
+    layers: layers.map(l => ({
+      material: l.material,
+      lambda: l.lambda,
+      thickness: l.thickness,
+      isInsulation: l.isInsulation,
+      materialName: l.materialRef ? l.materialRef.name : null /* для повторной привязки к справочнику при загрузке */
+    }))
+  };
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (objName || 'raschet-uteplitelya') + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importDataFile(inputEl){
+  const file = inputEl.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let data;
+    try {
+      data = JSON.parse(e.target.result);
+    } catch(err){
+      alert('Не удалось прочитать файл — это не тот формат JSON.\n' + err.message);
+      inputEl.value = '';
+      return;
+    }
+    if (data.format !== 'esk-uteplitel-data'){
+      alert('Этот файл не похож на сохранённые данные калькулятора "Подбор толщины утеплителя".');
+      inputEl.value = '';
+      return;
+    }
+    applyImportedData(data);
+    inputEl.value = ''; /* сброс, чтобы можно было загрузить тот же файл повторно после правок */
+  };
+  reader.readAsText(file);
+}
+
+function applyImportedData(data){
+  document.getElementById('objName').value = data.objName || '';
+  document.getElementById('buildingCategory').value = data.buildingCategory || '1';
+  document.getElementById('constructionType').value = data.constructionType || 'wall';
+  document.getElementById('tInt').value = data.tInt != null ? data.tInt : 20;
+  document.getElementById('phiInt').value = data.phiInt != null ? data.phiInt : 55;
+  document.getElementById('humidityZone').value = data.humidityZone || 'dry';
+  document.getElementById('ventGap').checked = !!data.ventGap;
+
+  layersIsUntouched = false; /* загружены реальные данные — автоподстановку типового пирога больше не применяем */
+  layers = (data.layers || []).map((l, i) => {
+    const materialRef = l.materialName ? (MATERIALS.find(m => m.name === l.materialName) || null) : null;
+    return {
+      id: i + 1,
+      material: l.material || '',
+      lambda: l.lambda || 0,
+      thickness: l.thickness || 0,
+      isInsulation: !!l.isInsulation,
+      materialRef
+    };
+  });
+  if (!layers.length){
+    layers = [{ id:1, material:'', lambda:0, thickness:0, isInsulation:true, materialRef:null }];
+  }
+  nextLayerId = layers.length + 1;
+
+  if (data.city && typeof CITIES !== 'undefined' && CITIES.some(c => c.name === data.city)){
+    selectCity(data.city); /* сама вызовет calculate() */
+  }
+  renderLayers(); /* сама вызовет calculate() и renderVisualization() */
+}
+
 function selText(id){
   const el = document.getElementById(id);
   return el && el.selectedOptions && el.selectedOptions[0] ? el.selectedOptions[0].textContent : '—';
