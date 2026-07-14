@@ -204,6 +204,20 @@ body{
 
 <div id="site-header"></div>
 
+<style>
+.esk-nav-bar { max-width:1100px; margin:0 auto; padding:16px 16px 0; display:flex; justify-content:center; gap:8px; flex-wrap:wrap; font-family:'Segoe UI',Roboto,Arial,sans-serif; }
+.esk-nav-bar a { display:inline-block; background:#232833; border:1px solid #2c313d; color:#e8eaed; border-radius:6px; padding:8px 14px; font-size:0.85rem; font-weight:600; text-decoration:none; }
+.esk-nav-bar a:hover { border-color:#4c8dff; color:#4c8dff; }
+.esk-nav-bar a.esk-current { background:#4c8dff; border-color:#4c8dff; color:#0b0e13; }
+</style>
+<div class="esk-nav-bar">
+  <a href="armatura-34028-2016.html">ГОСТ 34028-2016</a>
+  <a href="Vedomost_elementov.html" class="esk-current">Ведомость деталей</a>
+  <a href="podbor-secheniya-armatury.html">Подбор сечения арматуры</a>
+  <a href="ankerovka-nahlest.html">Анкеровка и нахлёст арматуры</a>
+  <a href="zashitny-sloy.html">Защитный слой бетона</a>
+</div>
+
 <div class="page-title">Ведомость деталей</div>
 <div class="page-sub">REBAR BENDING SCHEDULE · EN 1992-1-1 · ТАБЛ.8.1N</div>
 
@@ -1166,6 +1180,7 @@ const SKETCH_S_IMG='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABL8AAALCCAYAAA
 addRow();
 </script>
 
+<script src="site-structure.js"></script>
 <script src="site-header.js"></script>
 <script src="site-footer.js"></script>
 

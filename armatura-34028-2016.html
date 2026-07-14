@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Прокат арматурный для железобетонных конструкций по ГОСТ 34028-2016 — Электронный справочник конструктора</title>
+
+<!-- ==================== ОФОРМЛЕНИЕ ==================== -->
+<style>
+:root {
+  --bg: #14171c;
+  --bg-elevated: #1c2028;
+  --bg-elevated-2: #232833;
+  --border: #2c313d;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa3b2;
+  --accent: #4c8dff;
+  --success-text: #7fd99a;
+  --radius: 10px;
+  --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  line-height: 1.5;
+}
+
+.page { max-width: 1080px; margin: 0 auto; padding: 32px 20px 64px; }
+.page-header { margin-bottom: 24px; text-align: center; }
+.page-header h1 { font-size: 1.4rem; margin: 0; font-weight: 600; }
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 32px 0 12px;
+  color: var(--text-primary);
+}
+
+.section-note {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+table.ref {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 560px;
+  font-size: 0.86rem;
+}
+
+table.ref th, table.ref td {
+  border: 1px solid var(--border);
+  padding: 7px 9px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+table.ref thead th {
+  background: var(--bg-elevated-2);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.78rem;
+}
+
+table.ref td.name {
+  text-align: left;
+  font-weight: 600;
+  color: var(--success-text);
+}
+
+table.ref tbody tr:nth-child(even) { background: var(--bg-elevated-2); }
+
+.collapsible-section { margin: 32px 0 12px; }
+
+.collapsible-section summary.section-title {
+  margin: 0 0 12px;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.collapsible-section summary.section-title::-webkit-details-marker { display: none; }
+
+.collapsible-section summary.section-title::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--accent);
+  transition: transform 0.15s ease;
+}
+
+.collapsible-section[open] summary.section-title::before {
+  transform: rotate(90deg);
+}
+
+.collapsible-section summary.section-title:hover { color: var(--accent); }
+
+.marking-display {
+  background: var(--bg-elevated);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--success-text);
+  letter-spacing: 0.01em;
+  word-break: break-all;
+  margin-bottom: 16px;
+}
+
+.marking-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.marking-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.marking-field label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.marking-field select,
+.marking-field input {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-family: inherit;
+}
+
+.marking-field select:focus,
+.marking-field input:focus { outline: none; border-color: var(--accent); }
+
+.marking-checks {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 8px 0 16px;
+  padding: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.marking-checks label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+#as-result.ok { border-color: var(--success-text); color: var(--success-text); }
+#as-result.fail { border-color: #ea8888; color: #ea8888; }
+
+.toolbar { display: flex; gap: 10px; }
+
+.btn-remove-item {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+.btn-remove-item:hover { border-color: #ea8888; color: #ea8888; }
+
+.btn-add-item {
+  background: transparent;
+  border: 1px dashed var(--accent);
+  color: var(--accent);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+.btn-add-item:hover { background: rgba(76, 141, 255, 0.12); }
+
+.row-groups-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 220px;
+}
+
+.group-plus {
+  color: var(--text-secondary);
+  font-weight: 700;
+  padding: 0 2px;
+}
+
+.group-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 4px;
+}
+
+#as-table .group-item input.group-count {
+  width: 40px;
+  padding: 4px 3px;
+  text-align: center;
+}
+
+#as-table .group-item select.group-diameter {
+  width: 56px;
+  padding: 4px 3px;
+}
+
+.group-x {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.group-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0 2px;
+}
+.group-remove:hover { color: #ea8888; }
+
+#as-table input, #as-table select {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 6px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: inherit;
+  width: 100%;
+}
+#as-table input:focus, #as-table select:focus { outline: none; border-color: var(--accent); }
+
+.btn-secondary {
+  background: var(--bg-elevated-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-secondary:hover { border-color: var(--accent); }
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+
+<div id="site-header"></div>
+<style>
+.esk-nav-bar { max-width:1100px; margin:0 auto; padding:16px 16px 0; display:flex; justify-content:center; gap:8px; flex-wrap:wrap; font-family:'Segoe UI',Roboto,Arial,sans-serif; }
+.esk-nav-bar a { display:inline-block; background:#232833; border:1px solid #2c313d; color:#e8eaed; border-radius:6px; padding:8px 14px; font-size:0.85rem; font-weight:600; text-decoration:none; }
+.esk-nav-bar a:hover { border-color:#4c8dff; color:#4c8dff; }
+.esk-nav-bar a.esk-current { background:#4c8dff; border-color:#4c8dff; color:#0b0e13; }
+</style>
+<div class="esk-nav-bar">
+  <a href="armatura-34028-2016.html" class="esk-current">ГОСТ 34028-2016</a>
+  <a href="Vedomost_elementov.html">Ведомость деталей</a>
+  <a href="podbor-secheniya-armatury.html">Подбор сечения арматуры</a>
+  <a href="ankerovka-nahlest.html">Анкеровка и нахлёст арматуры</a>
+  <a href="zashitny-sloy.html">Защитный слой бетона</a>
+</div>
+
+<!-- ==================== ИНТЕРФЕЙС ==================== -->
+<div class="page">
+
+  <header class="page-header">
+    <h1>Прокат арматурный для железобетонных конструкций по ГОСТ 34028-2016</h1>
+  </header>
+
+  <div class="section-title">Конструктор условного обозначения</div>
+
+  <div class="marking-display" id="marking-display">Пруток МД-12х9000-А240 ГОСТ 34028-2016</div>
+
+  <div class="marking-controls">
+    <div class="marking-field">
+      <label for="m-vid">Вид поставки</label>
+      <select id="m-vid">
+        <option value="prutok">Пруток</option>
+        <option value="motok">Моток</option>
+      </select>
+    </div>
+    <div class="marking-field" id="m-supply-field">
+      <label for="m-supply">Состояние поставки</label>
+      <select id="m-supply">
+        <option value="MD">МД — мерная длина</option>
+        <option value="MD1">МД1 — мерная с немерной</option>
+        <option value="ND">НД — немерная длина</option>
+      </select>
+    </div>
+    <div class="marking-field" id="m-profile-field">
+      <label for="m-profile">Форма профиля</label>
+      <select id="m-profile">
+        <option value="1ф">1ф</option>
+        <option value="2ф">2ф</option>
+        <option value="3ф">3ф</option>
+        <option value="4ф">4ф</option>
+      </select>
+    </div>
+    <div class="marking-field">
+      <label for="m-diameter">Номинальный диаметр, мм</label>
+      <select id="m-diameter"></select>
+    </div>
+    <div class="marking-field" id="m-length-field">
+      <label for="m-length">Длина, мм (для МД/МД1)</label>
+      <input type="number" id="m-length" min="0" step="100" value="9000">
+    </div>
+    <div class="marking-field" id="m-om-field">
+      <label for="m-om">Группа откл. по массе</label>
+      <select id="m-om">
+        <option value="ОМ1">ОМ1</option>
+        <option value="ОМ2">ОМ2</option>
+      </select>
+    </div>
+    <div class="marking-field">
+      <label for="m-class">Класс проката</label>
+      <select id="m-class"></select>
+    </div>
+  </div>
+
+  <div class="marking-checks">
+    <label><input type="checkbox" id="m-oval"> ОВ2 — обычная точность овальности</label>
+    <label><input type="checkbox" id="m-svar"> С — свариваемый всеми способами</label>
+    <label><input type="radio" name="m-plast" value="" id="m-plast-none" checked> без категории пластичности</label>
+    <label><input type="radio" name="m-plast" value="Н" id="m-plast-n"> Н — повышенная пластичность</label>
+    <label><input type="radio" name="m-plast" value="Е" id="m-plast-e"> Е — высокая (сейсмостойкий)</label>
+    <label><input type="checkbox" id="m-k"> К — стойкость к коррозионному растрескиванию</label>
+    <label><input type="checkbox" id="m-u"> У — выносливость при циклических нагрузках</label>
+    <label><input type="checkbox" id="m-r"> Р — релаксация напряжений</label>
+  </div>
+
+  <p class="section-note">
+    Структура: [форма профиля-][состояние поставки-]диаметр[×длина]-[группа ОМ]-[ОВ2]-класс[доп. буквы] ГОСТ 34028-2016.
+    Для гладкого профиля (А240) форма профиля и группа ОМ не указываются. Для мотков состояние поставки (МД/МД1/НД) не указывается.
+  </p>
+
+  <details class="collapsible-section">
+    <summary class="section-title">Диаметры, площадь сечения, масса 1 м</summary>
+    <div class="table-wrap">
+      <table class="ref">
+        <thead>
+          <tr>
+            <th>Диаметр, мм</th>
+            <th>Площадь сечения, мм²</th>
+            <th>Масса 1 м, кг</th>
+          </tr>
+        </thead>
+        <tbody id="sortament-body"></tbody>
+      </table>
+    </div>
+    <p class="section-note">Масса рассчитана исходя из номинального диаметра при плотности стали 7,85 г/см³. Прокат классов А800 и А1000 изготавливают диаметром от 10 до 40 мм.</p>
+  </details>
+
+  <details class="collapsible-section">
+    <summary class="section-title">Механические свойства по классам</summary>
+    <div class="table-wrap">
+      <table class="ref">
+        <thead>
+          <tr>
+            <th>Класс</th>
+            <th>Температура электронагрева, °C</th>
+            <th>Предел текучести, Н/мм²</th>
+            <th>Временное сопротивление, Н/мм²</th>
+            <th>Отношение σᵥ/σₜ</th>
+            <th>Относит. удлинение δ₅, %</th>
+            <th>δ_равн, %</th>
+            <th>δ_max, %</th>
+          </tr>
+        </thead>
+        <tbody id="mech-body"></tbody>
+      </table>
+    </div>
+    <p class="section-note">«—» — характеристика не нормируется. Вид относительного удлинения для А500/А600/Ап600/А800/А1000 устанавливается заказчиком.</p>
+
+    <div class="section-title" style="font-size:0.95rem; margin-top:20px">Дополнительно — категории пластичности Н/Е (сейсмостойкий прокат)</div>
+    <div class="table-wrap">
+      <table class="ref">
+        <thead>
+          <tr>
+            <th>Категория</th>
+            <th>Класс</th>
+            <th>Предел текучести, Н/мм²</th>
+            <th>Временное сопротивление, Н/мм²</th>
+            <th>Отношение σᵥ/σₜ</th>
+            <th>δ₅, %</th>
+            <th>δ_равн, %</th>
+          </tr>
+        </thead>
+        <tbody id="mech-he-body"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <details class="collapsible-section">
+    <summary class="section-title">Маркировка рёбрами (количество рёбер по классам)</summary>
+    <div class="table-wrap">
+      <table class="ref">
+        <thead>
+          <tr>
+            <th>Класс</th>
+            <th>Кол-во рёбер</th>
+            <th>Класс</th>
+            <th>Кол-во рёбер</th>
+          </tr>
+        </thead>
+        <tbody id="ribs-body"></tbody>
+      </table>
+    </div>
+    <p class="section-note">Прокатная маркировка (продольное ребро) наносится с шагом не более 1,5 м; количество коротких выступов = номеру класса из таблицы.</p>
+  </details>
+
+  <details class="collapsible-section">
+    <summary class="section-title">Химический состав по классам</summary>
+    <div class="table-wrap">
+      <table class="ref">
+        <thead>
+          <tr>
+            <th>Класс</th>
+            <th>C</th>
+            <th>Si</th>
+            <th>Mn</th>
+            <th>P</th>
+            <th>S</th>
+            <th>N</th>
+            <th>Cu</th>
+            <th>As</th>
+          </tr>
+        </thead>
+        <tbody id="chem-body"></tbody>
+      </table>
+    </div>
+    <p class="section-note">Массовая доля элементов, %, не более. Без скобок — по ковшовой пробе, в скобках — в готовом прокате.</p>
+  </details>
+
+  <div class="section-title" style="text-align:center"><a href="podbor-secheniya-armatury.html" style="color:var(--accent)">Открыть калькулятор «Подбор сечения арматуры» →</a></div>
+
+</div>
+
+<div id="site-footer"></div>
+
+<!-- ==================== ЛОГИКА ==================== -->
+<script>
+(function () {
+
+  // Данные из ГОСТ 34028-2016 — зашиты напрямую в код, отдельный лист в Google Sheets не заводили
+
+  const DIAMETERS = [4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,8.5,9.0,9.5,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0,22.0,25.0,28.0,32.0,36.0,40.0];
+
+  // Таблица 1 — [диаметр, площадь мм2, масса кг/м]
+  const SORTAMENT = [
+    [4.0, 12.6, 0.099], [4.5, 15.9, 0.125], [5.0, 19.6, 0.154], [5.5, 23.8, 0.187],
+    [6.0, 28.3, 0.222], [6.5, 33.2, 0.261], [7.0, 38.5, 0.302], [7.5, 44.2, 0.347],
+    [8.0, 50.3, 0.395], [8.5, 56.7, 0.445], [9.0, 63.6, 0.499], [9.5, 70.9, 0.556],
+    [10.0, 78.5, 0.617], [11.0, 95.0, 0.746], [12.0, 113.1, 0.888], [13.0, 132.7, 1.042],
+    [14.0, 153.9, 1.208], [15.0, 176.7, 1.387], [16.0, 201.1, 1.578], [17.0, 227.0, 1.782],
+    [18.0, 254.5, 1.998], [19.0, 283.5, 2.226], [20.0, 314.2, 2.466], [22.0, 380.1, 2.984],
+    [25.0, 490.9, 3.853], [28.0, 615.8, 4.834], [32.0, 804.3, 6.313], [36.0, 1017.9, 7.990],
+    [40.0, 1256.6, 9.865],
+  ];
+
+  // Таблица 4 — механические свойства. [класс, темп.нагрева, предел текучести, врем.сопротивление, отношение, б5, б_равн, б_max]
+  const MECH = [
+    ['А240', '—', 240, 380, '—', '25,0', '—', '—'],
+    ['А400', '—', 390, 590, '—', '16,0', '—', '5,0'],
+    ['А500', '—', 500, 600, '1,05', '14,0', '2,0', '2,5'],
+    ['А600', '—', 600, 700, '1,05', '12,0', '2,0', '2,5'],
+    ['Ап600', 400, 600, 700, '1,05', '12,0', '2,0', '2,5'],
+    ['А800', 400, 800, 1000, '—', '8,0', '2,0', '2,5'],
+    ['А1000', 450, 1000, 1250, '—', '7,0', '2,0', '2,5'],
+  ];
+
+  // Таблица 6 — категории пластичности Н/Е. [категория, класс, предел текучести, врем.сопр., отношение, б5, б_равн]
+  const MECH_HE = [
+    ['Н', 'А400', 390, 590, '≥1,08', 16, 5],
+    ['Н', 'А500', 500, 600, '≥1,08', 16, 5],
+    ['Н', 'А600', 600, 700, '≥1,08', 14, 5],
+    ['Е', 'А400', 390, 590, '1,15–1,35', 16, 7],
+    ['Е', 'А500', 500, 600, '1,15–1,35', 16, 7],
+    ['Е', 'А600', 600, 700, '1,15–1,35', 16, 7],
+  ];
+
+  // Таблица 16 — количество рёбер по классам
+  const RIBS = [
+    ['А400', 1, 'Ап600', 4],
+    ['А500', 2, 'А800', 5],
+    ['А600', 3, 'А1000', 6],
+  ];
+
+  // Таблица 3 — химический состав. [класс, C, Si, Mn, P, S, N, Cu, As]
+  const CHEM = [
+    ['А240', '0,22 (0,25)', '0,05–0,30 (0,03–0,33)', '0,65 (0,70)', '0,050 (0,055)', '0,050 (0,055)', '0,012 (0,013)', '0,30 (0,30)', '0,08 (0,08)'],
+    ['А400, А500, А600', '0,22 (0,24)', '0,90 (0,95)', '1,60 (1,70)', '0,050 (0,055)', '0,050 (0,055)', '0,012 (0,013)', '0,35 (0,35)', '—'],
+    ['Ап600, А800, А1000', '0,32 (0,34)', '2,40 (2,45)', '2,30 (2,35)', '0,040 (0,045)', '0,040 (0,045)', '0,012 (0,013)', '—', '0,08 (0,08)'],
+  ];
+
+  const CLASSES = ['А240', 'А400', 'А500', 'А600', 'Ап600', 'А800', 'А1000'];
+
+  function fillSelect(selectEl, values) {
+    selectEl.innerHTML = values.map((v) => `<option value="${v}">${v}</option>`).join('');
+  }
+
+  function renderSortament() {
+    document.getElementById('sortament-body').innerHTML = SORTAMENT
+      .map(([d, a, m]) => `<tr><td class="name">${d}</td><td>${a}</td><td>${m}</td></tr>`)
+      .join('');
+  }
+
+  function renderMech() {
+    document.getElementById('mech-body').innerHTML = MECH
+      .map((r) => `<tr>${r.map((v, i) => `<td${i === 0 ? ' class="name"' : ''}>${v}</td>`).join('')}</tr>`)
+      .join('');
+  }
+
+  function renderMechHe() {
+    document.getElementById('mech-he-body').innerHTML = MECH_HE
+      .map((r) => `<tr>${r.map((v, i) => `<td${i === 1 ? ' class="name"' : ''}>${v}</td>`).join('')}</tr>`)
+      .join('');
+  }
+
+  function renderRibs() {
+    document.getElementById('ribs-body').innerHTML = RIBS
+      .map((r) => `<tr><td class="name">${r[0]}</td><td>${r[1]}</td><td class="name">${r[2]}</td><td>${r[3]}</td></tr>`)
+      .join('');
+  }
+
+  function renderChem() {
+    document.getElementById('chem-body').innerHTML = CHEM
+      .map((r) => `<tr>${r.map((v, i) => `<td${i === 0 ? ' class="name"' : ''}>${v}</td>`).join('')}</tr>`)
+      .join('');
+  }
+
+  renderSortament();
+  renderMech();
+  renderMechHe();
+  renderRibs();
+  renderChem();
+
+  // --- Конструктор условного обозначения ---
+
+  const elVid = document.getElementById('m-vid');
+  const elSupply = document.getElementById('m-supply');
+  const elSupplyField = document.getElementById('m-supply-field');
+  const elProfile = document.getElementById('m-profile');
+  const elProfileField = document.getElementById('m-profile-field');
+  const elDiameter = document.getElementById('m-diameter');
+  const elLength = document.getElementById('m-length');
+  const elLengthField = document.getElementById('m-length-field');
+  const elOm = document.getElementById('m-om');
+  const elOmField = document.getElementById('m-om-field');
+  const elClass = document.getElementById('m-class');
+  const elOval = document.getElementById('m-oval');
+  const elSvar = document.getElementById('m-svar');
+  const elK = document.getElementById('m-k');
+  const elU = document.getElementById('m-u');
+  const elR = document.getElementById('m-r');
+  const display = document.getElementById('marking-display');
+
+  fillSelect(elDiameter, DIAMETERS);
+  elDiameter.value = 12;
+  fillSelect(elClass, CLASSES);
+
+  function updateDisplay() {
+    const isGladky = elClass.value === 'А240';
+    const isMotok = elVid.value === 'motok';
+    const isMD = elSupply.value === 'MD' || elSupply.value === 'MD1';
+
+    elProfileField.hidden = isGladky;
+    elSupplyField.hidden = isMotok;
+    elOmField.hidden = isGladky;
+    elLengthField.hidden = !(isMD && !isMotok);
+
+    const parts = [];
+    if (!isGladky) parts.push(elProfile.value);
+    if (!isMotok) parts.push(elSupply.value === 'MD' ? 'МД' : elSupply.value === 'MD1' ? 'МД1' : 'НД');
+
+    let diamPart = elDiameter.value;
+    if (!isMotok && isMD && elLength.value) diamPart += 'х' + elLength.value;
+    parts.push(diamPart);
+
+    if (!isGladky) parts.push(elOm.value);
+    if (elOval.checked) parts.push('ОВ2');
+
+    let classPart = elClass.value;
+    let suffix = '';
+    if (elSvar.checked) suffix += 'С';
+    const plast = document.querySelector('input[name="m-plast"]:checked').value;
+    suffix += plast;
+    if (elK.checked) suffix += 'К';
+    if (elU.checked) suffix += 'У';
+    if (elR.checked) suffix += 'Р';
+    classPart += suffix;
+    parts.push(classPart);
+
+    const vidWord = isMotok ? 'Моток' : 'Пруток';
+    display.textContent = `${vidWord} ${parts.join('-')} ГОСТ 34028-2016`;
+  }
+
+  [elVid, elSupply, elProfile, elDiameter, elLength, elOm, elClass, elOval, elSvar, elK, elU, elR].forEach((el) => {
+    el.addEventListener('change', updateDisplay);
+    el.addEventListener('input', updateDisplay);
+  });
+  document.querySelectorAll('input[name="m-plast"]').forEach((el) => el.addEventListener('change', updateDisplay));
+
+  updateDisplay();
+
+})();
+</script>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+
+</body>
+</html>

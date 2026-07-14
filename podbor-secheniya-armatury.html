@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Подбор сечения арматуры — Электронный справочник конструктора</title>
+
+<!-- ==================== ОФОРМЛЕНИЕ ==================== -->
+<style>
+:root {
+  --bg: #14171c;
+  --bg-elevated: #1c2028;
+  --bg-elevated-2: #232833;
+  --border: #2c313d;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa3b2;
+  --accent: #4c8dff;
+  --success-text: #7fd99a;
+  --radius: 10px;
+  --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  line-height: 1.5;
+}
+
+.page { max-width: 1080px; margin: 0 auto; padding: 32px 20px 64px; }
+.page-header { margin-bottom: 24px; text-align: center; }
+.page-header h1 { font-size: 1.4rem; margin: 0; font-weight: 600; }
+
+.section-note {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+}
+
+table.ref {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 560px;
+  font-size: 0.86rem;
+}
+
+table.ref th, table.ref td {
+  border: 1px solid var(--border);
+  padding: 7px 9px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+table.ref thead th {
+  background: var(--bg-elevated-2);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.78rem;
+}
+
+.toolbar { display: flex; gap: 10px; }
+
+.btn-secondary {
+  background: var(--bg-elevated-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-secondary:hover { border-color: var(--accent); }
+
+.btn-remove-item {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+.btn-remove-item:hover { border-color: #ea8888; color: #ea8888; }
+
+.btn-add-item {
+  background: transparent;
+  border: 1px dashed var(--accent);
+  color: var(--accent);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+.btn-add-item:hover { background: rgba(76, 141, 255, 0.12); }
+
+.row-groups-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 220px;
+}
+
+.group-plus {
+  color: var(--text-secondary);
+  font-weight: 700;
+  padding: 0 2px;
+}
+
+.group-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 4px;
+}
+
+#as-table .group-item input.group-count {
+  width: 40px;
+  padding: 4px 3px;
+  text-align: center;
+}
+
+#as-table .group-item select.group-diameter {
+  width: 56px;
+  padding: 4px 3px;
+}
+
+.group-x {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.group-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0 2px;
+}
+.group-remove:hover { color: #ea8888; }
+
+#as-table input, #as-table select {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 6px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: inherit;
+  width: 100%;
+}
+#as-table input:focus, #as-table select:focus { outline: none; border-color: var(--accent); }
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+
+<div id="site-header"></div>
+<style>
+.esk-nav-bar { max-width:1100px; margin:0 auto; padding:16px 16px 0; display:flex; justify-content:center; gap:8px; flex-wrap:wrap; font-family:'Segoe UI',Roboto,Arial,sans-serif; }
+.esk-nav-bar a { display:inline-block; background:#232833; border:1px solid #2c313d; color:#e8eaed; border-radius:6px; padding:8px 14px; font-size:0.85rem; font-weight:600; text-decoration:none; }
+.esk-nav-bar a:hover { border-color:#4c8dff; color:#4c8dff; }
+.esk-nav-bar a.esk-current { background:#4c8dff; border-color:#4c8dff; color:#0b0e13; }
+</style>
+<div class="esk-nav-bar">
+  <a href="armatura-34028-2016.html">ГОСТ 34028-2016</a>
+  <a href="Vedomost_elementov.html">Ведомость деталей</a>
+  <a href="podbor-secheniya-armatury.html" class="esk-current">Подбор сечения арматуры</a>
+  <a href="ankerovka-nahlest.html">Анкеровка и нахлёст арматуры</a>
+  <a href="zashitny-sloy.html">Защитный слой бетона</a>
+</div>
+
+<!-- ==================== ИНТЕРФЕЙС ==================== -->
+<div class="page">
+
+  <header class="page-header">
+    <h1>Подбор сечения арматуры</h1>
+  </header>
+
+  <div class="table-wrap">
+    <table class="ref" id="as-table">
+      <thead>
+        <tr>
+          <th>Требуемое, см²</th>
+          <th style="width:36px"></th>
+          <th>Группы стержней (кол-во⌀диаметр)</th>
+          <th style="width:36px"></th>
+          <th>Факт. площадь, см²</th>
+          <th style="width:36px"></th>
+        </tr>
+      </thead>
+      <tbody id="as-rows-body"></tbody>
+    </table>
+  </div>
+
+  <div class="toolbar" style="margin-top:10px">
+    <button id="as-add-row" class="btn-secondary">+ Добавить строку</button>
+  </div>
+
+  <p class="section-note">
+    Диаметр по умолчанию подбирается минимальным, удовлетворяющим условию (площадь ≥ требуемой), но его можно поменять вручную.
+    Зелёным — условие выполнено, красным — площади не хватает. Кнопка «+» справа от группы добавляет ещё одну комбинацию кол-во⌀диаметр
+    (например 2⌀16+2⌀20) — площади складываются. Автоподбор диаметра работает, пока в строке одна группа.
+  </p>
+  <p class="section-note">Сортамент — по ГОСТ 34028-2016 (диаметры 4–40 мм, площади и массы согласно табл. 1 стандарта).</p>
+
+</div>
+
+<div id="site-footer"></div>
+
+<!-- ==================== ЛОГИКА ==================== -->
+<script>
+(function () {
+
+  // Сортамент из ГОСТ 34028-2016, таблица 1 — зашит напрямую в код
+  const DIAMETERS = [4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,8.5,9.0,9.5,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0,22.0,25.0,28.0,32.0,36.0,40.0];
+
+  // [диаметр, площадь мм2, масса кг/м]
+  const SORTAMENT = [
+    [4.0, 12.6, 0.099], [4.5, 15.9, 0.125], [5.0, 19.6, 0.154], [5.5, 23.8, 0.187],
+    [6.0, 28.3, 0.222], [6.5, 33.2, 0.261], [7.0, 38.5, 0.302], [7.5, 44.2, 0.347],
+    [8.0, 50.3, 0.395], [8.5, 56.7, 0.445], [9.0, 63.6, 0.499], [9.5, 70.9, 0.556],
+    [10.0, 78.5, 0.617], [11.0, 95.0, 0.746], [12.0, 113.1, 0.888], [13.0, 132.7, 1.042],
+    [14.0, 153.9, 1.208], [15.0, 176.7, 1.387], [16.0, 201.1, 1.578], [17.0, 227.0, 1.782],
+    [18.0, 254.5, 1.998], [19.0, 283.5, 2.226], [20.0, 314.2, 2.466], [22.0, 380.1, 2.984],
+    [25.0, 490.9, 3.853], [28.0, 615.8, 4.834], [32.0, 804.3, 6.313], [36.0, 1017.9, 7.990],
+    [40.0, 1256.6, 9.865],
+  ];
+
+  // --- Проверка площади сечения: таблица строк, в каждой строке — требуемое и одна или
+  //     несколько групп стержней (кол-во⌀диаметр), например 2⌀16+2⌀20. Площади групп складываются.
+  //     Автоподбор диаметра работает только пока в строке одна группа — после добавления
+  //     второй управление диаметрами полностью переходит к пользователю.
+
+  const asRowsBody = document.getElementById('as-rows-body');
+  let asRowIdCounter = 1;
+  let asGroupIdCounter = 1;
+
+  // Подбирает минимальный диаметр, при котором count стержней перекрывают requiredCm2.
+  function pickDiameter(requiredCm2, count) {
+    if (count <= 0) return SORTAMENT[0][0];
+    const requiredMm2 = requiredCm2 * 100;
+    const fitting = SORTAMENT.find(([, areaMm2]) => count * areaMm2 >= requiredMm2);
+    return fitting ? fitting[0] : SORTAMENT[SORTAMENT.length - 1][0];
+  }
+
+  function addAsRow(initial) {
+    const id = asRowIdCounter++;
+    const required = initial && initial.required !== undefined ? initial.required : 10;
+    const firstCount = initial && initial.count !== undefined ? initial.count : 5;
+    const firstDiameter = initial && initial.diameter !== undefined ? initial.diameter : pickDiameter(required, firstCount);
+
+    const row = {
+      id,
+      groups: [{ id: asGroupIdCounter++, count: firstCount, diameter: firstDiameter }],
+    };
+
+    const tr = document.createElement('tr');
+    tr.dataset.rowId = id;
+    tr.innerHTML = `
+      <td><input type="number" class="row-required" min="0" step="0.1" value="${required}"></td>
+      <td class="row-sign" style="font-weight:700"></td>
+      <td class="row-groups-cell"></td>
+      <td><button class="btn-add-item row-add-group" title="Добавить группу стержней">+</button></td>
+      <td class="row-actual"></td>
+      <td><button class="btn-remove-item row-remove" title="Удалить строку">×</button></td>
+    `;
+    asRowsBody.appendChild(tr);
+
+    const elRequired = tr.querySelector('.row-required');
+    const elSign = tr.querySelector('.row-sign');
+    const elGroupsCell = tr.querySelector('.row-groups-cell');
+    const elActual = tr.querySelector('.row-actual');
+
+    function clampRequired() {
+      let req = Number(elRequired.value);
+      if (!Number.isFinite(req) || req < 0) req = 0;
+      elRequired.value = req;
+    }
+
+    function renderGroups() {
+      elGroupsCell.innerHTML = row.groups
+        .map(
+          (g, i) => `
+            ${i > 0 ? '<span class="group-plus">+</span>' : ''}
+            <span class="group-item" data-group-id="${g.id}">
+              <input type="number" class="group-count" min="1" step="1" value="${g.count}">
+              <span class="group-x">⌀</span>
+              <select class="group-diameter">${DIAMETERS.map((d) => `<option value="${d}" ${d === g.diameter ? 'selected' : ''}>${d}</option>`).join('')}</select>
+              ${row.groups.length > 1 ? '<button class="group-remove" title="Убрать группу">×</button>' : ''}
+            </span>
+          `
+        )
+        .join('');
+
+      row.groups.forEach((g) => {
+        const groupEl = elGroupsCell.querySelector(`[data-group-id="${g.id}"]`);
+        const countInput = groupEl.querySelector('.group-count');
+        const diameterSelect = groupEl.querySelector('.group-diameter');
+
+        countInput.addEventListener('input', () => {
+          let cnt = Math.floor(Number(countInput.value));
+          if (!Number.isFinite(cnt) || cnt < 1) cnt = 1;
+          countInput.value = cnt;
+          g.count = cnt;
+          // Автоподбор диаметра — только если в строке ровно одна группа
+          if (row.groups.length === 1) {
+            clampRequired();
+            g.diameter = pickDiameter(Number(elRequired.value), g.count);
+            diameterSelect.value = g.diameter;
+          }
+          render();
+        });
+
+        diameterSelect.addEventListener('change', () => {
+          g.diameter = Number(diameterSelect.value);
+          render();
+        });
+
+        const removeBtn = groupEl.querySelector('.group-remove');
+        if (removeBtn) {
+          removeBtn.addEventListener('click', () => {
+            row.groups = row.groups.filter((x) => x.id !== g.id);
+            renderGroups();
+            render();
+          });
+        }
+      });
+    }
+
+    function render() {
+      const requiredCm2 = Number(elRequired.value) || 0;
+      const totalCm2 = row.groups.reduce((sum, g) => {
+        const record = SORTAMENT.find((r) => r[0] === g.diameter);
+        const areaMm2 = record ? record[1] : 0;
+        return sum + (g.count * areaMm2) / 100;
+      }, 0);
+
+      let sign, isOk;
+      if (Math.abs(totalCm2 - requiredCm2) < 0.005) {
+        sign = '=';
+        isOk = true;
+      } else if (requiredCm2 < totalCm2) {
+        sign = '<';
+        isOk = true;
+      } else {
+        sign = '>';
+        isOk = false;
+      }
+
+      const color = isOk ? 'var(--success-text)' : '#ea8888';
+      elSign.textContent = sign;
+      elSign.style.color = color;
+      elActual.textContent = totalCm2.toFixed(2);
+      elActual.style.color = color;
+      elActual.style.fontWeight = '700';
+    }
+
+    elRequired.addEventListener('input', () => {
+      clampRequired();
+      if (row.groups.length === 1) {
+        row.groups[0].diameter = pickDiameter(Number(elRequired.value), row.groups[0].count);
+        renderGroups();
+      }
+      render();
+    });
+
+    tr.querySelector('.row-add-group').addEventListener('click', () => {
+      const lastDiameter = row.groups[row.groups.length - 1].diameter;
+      row.groups.push({ id: asGroupIdCounter++, count: 1, diameter: lastDiameter });
+      renderGroups();
+      render();
+    });
+
+    tr.querySelector('.row-remove').addEventListener('click', () => tr.remove());
+
+    renderGroups();
+    render();
+  }
+
+  document.getElementById('as-add-row').addEventListener('click', () => addAsRow());
+
+  addAsRow();
+
+})();
+</script>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+
+</body>
+</html>
