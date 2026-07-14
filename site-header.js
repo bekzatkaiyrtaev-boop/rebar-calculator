@@ -12,27 +12,28 @@
 (function(){
 
   /* ── Порядок страниц для кнопок "Назад / Вперёд" ── */
-  const SITE_PAGES = [
-    { href: "Vedomost_elementov.html", title: "Ведомость деталей" },
-    { href: "ankerovka-nahlest.html",  title: "Анкеровка и нахлёст арматуры" },
-    { href: "zashitny-sloy.html",      title: "Защитный слой бетона" },
-    { href: "progony-1225-2.html",     title: "Железобетонные прогоны и опорные плиты" },
-    { href: "peremychki.html",         title: "Подбор перемычек по серии 1.038.1-1" },
-    { href: "fbs-13579-2018.html",     title: "Блоки бетонные для стен подвалов (ФБС)" },
-    { href: "dvutavry-b.html",         title: "Двутавры по ГОСТ 26020-83" },
-    { href: "dvutavry-sto.html",       title: "Двутавры по СТО АСЧМ 20-93" },
-    { href: "pv-listy.html",           title: "Листы стальные просечно-вытяжные" },
-    { href: "rifl-listy.html",         title: "Листы стальные рифлёные" },
-    { href: "trubi.html",              title: "Квадратные и прямоугольные трубы по ГОСТ 30245-2012" },
-    { href: "peregorodka.html",        title: "Устойчивость перегородки" },
-    { href: "podbor-uteplitelya.html", title: "Подбор толщины утеплителя" },
-    { href: "kirpich-530-2012.html",   title: "Кирпич и камень керамические по ГОСТ 530-2012" },
-    { href: "silikat-379-2015.html",   title: "Кирпич, камни, блоки и плиты перегородочные силикатные по ГОСТ 379-2015" },
-    { href: "vedomost-peremychek.html", title: "Подсчёт количества перемычек" },
-    { href: "climat.html",             title: "Климатические параметры" },
-    { href: "konverter.html",          title: "Конвертер единиц измерения" },
-    { href: "terminologiya.html",      title: "Строительная терминология" }
-  ];
+  /* ── Порядок страниц для "Назад/Вперёд" строим из общей структуры
+     сайта (site-structure.js), а не храним отдельным списком —
+     чтобы порядок в содержании и порядок пролистывания совпадали
+     всегда автоматически. Файл site-structure.js должен быть
+     подключён на странице ДО этого скрипта. ── */
+  const SITE_PAGES = [];
+  if (typeof SECTIONS !== 'undefined'){
+    SECTIONS.forEach(section => {
+      section.items.forEach(entry => {
+        if (entry.group){
+          entry.items.forEach(it => SITE_PAGES.push({ href: it.href, title: it.title }));
+        } else {
+          SITE_PAGES.push({ href: entry.href, title: entry.title });
+        }
+      });
+    });
+  }
+  // на всякий случай убираем index.html/about.html, если они вдруг
+  // попадут в SECTIONS — это не "листы" калькуляторов
+  const SITE_PAGES_FILTERED = SITE_PAGES.filter(p => p.href !== 'index.html' && p.href !== 'about.html');
+  SITE_PAGES.length = 0;
+  SITE_PAGES.push(...SITE_PAGES_FILTERED);
 
   /* ── Кнопки навигации в шапке (порядок = порядок отображения) ──
      Чтобы добавить новую кнопку — просто добавьте объект в массив.
