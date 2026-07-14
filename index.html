@@ -91,6 +91,8 @@
     user-select: none;
   }
   .toc-group-title:hover { color: var(--accent); }
+  .toc-group-title.has-link { cursor: default; }
+  .toc-group-title.has-link:hover { color: var(--muted); }
   .toc-group-title .num {
     font-family: var(--mono);
     color: var(--accent);
@@ -99,6 +101,20 @@
   }
   .toc-group-title:first-of-type {
     margin-top: 0;
+  }
+  .toc-chevron-btn {
+    display: inline-flex;
+    padding: 4px;
+    margin: -4px;
+    cursor: pointer;
+  }
+  .toc-group-link {
+    color: inherit;
+    text-decoration: none;
+  }
+  .toc-group-link:hover {
+    color: var(--accent);
+    text-decoration: underline;
   }
 
   .toc-item {
@@ -277,9 +293,24 @@ function render(filter = "") {
         const groupId = `${sectionId}-g${topCounter}`;
 
         const groupTitle = document.createElement('div');
-        groupTitle.className = 'toc-group-title';
-        groupTitle.innerHTML = `${chevron(groupId)}<span class="num">${groupNum}</span><span>${entry.group}</span>`;
-        groupTitle.addEventListener('click', () => toggleCollapse(groupId));
+        groupTitle.className = 'toc-group-title' + (entry.href ? ' has-link' : '');
+
+        const titleHtml = entry.href
+          ? `<a href="${entry.href}" class="toc-group-link">${entry.group}</a>`
+          : `<span>${entry.group}</span>`;
+        groupTitle.innerHTML = `<span class="toc-chevron-btn">${chevron(groupId)}</span><span class="num">${groupNum}</span>${titleHtml}`;
+
+        // Шеврон сворачивает/разворачивает — всегда, независимо от наличия ссылки
+        groupTitle.querySelector('.toc-chevron-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleCollapse(groupId);
+        });
+        // Если у группы нет своей страницы — клик по всей строке тоже сворачивает
+        // (старое поведение, например для "Сборные железобетонные конструкции")
+        if (!entry.href) {
+          groupTitle.addEventListener('click', () => toggleCollapse(groupId));
+        }
+
         sectionEl.appendChild(groupTitle);
 
         if (collapsed.has(groupId) && !q) return;
