@@ -45,3 +45,44 @@
 .site-nav a.current { color: #4f8ef7; pointer-events: none; }
 .site-nav a.disabled { opacity: .35; pointer-events: none; }
 .site-nav .sep { color: #2e3347; font-size: 14px; }
+
+/* ── Авторизация через Google ── */
+.site-auth {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+.auth-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #2e3347;
+  border-radius: 999px;
+  padding: 5px 8px 5px 6px;
+}
+.auth-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+.auth-name {
+  color: #d7dae8;
+  font-size: 13px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.auth-logout {
+  background: none;
+  border: none;
+  color: #6b7099;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+  transition: color .15s;
+}
+.auth-logout:hover { color: #f76c6c; }
