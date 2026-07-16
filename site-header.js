@@ -66,6 +66,7 @@
     <header class="site-header">
       <h1>Электронный справочник конструктора</h1>
       <nav class="site-nav">${navHTML}</nav>
+      <div class="site-auth" id="siteAuth"></div>
     </header>
   `;
 
@@ -98,4 +99,118 @@
      Чтобы включить обратно — верните <div class="site-online">...</div>
      в разметку выше и код пинга (см. историю правок).
      ══════════════════════════════════════════════════════════════ */
+
+  /* ══════════════════════════════════════════════════════════════
+     АВТОРИЗАЦИЯ ЧЕРЕЗ GOOGLE
+     Использует Google Identity Services (кнопка "Войти через Google").
+     После входа сохраняем данные пользователя в localStorage (чтобы
+     не логиниться заново на каждой странице) и отправляем на бэкенд
+     для учёта (сколько людей пользуется справочником).
+     ══════════════════════════════════════════════════════════════ */
+
+  // Client ID из Google Cloud Console (не секретный, можно хранить в коде)
+  const GOOGLE_CLIENT_ID = '911707760655-toihq4a9jn9qb6khnat8rsbs2ahm39pd.apps.googleusercontent.com';
+  const USER_LOG_API_URL = 'https://rebar-backend-henna.vercel.app/api/log-user';
+  const AUTH_STORAGE_KEY = 'esk_user';
+
+  const authMount = document.getElementById('siteAuth');
+
+  function getSavedUser(){
+    try {
+      const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e){ return null; }
+  }
+
+  function saveUser(user){
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+  }
+
+  function clearUser(){
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+  }
+
+  // Разбираем JWT-токен от Google, чтобы достать имя/почту/фото
+  function decodeJwt(token){
+    try {
+      const payload = token.split('.')[1];
+      const decoded = decodeURIComponent(
+        atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(decoded);
+    } catch(e){ return null; }
+  }
+
+  function renderSignedIn(user){
+    authMount.innerHTML = `
+      <div class="auth-user">
+        <img class="auth-avatar" src="${user.picture}" alt="${user.name}">
+        <span class="auth-name">${user.name}</span>
+        <button class="auth-logout" id="authLogoutBtn" title="Выйти">Выйти</button>
+      </div>
+    `;
+    document.getElementById('authLogoutBtn').addEventListener('click', function(){
+      clearUser();
+      renderSignedOut();
+    });
+  }
+
+  function renderSignedOut(){
+    authMount.innerHTML = `<div id="googleSignInBtn"></div>`;
+    if (window.google && google.accounts && google.accounts.id){
+      google.accounts.id.renderButton(
+        document.getElementById('googleSignInBtn'),
+        { theme: 'outline', size: 'medium', text: 'signin', locale: 'ru' }
+      );
+    }
+  }
+
+  function handleGoogleSignIn(response){
+    const profile = decodeJwt(response.credential);
+    if (!profile) return;
+    const user = {
+      name: profile.name,
+      email: profile.email,
+      picture: profile.picture
+    };
+    saveUser(user);
+    renderSignedIn(user);
+
+    // Отправляем данные на бэкенд для учёта пользователей (не блокирует интерфейс)
+    fetch(USER_LOG_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(user)
+    }).catch(function(){ /* тихо игнорируем — учёт не критичен для работы сайта */ });
+  }
+  window.handleGoogleSignIn = handleGoogleSignIn;
+
+  if (authMount){
+    const saved = getSavedUser();
+    if (saved){
+      renderSignedIn(saved);
+    }
+
+    // Подключаем скрипт Google Identity Services, если его ещё нет на странице
+    if (!document.getElementById('google-identity-script')){
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.id = 'google-identity-script';
+      script.onload = function(){
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleSignIn
+        });
+        if (!saved){ renderSignedOut(); }
+      };
+      document.head.appendChild(script);
+    } else if (!saved){
+      renderSignedOut();
+    }
+  }
 })();
