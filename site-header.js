@@ -35,6 +35,24 @@
   SITE_PAGES.length = 0;
   SITE_PAGES.push(...SITE_PAGES_FILTERED);
 
+  /* ── Отдельный полный список ВСЕХ страниц-калькуляторов (для проверки
+     доступа), включая сами групповые страницы (например,
+     armatura-34028-2016.html), которые НЕ входят в SITE_PAGES выше,
+     потому что не участвуют в пролистывании "Назад/Вперёд" напрямую. ── */
+  const ALL_CALC_PAGES = [];
+  if (typeof SECTIONS !== 'undefined'){
+    SECTIONS.forEach(section => {
+      section.items.forEach(entry => {
+        if (entry.group){
+          ALL_CALC_PAGES.push(entry.href);
+          entry.items.forEach(it => ALL_CALC_PAGES.push(it.href));
+        } else {
+          ALL_CALC_PAGES.push(entry.href);
+        }
+      });
+    });
+  }
+
   /* ── Кнопки навигации в шапке (порядок = порядок отображения) ──
      Чтобы добавить новую кнопку — просто добавьте объект в массив.
      current: true  — эта кнопка ведёт на текущую страницу (авто)
@@ -197,7 +215,7 @@
      не защита данных, а фильтр для случайных посетителей и способ
      учитывать реальных пользователей справочника.
      ══════════════════════════════════════════════════════════════ */
-  const isCalculatorPage = idx !== -1;
+  const isCalculatorPage = ALL_CALC_PAGES.includes(current);
   let authGateEl = null;
 
   function showAuthGate(){
