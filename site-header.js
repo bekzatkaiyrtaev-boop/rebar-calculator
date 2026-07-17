@@ -35,24 +35,6 @@
   SITE_PAGES.length = 0;
   SITE_PAGES.push(...SITE_PAGES_FILTERED);
 
-  /* ── Отдельный полный список ВСЕХ страниц-калькуляторов (для проверки
-     доступа), включая сами групповые страницы (например,
-     armatura-34028-2016.html), которые НЕ входят в SITE_PAGES выше,
-     потому что не участвуют в пролистывании "Назад/Вперёд" напрямую. ── */
-  const ALL_CALC_PAGES = [];
-  if (typeof SECTIONS !== 'undefined'){
-    SECTIONS.forEach(section => {
-      section.items.forEach(entry => {
-        if (entry.group){
-          ALL_CALC_PAGES.push(entry.href);
-          entry.items.forEach(it => ALL_CALC_PAGES.push(it.href));
-        } else {
-          ALL_CALC_PAGES.push(entry.href);
-        }
-      });
-    });
-  }
-
   /* ── Кнопки навигации в шапке (порядок = порядок отображения) ──
      Чтобы добавить новую кнопку — просто добавьте объект в массив.
      current: true  — эта кнопка ведёт на текущую страницу (авто)
@@ -102,7 +84,7 @@
       nextBtn.href = SITE_PAGES[idx + 1].href;
       nextBtn.title = SITE_PAGES[idx + 1].title;
       nextBtn.classList.remove('disabled');
-    } else if (idx === -1){
+    } else if (idx === -1 && SITE_PAGES.length > 0){
       // Мы не на одной из "листов" (например, index.html или about.html) —
       // "Вперёд" ведёт к первой странице справочника
       nextBtn.href = SITE_PAGES[0].href;
@@ -209,13 +191,15 @@
 
   /* ══════════════════════════════════════════════════════════════
      ОГРАНИЧЕНИЕ ДОСТУПА К КАЛЬКУЛЯТОРАМ
-     Страницы самих расчётных инструментов (все, что есть в SITE_PAGES,
-     т.е. НЕ index.html и НЕ about.html) доступны только вошедшим
-     через Google. Это программная блокировка на уровне браузера —
-     не защита данных, а фильтр для случайных посетителей и способ
+     Простое и надёжное правило: закрыто ВСЁ, кроме index.html и
+     about.html. Не зависит от SECTIONS/site-structure.js — так гейт
+     работает даже если на какой-то странице забыли подключить этот
+     файл (раньше именно это было причиной, что доступ был открыт
+     везде). Это программная блокировка на уровне браузера — не
+     защита данных, а фильтр для случайных посетителей и способ
      учитывать реальных пользователей справочника.
      ══════════════════════════════════════════════════════════════ */
-  const isCalculatorPage = ALL_CALC_PAGES.includes(current);
+  const isCalculatorPage = current !== 'index.html' && current !== 'about.html';
   let authGateEl = null;
 
   function showAuthGate(){
