@@ -86,3 +86,47 @@
   transition: color .15s;
 }
 .auth-logout:hover { color: #f76c6c; }
+
+/* ── Гейт доступа к калькуляторам (закрыт для не вошедших) ── */
+#authGate {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(8, 10, 18, 0.97);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.auth-gate-box {
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  background: #12141f;
+  border: 1px solid #2e3347;
+  border-radius: 16px;
+  padding: 36px 28px;
+}
+.auth-gate-box h2 {
+  color: #fff;
+  font-size: 1.25rem;
+  margin: 0 0 12px;
+}
+.auth-gate-box p {
+  color: #a2a6c2;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+#googleSignInBtnGate {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.auth-gate-back {
+  display: inline-block;
+  color: #6b7099;
+  font-size: 13px;
+  text-decoration: none;
+}
+.auth-gate-back:hover { color: #4f8ef7; }

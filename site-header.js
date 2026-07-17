@@ -178,6 +178,7 @@
     };
     saveUser(user);
     renderSignedIn(user);
+    hideAuthGate();
 
     // Отправляем данные на бэкенд для учёта пользователей (не блокирует интерфейс)
     fetch(USER_LOG_API_URL, {
@@ -188,10 +189,58 @@
   }
   window.handleGoogleSignIn = handleGoogleSignIn;
 
+  /* ══════════════════════════════════════════════════════════════
+     ОГРАНИЧЕНИЕ ДОСТУПА К КАЛЬКУЛЯТОРАМ
+     Страницы самих расчётных инструментов (все, что есть в SITE_PAGES,
+     т.е. НЕ index.html и НЕ about.html) доступны только вошедшим
+     через Google. Это программная блокировка на уровне браузера —
+     не защита данных, а фильтр для случайных посетителей и способ
+     учитывать реальных пользователей справочника.
+     ══════════════════════════════════════════════════════════════ */
+  const isCalculatorPage = idx !== -1;
+  let authGateEl = null;
+
+  function showAuthGate(){
+    if (authGateEl) return;
+    document.body.style.overflow = 'hidden';
+    authGateEl = document.createElement('div');
+    authGateEl.id = 'authGate';
+    authGateEl.innerHTML = `
+      <div class="auth-gate-box">
+        <h2>Доступ по входу через Google</h2>
+        <p>Чтобы открыть расчётные материалы справочника, войдите через свой Google-аккаунт — это бесплатно и займёт пару секунд.</p>
+        <div id="googleSignInBtnGate"></div>
+        <a class="auth-gate-back" href="index.html">← Вернуться к содержанию</a>
+      </div>
+    `;
+    document.body.appendChild(authGateEl);
+    renderGateButtonIfReady();
+  }
+
+  function hideAuthGate(){
+    if (authGateEl){
+      authGateEl.remove();
+      authGateEl = null;
+    }
+    document.body.style.overflow = '';
+  }
+
+  function renderGateButtonIfReady(){
+    const gateBtn = document.getElementById('googleSignInBtnGate');
+    if (gateBtn && window.google && google.accounts && google.accounts.id){
+      google.accounts.id.renderButton(
+        gateBtn,
+        { theme: 'filled_blue', size: 'large', text: 'signin_with', locale: 'ru' }
+      );
+    }
+  }
+
   if (authMount){
     const saved = getSavedUser();
     if (saved){
       renderSignedIn(saved);
+    } else if (isCalculatorPage){
+      showAuthGate();
     }
 
     // Подключаем скрипт Google Identity Services, если его ещё нет на странице
@@ -206,11 +255,15 @@
           client_id: GOOGLE_CLIENT_ID,
           callback: handleGoogleSignIn
         });
-        if (!saved){ renderSignedOut(); }
+        if (!saved){
+          renderSignedOut();
+          renderGateButtonIfReady();
+        }
       };
       document.head.appendChild(script);
     } else if (!saved){
       renderSignedOut();
+      renderGateButtonIfReady();
     }
   }
 })();
