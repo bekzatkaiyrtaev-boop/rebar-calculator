@@ -73,28 +73,30 @@
     headerStyle.id = 'site-header-styles';
     headerStyle.textContent = `
       .site-header{
-        padding:18px 24px 10px;
+        padding:14px 24px 8px;
       }
       .site-header-top{
-        display:flex;
+        display:grid;
+        grid-template-columns:260px 1fr 260px;
         align-items:center;
-        justify-content:space-between;
-        gap:25px;
-        padding-bottom:14px;
-        margin-bottom:14px;
+        gap:20px;
+        padding-bottom:10px;
+        margin-bottom:8px;
         border-bottom:1px solid rgba(255,255,255,.12);
       }
       .site-brand{
-        width:320px;
         display:flex;
         align-items:center;
+        justify-self:start;
+        min-width:0;
       }
       .site-brand a{
-        display:inline-block;
+        display:inline-flex;
+        align-items:center;
       }
       .site-logo{
         display:block;
-        height:58px;
+        height:50px;
         width:auto;
         transition:transform .18s ease;
       }
@@ -102,21 +104,25 @@
         transform:scale(1.04);
       }
       .site-title{
-        flex:1;
         text-align:center;
+        justify-self:center;
+        min-width:0;
       }
       .site-title-main{
-        font-size:30px;
-        font-weight:700;
-        letter-spacing:.5px;
+        font-size:23px;
+        font-weight:600;
+        letter-spacing:.3px;
+        white-space:nowrap;
       }
       .site-auth{
-        width:320px;
         display:flex;
+        align-items:center;
         justify-content:flex-end;
+        justify-self:end;
+        min-width:0;
       }
       .site-nav{
-        margin-top:18px;
+        margin-top:10px;
         display:flex;
         justify-content:center;
         align-items:center;
