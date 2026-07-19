@@ -72,8 +72,24 @@
     const headerStyle = document.createElement('style');
     headerStyle.id = 'site-header-styles';
     headerStyle.textContent = `
+      /* .site-header "вырывается" из контейнера страницы и всегда
+         занимает полную ширину окна — независимо от того, насколько
+         узкий или широкий контейнер контента на конкретной странице */
       .site-header{
-        padding:12px 24px 6px;
+        width:100vw;
+        margin-left:calc(50% - 50vw);
+        margin-right:calc(50% - 50vw);
+        padding:12px 0 6px;
+        box-sizing:border-box;
+        overflow-x:hidden;
+      }
+      /* .header-container — фиксированная максимальная ширина и
+         одинаковые боковые отступы на всех страницах сайта */
+      .header-container{
+        max-width:1320px;
+        margin:0 auto;
+        padding:0 24px;
+        box-sizing:border-box;
       }
       .site-header-top{
         display:grid;
@@ -157,18 +173,20 @@
 
   mount.innerHTML = `
     <header class="site-header">
-      <div class="site-header-top">
-        <div class="site-brand">
-          <a href="index.html">
-            <img class="site-logo" src="${LOGO_DATA_URI}" alt="ESK Engineering">
-          </a>
+      <div class="header-container">
+        <div class="site-header-top">
+          <div class="site-brand">
+            <a href="index.html">
+              <img class="site-logo" src="${LOGO_DATA_URI}" alt="ESK Engineering">
+            </a>
+          </div>
+          <div class="site-title">
+            <div class="site-title-main">Электронный справочник конструктора</div>
+          </div>
+          <div class="site-auth" id="siteAuth"></div>
         </div>
-        <div class="site-title">
-          <div class="site-title-main">Электронный справочник конструктора</div>
-        </div>
-        <div class="site-auth" id="siteAuth"></div>
+        <nav class="site-nav">${navHTML}</nav>
       </div>
-      <nav class="site-nav">${navHTML}</nav>
     </header>
   `;
 
