@@ -73,15 +73,15 @@
     headerStyle.id = 'site-header-styles';
     headerStyle.textContent = `
       .site-header{
-        padding:14px 24px 8px;
+        padding:12px 24px 6px;
       }
       .site-header-top{
         display:grid;
-        grid-template-columns:260px 1fr 260px;
+        grid-template-columns:1fr auto 1fr;
         align-items:center;
         gap:20px;
-        padding-bottom:10px;
-        margin-bottom:8px;
+        padding-bottom:8px;
+        margin-bottom:6px;
         border-bottom:1px solid rgba(255,255,255,.12);
       }
       .site-brand{
@@ -96,7 +96,7 @@
       }
       .site-logo{
         display:block;
-        height:50px;
+        height:58px;
         width:auto;
         transition:transform .18s ease;
       }
@@ -104,14 +104,17 @@
         transform:scale(1.04);
       }
       .site-title{
-        text-align:center;
+        display:flex;
+        align-items:center;
+        justify-content:center;
         justify-self:center;
-        min-width:0;
+        text-align:center;
       }
       .site-title-main{
         font-size:23px;
         font-weight:600;
         letter-spacing:.3px;
+        line-height:1;
         white-space:nowrap;
       }
       .site-auth{
@@ -122,11 +125,11 @@
         min-width:0;
       }
       .site-nav{
-        margin-top:10px;
+        margin-top:6px;
         display:flex;
         justify-content:center;
         align-items:center;
-        gap:12px;
+        gap:10px;
         flex-wrap:wrap;
       }
       .site-nav .sep{
@@ -136,8 +139,8 @@
         display:inline-flex;
         align-items:center;
         justify-content:center;
-        min-height:38px;
-        padding:0 18px;
+        min-height:32px;
+        padding:0 16px;
         border-radius:5px;
         transition:.18s;
       }
