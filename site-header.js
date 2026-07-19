@@ -72,13 +72,18 @@
     const headerStyle = document.createElement('style');
     headerStyle.id = 'site-header-styles';
     headerStyle.textContent = `
-      /* Ширина шапки теперь гарантируется переносом <header> в
-         document.body (см. код ниже) — сама шапка просто занимает
-         100% ширины своего родителя, которым всегда будет <body> */
+      /* .site-header "вырывается" из контейнера страницы и всегда
+         занимает полную ширину окна — независимо от того, насколько
+         узкий или широкий контейнер контента на конкретной странице.
+         Без манипуляций с DOM (см. историю правок) — это безопаснее
+         и не влияет на остальную логику страницы. */
       .site-header{
-        width:100%;
+        width:100vw;
+        margin-left:calc(50% - 50vw);
+        margin-right:calc(50% - 50vw);
         padding:12px 0 6px;
         box-sizing:border-box;
+        overflow-x:hidden;
       }
       /* .header-container — фиксированная максимальная ширина и
          одинаковые боковые отступы на всех страницах сайта */
@@ -186,17 +191,6 @@
       </div>
     </header>
   `;
-
-  /* ── Переносим готовую шапку в самое начало <body> ──
-     Так её ширина никогда не будет зависеть от того, в какой
-     контейнер (узкий/широкий, с overflow:hidden и т.п.) был
-     вложен исходный <div id="site-header"> на конкретной странице.
-     Сам исходный mount остаётся в документе пустым — на разметку
-     страницы это не влияет. ── */
-  const renderedHeader = mount.querySelector('.site-header');
-  if (renderedHeader && document.body.firstElementChild !== renderedHeader){
-    document.body.insertBefore(renderedHeader, document.body.firstChild);
-  }
 
   /* ── Настраиваем "Назад / Вперёд" по позиции в SITE_PAGES ── */
   const prevBtn = document.getElementById('siteNavPrev');
