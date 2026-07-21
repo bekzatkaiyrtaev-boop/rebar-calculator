@@ -123,6 +123,14 @@
   justify-content: center;
   margin-bottom: 20px;
 }
+.auth-gate-admin {
+  display: block;
+  color: #6b7099;
+  font-size: 12px;
+  text-decoration: none;
+  margin-bottom: 14px;
+}
+.auth-gate-admin:hover { color: #4f8ef7; }
 .auth-gate-back {
   display: inline-block;
   color: #6b7099;

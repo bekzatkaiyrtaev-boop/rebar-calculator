@@ -113,6 +113,11 @@
   const USER_LOG_API_URL = 'https://rebar-backend-henna.vercel.app/api/log-user';
   const AUTH_STORAGE_KEY = 'esk_user';
 
+  // Почты, для которых гейт можно снять вводом e-mail (без реального Google-
+  // попапа) — нужно автору для разработки на localhost, где попап Google
+  // всё равно не откроется (домен не зарегистрирован в OAuth-клиенте).
+  const ADMIN_EMAILS = ['bekzat.kaiyrtaev@gmail.com'];
+
   const authMount = document.getElementById('siteAuth');
 
   function getSavedUser(){
@@ -212,11 +217,26 @@
         <h2>Доступ по входу через Google</h2>
         <p>Чтобы открыть расчётные материалы справочника, войдите через свой Google-аккаунт — это бесплатно и займёт пару секунд.</p>
         <div id="googleSignInBtnGate"></div>
+        <a class="auth-gate-admin" href="#" id="authGateAdminLink">Я автор — войти по e-mail</a>
         <a class="auth-gate-back" href="index.html">← Вернуться к содержанию</a>
       </div>
     `;
     document.body.appendChild(authGateEl);
     renderGateButtonIfReady();
+
+    document.getElementById('authGateAdminLink').addEventListener('click', function(e){
+      e.preventDefault();
+      const email = (window.prompt('E-mail автора:') || '').trim().toLowerCase();
+      if (!email) return;
+      if (ADMIN_EMAILS.includes(email)) {
+        const user = { name: 'Автор', email, picture: '' };
+        saveUser(user);
+        renderSignedIn(user);
+        hideAuthGate();
+      } else {
+        window.alert('Эта почта не в списке авторов.');
+      }
+    });
   }
 
   function hideAuthGate(){

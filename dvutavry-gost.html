@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Двутавры стальные горячекатаные — ГОСТ 8239-89 — Электронный справочник конструктора</title>
+<style>
+:root {
+  --bg:       #0f1117;
+  --surface:  #1a1d27;
+  --surface2: #22263a;
+  --border:   #2e3347;
+  --accent:   #4f8ef7;
+  --green:    #7dd3a8;
+  --warn:     #f4b942;
+  --red:      #ef4444;
+  --text:     #d6daf0;
+  --muted:    #6b7099;
+  --mono:     'JetBrains Mono','Courier New',monospace;
+  --sans:     'Inter','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;padding:24px 16px 48px;}
+.page-wrap{max-width:960px;margin:0 auto;}
+
+.page-title{text-align:center;margin-bottom:6px;font-size:22px;font-weight:700;color:#fff;}
+.page-sub{text-align:center;color:var(--muted);font-size:12px;margin-bottom:24px;font-family:var(--mono);}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.card-header{background:var(--surface2);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.card-header .title{font-size:13px;font-weight:700;color:#fff;}
+.card-header .ref{font-family:var(--mono);font-size:10.5px;color:var(--accent);background:transparent;border:none;padding:0;opacity:.85;}
+.card-body{padding:16px;}
+
+.field-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:4px;}
+.field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;}
+.field select{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  color:var(--text);font-family:var(--sans);font-size:14px;font-weight:700;
+  padding:10px 12px;outline:none;cursor:pointer;
+}
+.field select:focus{border-color:var(--accent);}
+
+.design-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin-top:16px;}
+@media(max-width:640px){ .design-grid{grid-template-columns:repeat(2,1fr);} }
+.design-cell{background:var(--surface);padding:14px 12px;text-align:center;}
+.design-cell .dc-label{font-size:10.5px;color:var(--muted);margin-bottom:4px;}
+.design-cell .dc-val{font-size:16px;font-weight:700;font-family:var(--mono);color:#fff;}
+.design-cell.highlight-warn .dc-val{color:var(--warn);}
+
+.scheme-block{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;justify-content:center;padding:8px 0;}
+.scheme-block img{flex-shrink:0;}
+.scheme-legend{font-size:12.5px;color:var(--muted);}
+.scheme-legend div{margin-bottom:4px;}
+.scheme-legend b{color:var(--text);font-family:var(--mono);}
+
+table.datatable{width:100%;border-collapse:collapse;font-size:12px;}
+table.datatable th{background:var(--surface2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.3px;padding:7px 6px;border:1px solid var(--border);text-align:center;white-space:nowrap;}
+table.datatable td{padding:6px 6px;border:1px solid var(--border);text-align:center;color:var(--text);font-family:var(--mono);}
+table.datatable td.label{text-align:left;color:var(--muted);font-family:var(--sans);}
+table.datatable tr.current-row td{background:rgba(79,142,247,0.12);color:var(--accent);font-weight:700;}
+
+.text-block{padding:16px;font-size:13px;line-height:1.8;color:var(--text);}
+.text-block p{margin-bottom:10px;}
+.text-block p:last-child{margin-bottom:0;}
+.text-block b{color:#fff;}
+.text-block .num{color:var(--accent);font-family:var(--mono);font-weight:700;margin-right:6px;}
+
+.notes{padding:14px 16px;font-size:12px;line-height:1.8;color:var(--muted);}
+.notes b{color:var(--text);}
+
+details.card{padding:0;}
+details.card > summary{
+  list-style:none;cursor:pointer;background:var(--surface2);padding:12px 16px;
+  border-bottom:1px solid transparent;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+}
+details.card > summary::-webkit-details-marker{display:none;}
+details.card > summary::before{
+  content:'▸';color:var(--accent);font-size:11px;margin-right:8px;transition:transform .15s;display:inline-block;
+}
+details.card[open] > summary::before{transform:rotate(90deg);}
+details.card[open] > summary{border-bottom:1px solid var(--border);}
+details.card > summary .title{font-size:13px;font-weight:700;color:#fff;}
+details.card > summary .ref{font-family:var(--mono);font-size:10.5px;color:var(--accent);background:transparent;border:none;padding:0;opacity:.85;}
+details.card > summary .summary-flex{display:flex;align-items:center;justify-content:space-between;flex:1;gap:8px;flex-wrap:wrap;}
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+<div class="page-wrap">
+
+<div id="site-header"></div>
+
+<div class="page-title">Двутавры стальные горячекатаные</div>
+<div class="page-sub">ГОСТ 8239-89 (СТ СЭВ 2209-80) — сортамент, с уклоном внутренних граней полок</div>
+
+<!-- ══════ Схема сечения ══════ -->
+<div class="card">
+  <div class="card-body">
+    <div class="scheme-block">
+      <img src="data:image/png;base64,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" alt="Сечение двутавра" style="max-width:150px;width:100%;height:auto;">
+      <div class="scheme-legend">
+        <div><b>h</b> = <span id="legH">—</span> мм — высота двутавра</div>
+        <div><b>b</b> = <span id="legB">—</span> мм — ширина полки</div>
+        <div><b>s</b> = <span id="legS">—</span> мм — толщина стенки</div>
+        <div><b>t</b> = <span id="legT">—</span> мм — средняя толщина полки</div>
+        <div><b>R</b> = <span id="legR">—</span> мм — радиус внутреннего закругления</div>
+        <div><b>r</b> = <span id="legRr">—</span> мм — радиус закругления полки</div>
+        <div><b>F</b> = <span id="legF">—</span> см² — площадь сечения</div>
+        <div><b>M</b> = <span id="legM">—</span> кг/м — масса 1 м</div>
+        <div style="margin-top:6px;">уклон внутренних граней полок — <b>6–12%</b></div>
+        <div><b>X–X</b> — ось максимального момента инерции (сильная)</div>
+        <div><b>Y–Y</b> — ось минимального момента инерции (слабая)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ Подбор двутавра ══════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Подбор двутавра</span>
+    <span class="ref">Табл. 1 (8239-89)</span>
+  </div>
+  <div class="card-body">
+    <div class="field-grid">
+      <div class="field">
+        <label>Номер двутавра</label>
+        <select id="selSize" onchange="onSizeChange()"></select>
+      </div>
+    </div>
+    <div class="design-grid" id="resultGrid"></div>
+  </div>
+</div>
+
+<!-- ══════ Полная таблица ══════ -->
+<details class="card">
+  <summary><span class="summary-flex"><span class="title">Полная таблица — все номера</span><span class="ref">Табл. 1 (8239-89)</span></span></summary>
+  <div style="overflow-x:auto;">
+    <table class="datatable" id="fullTableBody"></table>
+  </div>
+</details>
+
+<!-- ══════ Условное обозначение при заказе ══════ -->
+<details class="card">
+  <summary><span class="summary-flex"><span class="title">Условное обозначение при заказе</span></span></summary>
+  <div class="text-block">
+    <p>Для выбранного выше профиля — номер <b id="desigNomer">20</b>, по ГОСТ 8239-89:</p>
+    <p style="font-family:var(--mono);color:var(--accent);font-size:14px;text-align:center;padding:8px;background:var(--surface2);border-radius:6px;" id="desigCode">Двутавр 20 ГОСТ 8239-89</p>
+    <p>То же, повышенной точности проката, стали марки С245 по ГОСТ 27772:</p>
+    <p style="font-family:var(--mono);color:var(--accent);font-size:14px;text-align:center;padding:8px;background:var(--surface2);border-radius:6px;" id="desigCodeFull">Двутавр 20-Б-С245 ГОСТ 8239-89</p>
+    <p>По точности прокатки: <b>Б</b> — повышенная точность, <b>В</b> — обычная точность.</p>
+  </div>
+</details>
+
+<p style="text-align:center;color:var(--muted);font-size:11px;margin-top:8px;">Область применения — балки, прогоны, колонны и другие изгибаемые/сжато-изгибаемые элементы стальных каркасов. <b>Двутавры от № 24 до № 60 не рекомендуется применять в новых разработках</b> (примечание 4 ГОСТ) — для новых проектов предпочтительны двутавры с параллельными гранями полок по СТО АСЧМ 20-93 или широкополочные по сериям Б/Ш/К. Расчёт по EN 1993-1-1: несимметричное относительно оси z нагружение и потеря устойчивости сжатого пояса при недостаточном раскреплении требуют проверки на LTB (§6.3.2).</p>
+
+</div>
+
+<div id="site-footer"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   ГОСТ 8239-89 (СТ СЭВ 2209-80) — двутавры стальные горячекатаные
+   с уклоном внутренних граней полок, сортамент. 17 номеров (10-60).
+   Данные извлечены программно из полного текста ГОСТ (docx)
+   и проверены по формулам ix=√(Ix/F), iy=√(Iy/F) — совпадение
+   для всех 17 строк.
+   ══════════════════════════════════════════════════════ */
+const BEAMS = [{"nomer":"10","h":100.0,"b":55.0,"s":4.5,"t":7.2,"R":7.0,"r":2.5,"F":12.0,"mass":9.46,"Ix":198.0,"Wx":39.7,"ix":4.06,"Sx":23.0,"Iy":17.9,"Wy":6.49,"iy":1.22},{"nomer":"12","h":120.0,"b":64.0,"s":4.8,"t":7.3,"R":7.5,"r":3.0,"F":14.7,"mass":11.5,"Ix":350.0,"Wx":58.4,"ix":4.88,"Sx":33.7,"Iy":27.9,"Wy":8.72,"iy":1.38},{"nomer":"14","h":140.0,"b":73.0,"s":4.9,"t":7.5,"R":8.0,"r":3.0,"F":17.4,"mass":13.7,"Ix":572.0,"Wx":81.7,"ix":5.73,"Sx":46.8,"Iy":41.9,"Wy":11.5,"iy":1.55},{"nomer":"16","h":160.0,"b":81.0,"s":5.0,"t":7.8,"R":8.5,"r":3.5,"F":20.2,"mass":15.9,"Ix":873.0,"Wx":109.0,"ix":6.57,"Sx":62.3,"Iy":58.6,"Wy":14.5,"iy":1.7},{"nomer":"18","h":180.0,"b":90.0,"s":5.1,"t":8.1,"R":9.0,"r":3.5,"F":23.4,"mass":18.4,"Ix":1290.0,"Wx":143.0,"ix":7.42,"Sx":81.4,"Iy":82.6,"Wy":18.4,"iy":1.88},{"nomer":"20","h":200.0,"b":100.0,"s":5.2,"t":8.4,"R":9.5,"r":4.0,"F":26.8,"mass":21.0,"Ix":1840.0,"Wx":184.0,"ix":8.28,"Sx":104.0,"Iy":115.0,"Wy":23.1,"iy":2.07},{"nomer":"22","h":220.0,"b":110.0,"s":5.4,"t":8.7,"R":10.0,"r":4.0,"F":30.6,"mass":24.0,"Ix":2550.0,"Wx":232.0,"ix":9.13,"Sx":131.0,"Iy":157.0,"Wy":28.6,"iy":2.27},{"nomer":"24","h":240.0,"b":115.0,"s":5.6,"t":9.5,"R":10.5,"r":4.0,"F":34.8,"mass":27.3,"Ix":3460.0,"Wx":289.0,"ix":9.97,"Sx":163.0,"Iy":198.0,"Wy":34.5,"iy":2.37},{"nomer":"27","h":270.0,"b":125.0,"s":6.0,"t":9.8,"R":11.0,"r":4.5,"F":40.2,"mass":31.5,"Ix":5010.0,"Wx":371.0,"ix":11.2,"Sx":210.0,"Iy":260.0,"Wy":41.5,"iy":2.54},{"nomer":"30","h":300.0,"b":135.0,"s":6.5,"t":10.2,"R":12.0,"r":5.0,"F":46.5,"mass":36.5,"Ix":7080.0,"Wx":472.0,"ix":12.3,"Sx":268.0,"Iy":337.0,"Wy":49.9,"iy":2.69},{"nomer":"33","h":330.0,"b":140.0,"s":7.0,"t":11.2,"R":13.0,"r":5.0,"F":53.8,"mass":42.2,"Ix":9840.0,"Wx":597.0,"ix":13.5,"Sx":339.0,"Iy":419.0,"Wy":59.9,"iy":2.79},{"nomer":"36","h":360.0,"b":145.0,"s":7.5,"t":12.3,"R":14.0,"r":6.0,"F":61.9,"mass":48.6,"Ix":13380.0,"Wx":743.0,"ix":14.7,"Sx":423.0,"Iy":516.0,"Wy":71.1,"iy":2.89},{"nomer":"40","h":400.0,"b":155.0,"s":8.3,"t":13.0,"R":15.0,"r":6.0,"F":72.6,"mass":57.0,"Ix":19062.0,"Wx":953.0,"ix":16.2,"Sx":545.0,"Iy":667.0,"Wy":86.1,"iy":3.03},{"nomer":"45","h":450.0,"b":160.0,"s":9.0,"t":14.2,"R":16.0,"r":7.0,"F":84.7,"mass":66.5,"Ix":27696.0,"Wx":1231.0,"ix":18.1,"Sx":708.0,"Iy":808.0,"Wy":101.0,"iy":3.09},{"nomer":"50","h":500.0,"b":170.0,"s":10.0,"t":15.2,"R":17.0,"r":7.0,"F":100.0,"mass":78.5,"Ix":39727.0,"Wx":1589.0,"ix":19.9,"Sx":919.0,"Iy":1043.0,"Wy":123.0,"iy":3.23},{"nomer":"55","h":550.0,"b":180.0,"s":11.0,"t":16.5,"R":18.0,"r":7.0,"F":118.0,"mass":92.6,"Ix":55962.0,"Wx":2035.0,"ix":21.8,"Sx":1181.0,"Iy":1356.0,"Wy":151.0,"iy":3.39},{"nomer":"60","h":600.0,"b":190.0,"s":12.0,"t":17.8,"R":20.0,"r":8.0,"F":138.0,"mass":108.0,"Ix":76806.0,"Wx":2560.0,"ix":23.6,"Sx":1491.0,"Iy":1725.0,"Wy":182.0,"iy":3.54}];
+
+const selectedState = { key: null };
+
+function fmt(v){ return (v===null||v===undefined) ? '—' : v; }
+
+function buildSizeOptions(){
+  const sel = document.getElementById('selSize');
+  sel.innerHTML = BEAMS.map((r,i) => `<option value="${i}">${r.nomer}</option>`).join('');
+  if (selectedState.key !== null) sel.value = selectedState.key;
+}
+
+function onSizeChange(){
+  selectedState.key = document.getElementById('selSize').value;
+  render();
+}
+
+function render(){
+  const i = parseInt(document.getElementById('selSize').value);
+  const row = BEAMS[i];
+
+  const grid = document.getElementById('resultGrid');
+  grid.innerHTML = `
+    <div class="design-cell"><div class="dc-label">Высота h</div><div class="dc-val">${fmt(row.h)} мм</div></div>
+    <div class="design-cell"><div class="dc-label">Ширина полки b</div><div class="dc-val">${fmt(row.b)} мм</div></div>
+    <div class="design-cell"><div class="dc-label">Толщина стенки s</div><div class="dc-val">${fmt(row.s)} мм</div></div>
+    <div class="design-cell"><div class="dc-label">Толщина полки t</div><div class="dc-val">${fmt(row.t)} мм</div></div>
+    <div class="design-cell"><div class="dc-label">Площадь сечения F</div><div class="dc-val">${fmt(row.F)} см²</div></div>
+    <div class="design-cell"><div class="dc-label">Ix</div><div class="dc-val">${fmt(row.Ix)} см⁴</div></div>
+    <div class="design-cell"><div class="dc-label">Wx</div><div class="dc-val">${fmt(row.Wx)} см³</div></div>
+    <div class="design-cell"><div class="dc-label">ix</div><div class="dc-val">${fmt(row.ix)} см</div></div>
+    <div class="design-cell"><div class="dc-label">Sx</div><div class="dc-val">${fmt(row.Sx)} см³</div></div>
+    <div class="design-cell"><div class="dc-label">Iy</div><div class="dc-val">${fmt(row.Iy)} см⁴</div></div>
+    <div class="design-cell"><div class="dc-label">Wy</div><div class="dc-val">${fmt(row.Wy)} см³</div></div>
+    <div class="design-cell"><div class="dc-label">iy</div><div class="dc-val">${fmt(row.iy)} см</div></div>
+    <div class="design-cell highlight-warn" style="grid-column:1 / -1;"><div class="dc-label">Масса 1 м</div><div class="dc-val">${fmt(row.mass)} кг</div></div>
+  `;
+
+  document.getElementById('legH').textContent = fmt(row.h);
+  document.getElementById('legB').textContent = fmt(row.b);
+  document.getElementById('legS').textContent = fmt(row.s);
+  document.getElementById('legT').textContent = fmt(row.t);
+  document.getElementById('legR').textContent = fmt(row.R);
+  document.getElementById('legRr').textContent = fmt(row.r);
+  document.getElementById('legF').textContent = fmt(row.F);
+  document.getElementById('legM').textContent = fmt(row.mass);
+
+  renderFullTable(i);
+  updateDesignation(row);
+}
+
+function renderFullTable(currentIdx){
+  const table = document.getElementById('fullTableBody');
+  let html = `<tr><th>№</th><th>h,мм</th><th>b,мм</th><th>s,мм</th><th>t,мм</th><th>R,мм</th><th>r,мм</th><th>F,см²</th><th>Масса,кг/м</th><th>Ix,см⁴</th><th>Wx,см³</th><th>ix,см</th><th>Sx,см³</th><th>Iy,см⁴</th><th>Wy,см³</th><th>iy,см</th></tr>`;
+  BEAMS.forEach((r,i) => {
+    const cur = i === currentIdx ? ' class="current-row"' : '';
+    html += `<tr${cur}><td class="label">${r.nomer}</td><td>${r.h}</td><td>${r.b}</td><td>${r.s}</td><td>${r.t}</td><td>${r.R}</td><td>${r.r}</td><td>${r.F}</td><td>${r.mass}</td><td>${r.Ix}</td><td>${r.Wx}</td><td>${r.ix}</td><td>${r.Sx}</td><td>${r.Iy}</td><td>${r.Wy}</td><td>${r.iy}</td></tr>`;
+  });
+  table.innerHTML = html;
+}
+
+function updateDesignation(row){
+  document.getElementById('desigNomer').textContent = row.nomer;
+  document.getElementById('desigCode').textContent = `Двутавр ${row.nomer} ГОСТ 8239-89`;
+  document.getElementById('desigCodeFull').textContent = `Двутавр ${row.nomer}-Б-С245 ГОСТ 8239-89`;
+}
+
+buildSizeOptions();
+onSizeChange();
+</script>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+
+</body>
+</html>
