@@ -54,6 +54,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .scheme-legend{font-size:12.5px;color:var(--muted);}
 .scheme-legend div{margin-bottom:4px;}
 .scheme-legend b{color:var(--text);font-family:var(--mono);}
+.scheme-legend .legend-highlight{color:#fff;}
 
 table.datatable{width:100%;border-collapse:collapse;font-size:12px;}
 table.datatable th{background:var(--surface2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.3px;padding:7px 6px;border:1px solid var(--border);text-align:center;white-space:nowrap;}
@@ -110,7 +111,7 @@ details.card > summary .summary-flex{display:flex;align-items:center;justify-con
         <div><b>d</b> = <span id="legd">—</span> мм — внутренний диаметр (d = D − 2S)</div>
         <div><b>F</b> = <span id="legF">—</span> см² — площадь сечения</div>
         <div><b>M</b> = <span id="legM">—</span> кг/м — масса 1 м</div>
-        <div style="margin-top:6px;">масса: <b>M = 0,02466 · S · (D − S)</b>, плотность стали 7,850 г/см³</div>
+        <div class="legend-highlight">Мин. радиус холодной гибки (30·D) = <span id="legBendR">—</span></div>
       </div>
     </div>
   </div>
@@ -198,6 +199,14 @@ function computeGeometry(D, S){
 function round2(v){ return (Math.round(v*100)/100).toString().replace('.', ','); }
 function round3(v){ return (Math.round(v*1000)/1000).toString().replace('.', ','); }
 
+// Минимальный радиус холодной гибки труб принимается не менее 30 наружных
+// диаметров (R ≥ 30·D) — типовое конструктивное требование для гибки в
+// холодном состоянии без спецоборудования.
+function fmtBendRadius(D){
+  const rMm = 30 * D;
+  return rMm >= 1000 ? round2(rMm / 1000) + ' м' : round2(rMm) + ' мм';
+}
+
 function buildDOptions(){
   const sel = document.getElementById('selD');
   sel.innerHTML = PIPES.diameters
@@ -246,6 +255,7 @@ function render(){
   document.getElementById('legd').textContent = round2(geo.d);
   document.getElementById('legF').textContent = round2(geo.F);
   document.getElementById('legM').textContent = round2(geo.mass);
+  document.getElementById('legBendR').textContent = fmtBendRadius(D);
 
   const warn = document.getElementById('warnBadge');
   let msgs = [];
