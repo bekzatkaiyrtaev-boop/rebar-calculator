@@ -39,7 +39,7 @@ body {
 }
 
 .page {
-  max-width: 780px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 16px 12px 40px;
 }
@@ -67,6 +67,16 @@ body {
   font-size: 0.95rem;
   margin: 0 0 8px;
 }
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.results-header h2 { margin: 0; }
 
 .hint {
   font-size: 0.75rem;
@@ -564,6 +574,7 @@ summary {
 
 .col2-data {
   padding: 14px;
+  min-width: 0;
 }
 
 .col2-data .subgroup {
@@ -588,11 +599,16 @@ summary {
   align-items: center;
   padding: 10px;
   border-left: 1px solid var(--border);
+  overflow: hidden;
+  min-width: 0;
 }
 
 .col2-image img {
+  display: block;
   width: 100%;
   max-width: 280px;
+  height: auto;
+  object-fit: contain;
   border-radius: 8px;
 }
 
@@ -963,7 +979,10 @@ summary {
   <button id="int-calcBtn" class="btn-primary">Рассчитать</button>
 
   <section id="int-results" class="card result-card" hidden>
-    <h2>Результаты</h2>
+    <div class="results-header">
+      <h2>Результаты</h2>
+      <button type="button" id="int-reportBtn" class="btn-secondary">Печать</button>
+    </div>
 
     <div class="live-detail-hidden">
     <div class="result-row">
@@ -1053,71 +1072,89 @@ summary {
     <div id="int-recommendations"></div>
   </section>
 
-  <section class="card">
-    <h2>Пояснительная записка</h2>
-    <p class="hint">Формирует читаемый отчёт по последнему расчёту (нажмите «Рассчитать» выше, если ещё не считали) — с формулами, промежуточными значениями и итогом. Кнопка открывает системный диалог печати браузера — там можно выбрать «Сохранить как PDF».</p>
-    <button type="button" id="int-reportBtn" class="btn-secondary">Сформировать и распечатать / сохранить в PDF</button>
-    <div id="int-reportPreview" class="report-preview"></div>
-  </section>
 </div>
 
 <div class="tab-panel" id="panel-edge">
-  <section class="card">
-    <h2>Колонна</h2>
-    <div class="grid-2">
-      <label>c₁, мм (⊥ свободному краю)
-        <input type="number" id="edge-c1" value="400" min="250">
-      </label>
-      <label>c₂, мм (∥ свободному краю)
-        <input type="number" id="edge-c2" value="400" min="250">
-      </label>
-    </div>
+  <div class="col2-layout">
+    <div class="col2-data">
+      <div class="subgroup">
+        <h2>Колонна</h2>
+        <div class="grid-2">
+          <label>c₁, мм (⊥ свободному краю)
+            <input type="number" id="edge-c1" value="400" min="250">
+          </label>
+          <label>c₂, мм (∥ свободному краю)
+            <input type="number" id="edge-c2" value="400" min="250">
+          </label>
+        </div>
 
-    <label style="flex-direction:row;align-items:center;gap:8px">
-      <input type="checkbox" id="edge-hasPedestal">
-      Есть подколонник (уширение колонны в основании)
-    </label>
-    <div id="edge-pedestalFields" style="display:none">
-      <p class="hint">В плиту продавливает именно подколонник — его размеры используются вместо c₁/c₂ во всех расчётах ниже.</p>
-      <div class="grid-3">
-        <label>b₁, мм (по стороне c₁)
-          <input type="number" id="edge-pedB1" value="600">
+        <label style="flex-direction:row;align-items:center;gap:8px">
+          <input type="checkbox" id="edge-hasPedestal">
+          Есть подколонник (уширение колонны в основании)
         </label>
-        <label>b₂, мм (по стороне c₂)
-          <input type="number" id="edge-pedB2" value="600">
+        <div id="edge-pedestalFields" style="display:none">
+          <p class="hint">В плиту продавливает именно подколонник — его размеры используются вместо c₁/c₂ во всех расчётах ниже.</p>
+          <div class="grid-3">
+            <label>b₁, мм (по стороне c₁)
+              <input type="number" id="edge-pedB1" value="600">
+            </label>
+            <label>b₂, мм (по стороне c₂)
+              <input type="number" id="edge-pedB2" value="600">
+            </label>
+            <label>hₚ, мм (высота)
+              <input type="number" id="edge-pedHp" value="400">
+            </label>
+          </div>
+          <p id="edge-pedestalHeightWarning" class="warning" hidden></p>
+        </div>
+
+        <label style="flex-direction:row;align-items:center;gap:8px">
+          <input type="checkbox" id="edge-towardInterior" checked>
+          Эксцентриситет направлен внутрь плиты (обычный случай)
         </label>
-        <label>hₚ, мм (высота)
-          <input type="number" id="edge-pedHp" value="400">
-        </label>
+
+        <p id="edge-aspectWarning" class="warning" hidden></p>
       </div>
-      <p id="edge-pedestalHeightWarning" class="warning" hidden></p>
+
+      <div class="subgroup">
+        <h2>Нагрузки на обрез фундамента (ULS)</h2>
+        <div class="grid-3">
+          <label>N, тс
+            <input type="number" id="edge-N" value="120">
+          </label>
+          <label>Mx, тс·м
+            <input type="number" id="edge-Mx" value="0">
+          </label>
+          <label>My, тс·м
+            <input type="number" id="edge-My" value="0">
+          </label>
+        </div>
+      </div>
+
+      <div class="subgroup">
+        <h2>Фундамент</h2>
+        <div class="grid-2">
+          <label>Класс бетона
+            <select id="edge-fck">
+              <option value="20">C20/25</option>
+              <option value="25" selected>C25/30</option>
+              <option value="30">C30/37</option>
+              <option value="35">C35/45</option>
+              <option value="40">C40/50</option>
+            </select>
+          </label>
+          <label>Отпор грунта p, тс/м²
+            <input type="number" id="edge-soilPressure" value="15" step="0.5">
+          </label>
+        </div>
+      </div>
     </div>
 
-    <label style="flex-direction:row;align-items:center;gap:8px">
-      <input type="checkbox" id="edge-towardInterior" checked>
-      Эксцентриситет направлен внутрь плиты (обычный случай)
-    </label>
-
-    <p id="edge-aspectWarning" class="warning" hidden></p>
-  </section>
-
-  <section class="card">
-    <h2>Фундамент</h2>
-    <div class="grid-2">
-      <label>Отпор грунта p, тс/м²
-        <input type="number" id="edge-soilPressure" value="15" step="0.5">
-      </label>
-      <label>Класс бетона
-        <select id="edge-fck">
-          <option value="20">C20/25</option>
-          <option value="25" selected>C25/30</option>
-          <option value="30">C30/37</option>
-          <option value="35">C35/45</option>
-          <option value="40">C40/50</option>
-        </select>
-      </label>
+    <div class="col2-image" id="edge-mainSketchWrap">
+      <img src="prodavlivanie-fundament/prodavlivanie-3d-shema-edge.webp" alt="Схема осей и нагрузок на крайнюю колонну (N, Mx, My, X, Y, Z, c1, c2, d)">
+      <img src="prodavlivanie-fundament/prodavlivanie-3d-shema-edge-2.webp" alt="Схема осей, нагрузок и подколонника крайней колонны (b1, b2, hp)" class="pedestal-sketch-img" id="edge-pedestalSketchImg" style="display:none">
     </div>
-  </section>
+  </div>
 
   <details class="card reinf-section" id="edge-perimeterSection" open>
     <summary class="summary-badge"><span>Контрольный периметр и метод расчёта</span><span class="perimeter-badge" id="edge-perimeterBadge">u₁ = — · β = —</span></summary>
@@ -1141,21 +1178,6 @@ summary {
     <label id="edge-betaFigureWrap" style="display:none"><div class="u1-diagram-wrap"><img src="prodavlivanie-fundament/prodavlivanie-kp-9.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img"></div></label>
     <div id="edge-figureBetaDiagramWrap" class="u1-diagram-wrap" style="display:none"><img src="prodavlivanie-fundament/prodavlivanie-kp-10.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img"></div>
   </details>
-
-  <section class="card">
-    <h2>Нагрузки на обрез фундамента (ULS)</h2>
-    <div class="grid-3">
-      <label>N, тс
-        <input type="number" id="edge-N" value="120">
-      </label>
-      <label>Mx, тс·м
-        <input type="number" id="edge-Mx" value="0">
-      </label>
-      <label>My, тс·м
-        <input type="number" id="edge-My" value="0">
-      </label>
-    </div>
-  </section>
 
   <details class="card reinf-section" id="edge-plateReinfSection" open>
     <summary class="summary-badge"><span>Армирование плиты (для v<sub>Rd,c</sub>)</span><span class="perimeter-badge" id="edge-rhoBadge">ρl = —</span></summary>
@@ -1269,7 +1291,10 @@ summary {
   <button id="edge-calcBtn" class="btn-primary">Рассчитать</button>
 
   <section id="edge-results" class="card result-card" hidden>
-    <h2>Результаты</h2>
+    <div class="results-header">
+      <h2>Результаты</h2>
+      <button type="button" id="edge-reportBtn" class="btn-secondary">Печать</button>
+    </div>
 
     <div class="live-detail-hidden">
     <div class="result-row">
@@ -1359,71 +1384,89 @@ summary {
     <div id="edge-recommendations"></div>
   </section>
 
-  <section class="card">
-    <h2>Пояснительная записка</h2>
-    <p class="hint">Формирует читаемый отчёт по последнему расчёту (нажмите «Рассчитать» выше, если ещё не считали) — с формулами, промежуточными значениями и итогом. Кнопка открывает системный диалог печати браузера — там можно выбрать «Сохранить как PDF».</p>
-    <button type="button" id="edge-reportBtn" class="btn-secondary">Сформировать и распечатать / сохранить в PDF</button>
-    <div id="edge-reportPreview" class="report-preview"></div>
-  </section>
 </div>
 
 <div class="tab-panel" id="panel-corner">
-  <section class="card">
-    <h2>Колонна</h2>
-    <div class="grid-2">
-      <label>c₁, мм (⊥ свободному краю)
-        <input type="number" id="corner-c1" value="400" min="250">
-      </label>
-      <label>c₂, мм (∥ свободному краю)
-        <input type="number" id="corner-c2" value="400" min="250">
-      </label>
-    </div>
+  <div class="col2-layout">
+    <div class="col2-data">
+      <div class="subgroup">
+        <h2>Колонна</h2>
+        <div class="grid-2">
+          <label>c₁, мм (⊥ свободному краю)
+            <input type="number" id="corner-c1" value="400" min="250">
+          </label>
+          <label>c₂, мм (∥ свободному краю)
+            <input type="number" id="corner-c2" value="400" min="250">
+          </label>
+        </div>
 
-    <label style="flex-direction:row;align-items:center;gap:8px">
-      <input type="checkbox" id="corner-hasPedestal">
-      Есть подколонник (уширение колонны в основании)
-    </label>
-    <div id="corner-pedestalFields" style="display:none">
-      <p class="hint">В плиту продавливает именно подколонник — его размеры используются вместо c₁/c₂ во всех расчётах ниже.</p>
-      <div class="grid-3">
-        <label>b₁, мм (по стороне c₁)
-          <input type="number" id="corner-pedB1" value="600">
+        <label style="flex-direction:row;align-items:center;gap:8px">
+          <input type="checkbox" id="corner-hasPedestal">
+          Есть подколонник (уширение колонны в основании)
         </label>
-        <label>b₂, мм (по стороне c₂)
-          <input type="number" id="corner-pedB2" value="600">
+        <div id="corner-pedestalFields" style="display:none">
+          <p class="hint">В плиту продавливает именно подколонник — его размеры используются вместо c₁/c₂ во всех расчётах ниже.</p>
+          <div class="grid-3">
+            <label>b₁, мм (по стороне c₁)
+              <input type="number" id="corner-pedB1" value="600">
+            </label>
+            <label>b₂, мм (по стороне c₂)
+              <input type="number" id="corner-pedB2" value="600">
+            </label>
+            <label>hₚ, мм (высота)
+              <input type="number" id="corner-pedHp" value="400">
+            </label>
+          </div>
+          <p id="corner-pedestalHeightWarning" class="warning" hidden></p>
+        </div>
+
+        <label style="flex-direction:row;align-items:center;gap:8px">
+          <input type="checkbox" id="corner-towardInterior" checked>
+          Эксцентриситет направлен внутрь плиты (обычный случай)
         </label>
-        <label>hₚ, мм (высота)
-          <input type="number" id="corner-pedHp" value="400">
-        </label>
+
+        <p id="corner-aspectWarning" class="warning" hidden></p>
       </div>
-      <p id="corner-pedestalHeightWarning" class="warning" hidden></p>
+
+      <div class="subgroup">
+        <h2>Нагрузки на обрез фундамента (ULS)</h2>
+        <div class="grid-3">
+          <label>N, тс
+            <input type="number" id="corner-N" value="120">
+          </label>
+          <label>Mx, тс·м
+            <input type="number" id="corner-Mx" value="0">
+          </label>
+          <label>My, тс·м
+            <input type="number" id="corner-My" value="0">
+          </label>
+        </div>
+      </div>
+
+      <div class="subgroup">
+        <h2>Фундамент</h2>
+        <div class="grid-2">
+          <label>Класс бетона
+            <select id="corner-fck">
+              <option value="20">C20/25</option>
+              <option value="25" selected>C25/30</option>
+              <option value="30">C30/37</option>
+              <option value="35">C35/45</option>
+              <option value="40">C40/50</option>
+            </select>
+          </label>
+          <label>Отпор грунта p, тс/м²
+            <input type="number" id="corner-soilPressure" value="15" step="0.5">
+          </label>
+        </div>
+      </div>
     </div>
 
-    <label style="flex-direction:row;align-items:center;gap:8px">
-      <input type="checkbox" id="corner-towardInterior" checked>
-      Эксцентриситет направлен внутрь плиты (обычный случай)
-    </label>
-
-    <p id="corner-aspectWarning" class="warning" hidden></p>
-  </section>
-
-  <section class="card">
-    <h2>Фундамент</h2>
-    <div class="grid-2">
-      <label>Отпор грунта p, тс/м²
-        <input type="number" id="corner-soilPressure" value="15" step="0.5">
-      </label>
-      <label>Класс бетона
-        <select id="corner-fck">
-          <option value="20">C20/25</option>
-          <option value="25" selected>C25/30</option>
-          <option value="30">C30/37</option>
-          <option value="35">C35/45</option>
-          <option value="40">C40/50</option>
-        </select>
-      </label>
+    <div class="col2-image" id="corner-mainSketchWrap">
+      <img src="prodavlivanie-fundament/prodavlivanie-3d-shema-corner.webp" alt="Схема осей и нагрузок на угловую колонну (N, Mx, My, X, Y, Z, c1, c2, d)">
+      <img src="prodavlivanie-fundament/prodavlivanie-3d-shema-corner-2.webp" alt="Схема осей, нагрузок и подколонника угловой колонны (b1, b2, hp)" class="pedestal-sketch-img" id="corner-pedestalSketchImg" style="display:none">
     </div>
-  </section>
+  </div>
 
   <details class="card reinf-section" id="corner-perimeterSection" open>
     <summary class="summary-badge"><span>Контрольный периметр и метод расчёта</span><span class="perimeter-badge" id="corner-perimeterBadge">u₁ = — · β = —</span></summary>
@@ -1447,21 +1490,6 @@ summary {
     <label id="corner-betaFigureWrap" style="display:none"><div class="u1-diagram-wrap"><img src="prodavlivanie-fundament/prodavlivanie-kp-13.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img"></div></label>
     <div id="corner-figureBetaDiagramWrap" class="u1-diagram-wrap" style="display:none"><img src="prodavlivanie-fundament/prodavlivanie-kp-14.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img"></div>
   </details>
-
-  <section class="card">
-    <h2>Нагрузки на обрез фундамента (ULS)</h2>
-    <div class="grid-3">
-      <label>N, тс
-        <input type="number" id="corner-N" value="120">
-      </label>
-      <label>Mx, тс·м
-        <input type="number" id="corner-Mx" value="0">
-      </label>
-      <label>My, тс·м
-        <input type="number" id="corner-My" value="0">
-      </label>
-    </div>
-  </section>
 
   <details class="card reinf-section" id="corner-plateReinfSection" open>
     <summary class="summary-badge"><span>Армирование плиты (для v<sub>Rd,c</sub>)</span><span class="perimeter-badge" id="corner-rhoBadge">ρl = —</span></summary>
@@ -1575,7 +1603,10 @@ summary {
   <button id="corner-calcBtn" class="btn-primary">Рассчитать</button>
 
   <section id="corner-results" class="card result-card" hidden>
-    <h2>Результаты</h2>
+    <div class="results-header">
+      <h2>Результаты</h2>
+      <button type="button" id="corner-reportBtn" class="btn-secondary">Печать</button>
+    </div>
 
     <div class="live-detail-hidden">
     <div class="result-row">
@@ -1665,12 +1696,6 @@ summary {
     <div id="corner-recommendations"></div>
   </section>
 
-  <section class="card">
-    <h2>Пояснительная записка</h2>
-    <p class="hint">Формирует читаемый отчёт по последнему расчёту (нажмите «Рассчитать» выше, если ещё не считали) — с формулами, промежуточными значениями и итогом. Кнопка открывает системный диалог печати браузера — там можно выбрать «Сохранить как PDF».</p>
-    <button type="button" id="corner-reportBtn" class="btn-secondary">Сформировать и распечатать / сохранить в PDF</button>
-    <div id="corner-reportPreview" class="report-preview"></div>
-  </section>
 </div>
 
 
@@ -2393,6 +2418,15 @@ function initPanel(prefix, position) {
     const sample = layouts[0];
     const { cutLeft, cutRight, cutTop, cutBottom } = sample;
 
+    // Визуальный отступ ТОЧКИ хомута от линии "край плиты" — только для
+    // отрисовки, когда стержень оказывается ровно в углу, где ряд
+    // переходит с закрытой стороны на открытую (край плиты в реальности не
+    // может проходить прямо по оси стержня). На расчёт (u0/u1, количество и
+    // положение хомутов в данных) не влияет — правится только координата
+    // конкретного кружка на картинке. Линия "край плиты" и рамка ряда
+    // остаются строго по грани колонны.
+    const POINT_EDGE_MARGIN = 50;
+
     const maxXMinus = Math.max(c1 / 2, ...layouts.map((l) => l.halfXMinus));
     const maxXPlus = Math.max(c1 / 2, ...layouts.map((l) => l.halfXPlus));
     const maxYMinus = Math.max(c2 / 2, ...layouts.map((l) => l.halfYMinus));
@@ -2417,7 +2451,15 @@ function initPanel(prefix, position) {
       const y0 = toScreenY(-layout.halfYMinus), y1 = toScreenY(layout.halfYPlus);
       svg += `<rect x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${(x1 - x0).toFixed(1)}" height="${(y1 - y0).toFixed(1)}" fill="none" stroke="${color}" stroke-width="1" stroke-dasharray="4 3" rx="2"/>`;
       layout.points.forEach((p) => {
-        svg += `<circle cx="${toScreenX(p.x).toFixed(1)}" cy="${toScreenY(p.y).toFixed(1)}" r="3.2" fill="${color}"/>`;
+        // Если стержень попадает ровно на линию "край плиты" (угол, где ряд
+        // переходит с закрытой стороны на открытую) — сдвигаем ТОЛЬКО эту
+        // точку на картинке вглубь плиты, чтобы не сидела прямо на краю.
+        let px = p.x, py = p.y;
+        if (layout.cutTop && Math.abs(py + layout.halfYMinus) < 0.01) py += POINT_EDGE_MARGIN;
+        if (layout.cutBottom && Math.abs(py - layout.halfYPlus) < 0.01) py -= POINT_EDGE_MARGIN;
+        if (layout.cutLeft && Math.abs(px + layout.halfXMinus) < 0.01) px += POINT_EDGE_MARGIN;
+        if (layout.cutRight && Math.abs(px - layout.halfXPlus) < 0.01) px -= POINT_EDGE_MARGIN;
+        svg += `<circle cx="${toScreenX(px).toFixed(1)}" cy="${toScreenY(py).toFixed(1)}" r="3.2" fill="${color}"/>`;
       });
     });
 
@@ -3422,7 +3464,6 @@ function initPanel(prefix, position) {
 
   $('reportBtn').addEventListener('click', () => {
     const html = buildReport();
-    $('reportPreview').innerHTML = html;
     const printArea = document.getElementById('printArea');
     printArea.innerHTML = html;
     window.print();
