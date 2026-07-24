@@ -67,7 +67,7 @@
 
   table.datatable th, table.datatable td {
     border: 1px solid var(--border);
-    padding: 7px 10px;
+    padding: 6px 8px;
     text-align: center;
     white-space: nowrap;
     vertical-align: top;
@@ -83,11 +83,21 @@
     background: var(--surface2);
     color: var(--muted);
     font-weight: 600;
-    font-size: 14px;
+    font-size: 12px;
+    line-height: 1.3;
     text-align: center;
+    white-space: normal;
     position: sticky;
     top: 0;
     z-index: 1;
+  }
+
+  table.datatable col.narrow {
+    width: 1%;
+  }
+
+  table.datatable thead tr.sub-row th {
+    position: static;
   }
 
   table.datatable td.note-cell {
@@ -116,13 +126,13 @@
     font-family: var(--mono);
     font-weight: 600;
     border-radius: 6px;
-    padding: 5px 8px;
+    padding: 5px 6px;
     font-size: 13px;
-    min-width: 90px;
+    min-width: 62px;
   }
 
   table.datatable .marking-cell select {
-    min-width: 170px;
+    min-width: 155px;
   }
 
   table.datatable select:focus {
@@ -211,6 +221,36 @@
     display: block;
     width: 100%;
     height: auto;
+    cursor: zoom-in;
+    transition: transform 0.15s ease;
+  }
+
+  .node-card img:hover {
+    transform: scale(1.04);
+  }
+
+  .img-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 7, 12, 0.88);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    cursor: zoom-out;
+  }
+
+  .img-lightbox.visible {
+    display: flex;
+  }
+
+  .img-lightbox img {
+    max-width: 90vw;
+    max-height: 90vh;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
   }
 
   .tabs {
@@ -381,16 +421,29 @@
 
   <div class="table-wrap">
     <table class="datatable">
+      <colgroup>
+        <col>
+        <col class="narrow">
+        <col class="narrow">
+        <col class="narrow">
+        <col class="narrow">
+        <col>
+        <col class="narrow">
+        <col>
+      </colgroup>
       <thead>
         <tr>
-          <th>Серия</th>
-          <th>Длина, мм</th>
-          <th>Ширина, мм</th>
-          <th>Высота, мм</th>
-          <th>Несущ. способность, кг/м&sup2;</th>
-          <th>Маркировка</th>
-          <th>Масса, кг</th>
-          <th>Примечание</th>
+          <th rowspan="2">Серия</th>
+          <th colspan="3">Размеры, мм</th>
+          <th rowspan="2">Несущ.<br>способ-<br>ность, кг/м&sup2;</th>
+          <th rowspan="2">Маркировка</th>
+          <th rowspan="2">Масса,<br>кг</th>
+          <th rowspan="2">Примечание</th>
+        </tr>
+        <tr class="sub-row">
+          <th>Длина</th>
+          <th>Ширина</th>
+          <th>Высота</th>
         </tr>
       </thead>
       <tbody id="tableBodyHollow"></tbody>
@@ -488,6 +541,10 @@
       <li>Не допускается складирование строительных материалов и оборудования на смонтированных плитах перекрытия сверх нагрузок, предусмотренных проектом производства работ.</li>
     </ol>
   </details>
+</div>
+
+<div class="img-lightbox" id="imgLightbox">
+  <img id="imgLightboxPic" src="" alt="">
 </div>
 
 <div id="site-footer"></div>
@@ -897,6 +954,28 @@ if (IZ_SERIES.indexOf(seriesName) !== -1) {
 }
 
 loadPustotkiData();
+
+/* ── Лайтбокс для картинок узлов ── */
+(function () {
+  var lightbox = document.getElementById('imgLightbox');
+  var lightboxPic = document.getElementById('imgLightboxPic');
+
+  document.querySelectorAll('.node-card img').forEach(function (img) {
+    img.addEventListener('click', function () {
+      lightboxPic.src = img.src;
+      lightboxPic.alt = img.alt;
+      lightbox.classList.add('visible');
+    });
+  });
+
+  lightbox.addEventListener('click', function () {
+    lightbox.classList.remove('visible');
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') lightbox.classList.remove('visible');
+  });
+})();
 </script>
 
 <script src="site-structure.js"></script>
