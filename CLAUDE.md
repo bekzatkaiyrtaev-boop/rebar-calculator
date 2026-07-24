@@ -144,3 +144,20 @@ CSV/JSON-экспорт Google Таблицы (`gviz/tq` и т.п.) не под�
 
 **Подробная пошаговая инструкция, как это настроить** —
 [HOWTO_LIVE_SHEET_CALCULATOR.md](HOWTO_LIVE_SHEET_CALCULATOR.md).
+
+## 8. Бейджи-ссылки на нормативы (`.ref`)
+
+В шапке карточки (`.card-header`) рядом с заголовком часто стоит
+маленькая подпись на норматив — `<span class="ref">СП РК ...</span>`.
+Она должна быть **лёгкой, без рамки и фона** — просто приглушённый
+цветной текст, чтобы не создавать «коробочный» вид рядом с заголовком:
+
+```css
+.card-header .ref{font-family:var(--mono);font-size:10.5px;color:var(--accent);background:transparent;border:none;padding:0;opacity:.85;}
+```
+
+На части старых страниц (`climat.html`, `trubi.html`, `pv-listy.html`,
+`peregorodka.html`, `podbor-uteplitelya.html`) раньше был вариант с
+рамкой и фоном (`background:var(--bg);border:1px solid var(--border);
+padding:3px 8px;border-radius:4px;`) — это исправлено, для новых
+страниц использовать только облегчённый вариант выше.
