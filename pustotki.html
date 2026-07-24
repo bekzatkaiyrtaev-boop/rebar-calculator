@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Пустотные плиты перекрытия — сортамент — Электронный справочник конструктора</title>
+
+<style>
+  :root {
+    --bg:       #0f1117;
+    --surface:  #1a1d27;
+    --surface2: #22263a;
+    --border:   #2e3347;
+    --accent:   #4f8ef7;
+    --green:    #7dd3a8;
+    --warn:     #f4b942;
+    --red:      #ef4444;
+    --text:     #d6daf0;
+    --muted:    #6b7099;
+    --mono:     'JetBrains Mono','Courier New',monospace;
+    --sans:     'Inter','Segoe UI',sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .page-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    text-align: center;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    margin: 0 0 20px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: auto;
+  }
+
+  table.datatable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  table.datatable th, table.datatable td {
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: top;
+  }
+
+  table.datatable td.series-cell,
+  table.datatable td.marking-cell,
+  table.datatable td.note-cell {
+    text-align: left;
+  }
+
+  table.datatable th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  table.datatable td.note-cell {
+    white-space: normal;
+    min-width: 220px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  table.datatable td.series-cell {
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  table.datatable td.marking-cell {
+    font-family: var(--mono);
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  table.datatable select {
+    background: var(--surface2);
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-family: var(--mono);
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 13px;
+    min-width: 90px;
+  }
+
+  table.datatable .marking-cell select {
+    min-width: 170px;
+  }
+
+  table.datatable select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .notes-list {
+    margin: 16px 0 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .notes-list li {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .nodes-section, .notes-section {
+    margin: 28px 0 12px;
+  }
+
+  .nodes-section summary, .notes-section summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .nodes-section summary::-webkit-details-marker, .notes-section summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .nodes-section summary::before, .notes-section summary::before {
+    content: '▸';
+    display: inline-block;
+    margin-right: 6px;
+    color: var(--accent);
+    transition: transform 0.15s ease;
+  }
+
+  .nodes-section[open] summary::before, .notes-section[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .nodes-section summary:hover, .notes-section summary:hover {
+    color: var(--accent);
+  }
+
+  .nodes-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 900px) {
+    .nodes-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .nodes-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .node-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .node-card .node-title {
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    padding: 6px 4px;
+  }
+
+  .node-card img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tab-btn {
+    background: var(--surface2);
+    border: none;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .tab-btn:hover {
+    background: #2a2f45;
+  }
+
+  .tab-btn.active {
+    background: var(--accent);
+    color: #ffffff;
+  }
+
+  .placeholder-panel {
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .detail-panel {
+    background: #ffffff;
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    display: none;
+  }
+
+  .detail-panel.visible {
+    display: block;
+  }
+
+  .detail-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #111318;
+  }
+
+  .detail-title .dt-marking {
+    color: var(--accent);
+    font-family: var(--mono);
+  }
+
+  .dt-fullname {
+    color: #5a5f70;
+    font-size: 12px;
+    margin-top: 4px;
+    margin-bottom: 16px;
+    max-width: 640px;
+  }
+
+  .detail-sub {
+    color: #5a5f70;
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  .detail-body {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: space-between;
+  }
+
+  .detail-sketch {
+    flex: 0 0 auto;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .detail-sketch img {
+    display: block;
+    height: 100%;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+
+  .detail-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 420px;
+  }
+
+  .detail-stats .design-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 6px 0;
+    border-bottom: 1px solid #e2e2e2;
+  }
+
+  .detail-stats .design-row .k {
+    color: #6b6f80;
+    font-size: 13px;
+  }
+
+  .detail-stats .design-row .v {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: #111318;
+    text-align: right;
+  }
+
+  .detail-stats .design-row.dt-note {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .detail-stats .design-row.dt-note .v {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 400;
+    text-align: left;
+  }
+
+  table.datatable tbody tr {
+    cursor: pointer;
+  }
+
+  table.datatable tbody tr:hover {
+    background: rgba(79, 142, 247, 0.06);
+  }
+
+  table.datatable tbody tr.row-selected {
+    background: rgba(79, 142, 247, 0.14);
+  }
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+
+<div class="page-wrap">
+  <div id="site-header"></div>
+
+  <h1>Пустотные плиты перекрытия</h1>
+  <p class="subtitle">Сортамент многопустотных плит перекрытия</p>
+
+  <div class="table-wrap">
+    <table class="datatable">
+      <thead>
+        <tr>
+          <th>Серия</th>
+          <th>Длина, мм</th>
+          <th>Ширина, мм</th>
+          <th>Высота, мм</th>
+          <th>Несущ. способность, кг/м&sup2;</th>
+          <th>Маркировка</th>
+          <th>Масса, кг</th>
+          <th>Примечание</th>
+        </tr>
+      </thead>
+      <tbody id="tableBodyHollow"></tbody>
+    </table>
+  </div>
+
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-title"><span class="dt-marking" id="dtMarking"></span></div>
+    <div class="dt-fullname" id="dtFullName"></div>
+    <div class="detail-sub">Кликните по строке в таблице, чтобы увидеть все показатели выбранной плиты</div>
+    <div class="detail-body">
+      <div class="detail-stats">
+        <div class="design-row"><div class="k">Длина, мм</div><div class="v" id="dtLength"></div></div>
+        <div class="design-row"><div class="k">Ширина, мм</div><div class="v" id="dtWidth"></div></div>
+        <div class="design-row"><div class="k">Высота, мм</div><div class="v" id="dtHeight"></div></div>
+        <div class="design-row"><div class="k">Несущ. способность, кг/м&sup2;</div><div class="v" id="dtLoad"></div></div>
+        <div class="design-row"><div class="k">Масса, кг</div><div class="v" id="dtMass"></div></div>
+        <div class="design-row dt-note"><div class="k">Примечание</div><div class="v" id="dtNote"></div></div>
+      </div>
+      <div class="detail-sketch"><img src="pustotki/detail-sketch.jpg" alt="Схема пустотной плиты"></div>
+    </div>
+  </div>
+
+  <details class="nodes-section">
+    <summary>
+      <span class="nodes-title">Типовые узлы примыкания и сопряжения (серия 2.140-1 вып.1)</span>
+    </summary>
+    <div class="nodes-grid">
+        <div class="node-card">
+          <div class="node-title">Узел 20 серии 2.140-1 вып.1</div>
+          <img src="pustotki/uzel-20.jpg" alt="Узел 20 серии 2.140-1 вып.1">
+        </div>
+        <div class="node-card">
+          <div class="node-title">Узел 21 серии 2.140-1 вып.1</div>
+          <img src="pustotki/uzel-21.jpg" alt="Узел 21 серии 2.140-1 вып.1">
+        </div>
+        <div class="node-card">
+          <div class="node-title">Узел 22 серии 2.140-1 вып.1</div>
+          <img src="pustotki/uzel-22.jpg" alt="Узел 22 серии 2.140-1 вып.1">
+        </div>
+        <div class="node-card">
+          <div class="node-title">Узел 23 серии 2.140-1 вып.1</div>
+          <img src="pustotki/uzel-23.jpg" alt="Узел 23 серии 2.140-1 вып.1">
+        </div>
+        <div class="node-card">
+          <div class="node-title">Узел 24 серии 2.140-1 вып.1</div>
+          <img src="pustotki/uzel-24.jpg" alt="Узел 24 серии 2.140-1 вып.1">
+        </div>
+        <div class="node-card">
+          <div class="node-title">Узел 25 серии 2.140-1 вып.1</div>
+          <img src="pustotki/uzel-25.jpg" alt="Узел 25 серии 2.140-1 вып.1">
+        </div>
+        <div class="node-card">
+          <div class="node-title">Узел 26 серии 2.140-1 вып.1</div>
+          <img src="pustotki/uzel-26.jpg" alt="Узел 26 серии 2.140-1 вып.1">
+        </div>
+        <div class="node-card">
+          <div class="node-title">Узел 27 серии 2.140-1 вып.1</div>
+          <img src="pustotki/uzel-27.jpg" alt="Узел 27 серии 2.140-1 вып.1">
+        </div>
+        <div class="node-card">
+          <div class="node-title">Узел 28 серии 2.140-1 вып.1</div>
+          <img src="pustotki/uzel-28.jpg" alt="Узел 28 серии 2.140-1 вып.1">
+        </div>
+        <div class="node-card">
+          <div class="node-title">Каркас по серии 2.140-1 вып.1</div>
+          <img src="pustotki/karkas.jpg" alt="Каркас по серии 2.140-1 вып.1">
+        </div>
+        <div class="node-card">
+          <div class="node-title">Анкеры по серии 2.140-1 вып.1</div>
+          <img src="pustotki/ankery.jpg" alt="Анкеры по серии 2.140-1 вып.1">
+        </div>
+    </div>
+  </details>
+
+  <details class="notes-section">
+    <summary>
+      <span>Типовые примечания к схеме расположения плит перекрытий</span>
+    </summary>
+    <ol class="notes-list">
+      <li>Монтаж плит перекрытия выполнять в соответствии с проектом, требованиями EN 1992-1-1, EN 13670 и действующих национальных приложений.</li>
+      <li>Плиты перекрытия укладывать на слой кладочного раствора класса М10 толщиной 20 мм.</li>
+      <li>Минимальную длину опирания плит принимать согласно проекту.</li>
+      <li>Продольные и поперечные швы между плитами после монтажа очистить и замонолитить бетоном класса не ниже C20/25.</li>
+      <li>Торцы пустот плит в местах опирания заделать бетоном класса не ниже C20/25 или заводскими бетонными вкладышами согласно проекту.</li>
+      <li>Анкеровку плит между собой и с несущими конструкциями выполнять в соответствии с узлами проекта. Монтажные петли после выполнения сварочных работ очистить от шлака и защитить антикоррозионным покрытием.</li>
+      <li>Отверстия диаметром до 150 мм для пропуска инженерных коммуникаций выполнять по месту в многопустотных плитах перекрытия в пределах пустот, не допуская повреждения несущих рёбер плит (см. разделы ОВ, ВК).</li>
+      <li>Выполнение отверстий, штраб, вырезов и иных повреждений плит, не предусмотренных проектом, не допускается. При необходимости устройства технологических отверстий размеры и расположение согласовать с проектной организацией.</li>
+      <li>Монтаж плит производить после достижения раствором под опорами проектной прочности.</li>
+      <li>При монтаже обеспечить полное заполнение раствором опорной поверхности плит без образования пустот.</li>
+      <li>После окончания монтажа проверить отметки верха плит. Допустимые отклонения принимать согласно EN 13670 и требований проекта.</li>
+      <li>Все сварные соединения выполнять электродами, соответствующими марке свариваемой стали.</li>
+      <li>При выполнении монтажных работ соблюдать требования проекта производства работ (ППР), действующих норм по охране труда и технике безопасности.</li>
+      <li>Все размеры указаны в миллиметрах, отметки — в метрах.</li>
+      <li>Не допускается складирование строительных материалов и оборудования на смонтированных плитах перекрытия сверх нагрузок, предусмотренных проектом производства работ.</li>
+    </ol>
+  </details>
+</div>
+
+<div id="site-footer"></div>
+
+<script>
+const BACKEND = 'https://rebar-backend-henna.vercel.app/api/sheet-data';
+let PUSTOTKI_ORDER = [];
+let PUSTOTKI_DATA = {};
+
+// Серии ИЖ — маркировка вычисляется динамически: базовая часть (зависит от длины)
+// + код несущей способности (значение / 100), т.к. в исходнике маркировка дана
+// с незаполненным "хвостом", а несущая способность выбирается независимо от длины.
+var IZ_SERIES = ['ИЖ 738', 'ИЖ 840', 'Серия 1.141-1 вып.62'];
+
+// Серии, где выбор идёт ТОЛЬКО по Маркировке (одним списком), а не по
+// отдельным Длине/Ширине/Несущ.способности.
+var MARKING_ONLY_SERIES = ['Серия 1.141-1 вып.61', 'Серия 1.243.1-4', 'Серия ИИ-03-02'];
+
+async function loadPustotkiData() {
+  var tbody = document.getElementById('tableBodyHollow');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px;">Загрузка данных...</td></tr>';
+  try {
+    var res = await fetch(BACKEND + '?book=climat&sheet=Plity_pustotki', {
+      headers: { 'x-app-key': 'spravochnik-km-2026-x7k9' }
+    });
+    var json = await res.json();
+    var records = (json.records || []).filter(function (r) { return r.serie; });
+
+    // Полное наименование исходного документа (столбец note2 в Google Sheets) — одно значение на серию.
+    var fullnames = {};
+    var order = [];
+    var data = {};
+    records.forEach(function (r) {
+      if (!data[r.serie]) { data[r.serie] = []; order.push(r.serie); }
+      data[r.serie].push([r.length_mm, r.width_mm, r.height_mm, r.load_kgm2, r.marking, r.mass_kg, r.note]);
+      if (r.note2 && !fullnames[r.serie]) fullnames[r.serie] = r.note2;
+    });
+
+    PUSTOTKI_ORDER = order;
+    PUSTOTKI_DATA = data;
+    tbody.innerHTML = '';
+    initPustotki(fullnames);
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--red);padding:24px;">Ошибка загрузки данных — обновите страницу</td></tr>';
+    console.error('Ошибка загрузки данных плит:', e);
+  }
+}
+
+function initPustotki(SERIES_FULLNAME) {
+  var CATEGORY_HOLLOW = PUSTOTKI_ORDER;
+
+  function cellValue(td) {
+    var sel = td.querySelector('select');
+    if (sel) {
+      return sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].textContent : '';
+    }
+    return td.textContent;
+  }
+
+  var selectedRow = null;
+
+  function drawSketch(container, length, width, isHollow) {
+    var L = parseFloat(length) || 0;
+    var W = parseFloat(width) || 0;
+    var maxW = 260, maxH = 140;
+    var scale = Math.min(maxW / (L || 1), maxH / (W || 1));
+    var rectW = Math.max(L * scale, 20);
+    var rectH = Math.max(W * scale, 14);
+    var svgW = rectW + 70;
+    var svgH = rectH + 60;
+
+    var voids = '';
+    if (isHollow) {
+      var count = Math.max(3, Math.min(9, Math.round(rectW / 24)));
+      var padding = rectW * 0.06;
+      var usable = rectW - padding * 2;
+      var r = Math.min(rectH * 0.32, usable / (count * 1.6));
+      for (var i = 0; i < count; i++) {
+        var cx = 35 + padding + r + i * ((usable - 2 * r) / (count - 1 || 1));
+        voids += '<ellipse cx="' + cx + '" cy="' + (30 + rectH / 2) + '" rx="' + r + '" ry="' + (rectH * 0.32) +
+          '" fill="var(--bg)" stroke="var(--border)" stroke-width="1"/>';
+      }
+    }
+
+    var svg = ''
+      + '<svg width="' + svgW + '" height="' + svgH + '" viewBox="0 0 ' + svgW + ' ' + svgH + '" xmlns="http://www.w3.org/2000/svg">'
+      + '<rect x="35" y="30" width="' + rectW + '" height="' + rectH + '" rx="4" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5"/>'
+      + voids
+      + '<line x1="35" y1="' + (30 + rectH + 14) + '" x2="' + (35 + rectW) + '" y2="' + (30 + rectH + 14) + '" stroke="var(--muted)" stroke-width="1"/>'
+      + '<text x="' + (35 + rectW / 2) + '" y="' + (30 + rectH + 30) + '" fill="var(--muted)" font-size="11" text-anchor="middle" font-family="var(--sans)">' + (length || '\u2014') + ' \u043c\u043c</text>'
+      + '<line x1="14" y1="30" x2="14" y2="' + (30 + rectH) + '" stroke="var(--muted)" stroke-width="1"/>'
+      + '<text x="14" y="' + (30 + rectH / 2) + '" fill="var(--muted)" font-size="11" text-anchor="middle" font-family="var(--sans)" transform="rotate(-90 14 ' + (30 + rectH / 2) + ')">' + (width || '\u2014') + ' \u043c\u043c</text>'
+      + '</svg>';
+
+    container.innerHTML = svg;
+  }
+
+  function hideDetails() {
+    if (selectedRow) selectedRow.classList.remove('row-selected');
+    selectedRow = null;
+    document.getElementById('detailPanel').classList.remove('visible');
+  }
+
+  function showDetailsFromRow(tr, seriesName) {
+    if (selectedRow) selectedRow.classList.remove('row-selected');
+    tr.classList.add('row-selected');
+    selectedRow = tr;
+
+    var cells = tr.children;
+    var length = cellValue(cells[1]);
+    var width = cellValue(cells[2]);
+    var height = cellValue(cells[3]);
+    var load = cellValue(cells[4]);
+    var marking = cellValue(cells[5]);
+    var mass = cellValue(cells[6]);
+    var note = cellValue(cells[7]);
+
+    document.getElementById('dtMarking').textContent = marking;
+    document.getElementById('dtFullName').textContent = SERIES_FULLNAME[seriesName] || '';
+    document.getElementById('dtLength').textContent = length || '\u2014';
+    document.getElementById('dtWidth').textContent = width || '\u2014';
+    document.getElementById('dtHeight').textContent = height || '\u2014';
+    document.getElementById('dtLoad').textContent = load || '\u2014';
+    document.getElementById('dtMass').textContent = mass || '\u2014';
+    document.getElementById('dtNote').textContent = note || '\u2014';
+
+    document.getElementById('detailPanel').classList.add('visible');
+  }
+
+  function toItem(row) {
+    return {
+      length: row[0], width: row[1], height: row[2],
+      load: row[3], marking: row[4], mass: row[5], note: row[6]
+    };
+  }
+
+  function fill(td, value) {
+    td.textContent = value || '\u2014';
+  }
+
+  function uniqueSorted(rows, field) {
+    var seen = {};
+    var out = [];
+    rows.forEach(function (r) {
+      var v = toItem(r)[field];
+      if (v && !seen[v]) { seen[v] = true; out.push(v); }
+    });
+    out.sort(function (a, b) { return parseFloat(a) - parseFloat(b); });
+    return out;
+  }
+
+  function renderCategory(tbodyId, seriesList) {
+    var tbody = document.getElementById(tbodyId);
+    seriesList.forEach(function (seriesName) {
+    var rows = PUSTOTKI_DATA[seriesName];
+
+    var tr = document.createElement('tr');
+    tr.addEventListener('click', function (e) {
+      if (e.target.tagName === 'SELECT') return;
+      if (tr === selectedRow) {
+        hideDetails();
+      } else {
+        showDetailsFromRow(tr, seriesName);
+      }
+    });
+    var seriesTd = document.createElement('td');
+    seriesTd.className = 'series-cell';
+    seriesTd.textContent = seriesName;
+    tr.appendChild(seriesTd);
+
+    var lengthTd = document.createElement('td');
+    var widthTd = document.createElement('td');
+    var heightTd = document.createElement('td');
+    var loadTd = document.createElement('td');
+    var markingTd = document.createElement('td');
+    markingTd.className = 'marking-cell';
+    var massTd = document.createElement('td');
+    var noteTd = document.createElement('td');
+    noteTd.className = 'note-cell';
+
+    function displayFull(item) {
+      fill(lengthTd, item.length);
+      fill(widthTd, item.width);
+      fill(heightTd, item.height);
+      fill(loadTd, item.load);
+      fill(markingTd, item.marking);
+      fill(massTd, item.mass);
+      fill(noteTd, item.note);
+    }
+
+    if (rows.length <= 1) {
+      displayFull(toItem(rows[0]));
+      tr.appendChild(lengthTd); tr.appendChild(widthTd); tr.appendChild(heightTd);
+      tr.appendChild(loadTd); tr.appendChild(markingTd); tr.appendChild(massTd); tr.appendChild(noteTd);
+      tbody.appendChild(tr);
+      return;
+    }
+
+if (IZ_SERIES.indexOf(seriesName) !== -1) {
+      var izLengths = uniqueSorted(rows, 'length');
+      var izWidths = uniqueSorted(rows, 'width');
+      var izLoads = uniqueSorted(rows, 'load');
+      var byKey = {};
+      rows.forEach(function (r) {
+        var it = toItem(r);
+        var key = it.length + '|' + it.width;
+        if (!byKey[key]) byKey[key] = it;
+      });
+
+      function loadCode(v) {
+        var n = parseFloat(String(v).replace(',', '.'));
+        if (isNaN(n)) return '';
+        var code = n / 100;
+        var s = code.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+        return s;
+      }
+
+      function findBase(length, width) {
+        var key = length + '|' + width;
+        if (byKey[key]) return byKey[key];
+        // нет точной комбинации Длина+Ширина — берём первую строку с такой длиной
+        for (var k in byKey) {
+          if (k.indexOf(length + '|') === 0) return byKey[k];
+        }
+        return rows.map(toItem)[0];
+      }
+
+      var izState = { length: (izLengths.indexOf('5980') !== -1 ? '5980' : izLengths[0]), width: (izWidths.indexOf('1190') !== -1 ? '1190' : (izWidths[0] || '')), load: (izLoads.indexOf('800') !== -1 ? '800' : (izLoads[0] || '')) };
+
+      function izRefresh() {
+        var base = findBase(izState.length, izState.width);
+        var prefix = base.marking; // уже оканчивается на "-"
+        var suffix = (seriesName === 'Серия 1.141-1 вып.62') ? ' К7Т' : '';
+        fill(markingTd, prefix + loadCode(izState.load) + suffix);
+        fill(heightTd, base.height);
+        fill(massTd, base.mass);
+        fill(noteTd, base.note);
+      }
+
+      var izLengthSelect = document.createElement('select');
+      izLengths.forEach(function (v) {
+        var opt = document.createElement('option');
+        opt.value = v; opt.textContent = v;
+        izLengthSelect.appendChild(opt);
+      });
+      izLengthSelect.value = izState.length;
+      izLengthSelect.addEventListener('change', function () {
+        izState.length = izLengthSelect.value;
+        izRefresh();
+      });
+      lengthTd.appendChild(izLengthSelect);
+
+      if (izWidths.length > 1) {
+        var izWidthSelect = document.createElement('select');
+        izWidths.forEach(function (v) {
+          var opt = document.createElement('option');
+          opt.value = v; opt.textContent = v;
+          izWidthSelect.appendChild(opt);
+        });
+        izWidthSelect.value = izState.width;
+        izWidthSelect.addEventListener('change', function () {
+          izState.width = izWidthSelect.value;
+          izRefresh();
+        });
+        widthTd.appendChild(izWidthSelect);
+      } else {
+        fill(widthTd, izWidths[0] || '');
+      }
+
+      if (izLoads.length > 1) {
+        var izLoadSelect = document.createElement('select');
+        izLoads.forEach(function (v) {
+          var opt = document.createElement('option');
+          opt.value = v; opt.textContent = v;
+          izLoadSelect.appendChild(opt);
+        });
+        izLoadSelect.value = izState.load;
+        izLoadSelect.addEventListener('change', function () {
+          izState.load = izLoadSelect.value;
+          izRefresh();
+        });
+        loadTd.appendChild(izLoadSelect);
+      } else {
+        fill(loadTd, izLoads[0] || '');
+      }
+
+      izRefresh();
+
+      tr.appendChild(lengthTd); tr.appendChild(widthTd); tr.appendChild(heightTd);
+      tr.appendChild(loadTd); tr.appendChild(markingTd); tr.appendChild(massTd); tr.appendChild(noteTd);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    if (MARKING_ONLY_SERIES.indexOf(seriesName) !== -1) {
+      // Один список — по Маркировке, остальное подтягивается вслед за ним.
+      var markingSelect = document.createElement('select');
+      rows.forEach(function (row, idx) {
+        var item = toItem(row);
+        var opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = item.marking;
+        markingSelect.appendChild(opt);
+      });
+      function displayOthers(item) {
+        fill(lengthTd, item.length);
+        fill(widthTd, item.width);
+        fill(heightTd, item.height);
+        fill(loadTd, item.load);
+        fill(massTd, item.mass);
+        fill(noteTd, item.note);
+      }
+
+      markingSelect.addEventListener('change', function () {
+        displayOthers(toItem(rows[parseInt(markingSelect.value, 10)]));
+      });
+      markingTd.appendChild(markingSelect);
+      displayOthers(toItem(rows[0]));
+
+      tr.appendChild(lengthTd); tr.appendChild(widthTd); tr.appendChild(heightTd);
+      tr.appendChild(loadTd); tr.appendChild(markingTd); tr.appendChild(massTd); tr.appendChild(noteTd);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    // Иначе — каскадные списки по варьирующимся колонкам (Длина/Ширина/Несущ.способность)
+    var lengths = uniqueSorted(rows, 'length');
+    var widths = uniqueSorted(rows, 'width');
+    var loads = uniqueSorted(rows, 'load');
+
+    var filters = {
+      length: lengths[0] || '',
+      width: (widths.indexOf('1190') !== -1 ? '1190' : (widths[0] || '')),
+      load: (loads.indexOf('800') !== -1 ? '800' : (loads[0] || ''))
+    };
+
+    function matchingRows(activeFilters) {
+      return rows.filter(function (r) {
+        var it = toItem(r);
+        for (var key in activeFilters) {
+          if (activeFilters[key] && it[key] !== activeFilters[key]) return false;
+        }
+        return true;
+      });
+    }
+
+    function currentItem() {
+      var m = matchingRows(filters);
+      if (!m.length) {
+        m = matchingRows({ length: filters.length });
+        if (!m.length) m = rows;
+      }
+      return toItem(m[0]);
+    }
+
+    function refreshDisplay() {
+      var item = currentItem();
+      fill(heightTd, item.height);
+      fill(markingTd, item.marking);
+      fill(massTd, item.mass);
+      fill(noteTd, item.note);
+    }
+
+    function makeSelect(field, values, cellEl) {
+      if (values.length <= 1) {
+        fill(cellEl, values[0] || '');
+        return null;
+      }
+      var select = document.createElement('select');
+      values.forEach(function (v) {
+        var opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        select.appendChild(opt);
+      });
+      select.value = filters[field];
+      select.addEventListener('change', function () {
+        filters[field] = select.value;
+        refreshDisplay();
+      });
+      cellEl.appendChild(select);
+      return select;
+    }
+
+    makeSelect('length', lengths, lengthTd);
+    makeSelect('width', widths, widthTd);
+    makeSelect('load', loads, loadTd);
+
+    refreshDisplay();
+
+    tr.appendChild(lengthTd); tr.appendChild(widthTd); tr.appendChild(heightTd);
+    tr.appendChild(loadTd); tr.appendChild(markingTd); tr.appendChild(massTd); tr.appendChild(noteTd);
+    tbody.appendChild(tr);
+    });
+  }
+
+  renderCategory('tableBodyHollow', CATEGORY_HOLLOW);
+
+  document.getElementById('tableBodyHollow').addEventListener('change', function (e) {
+    if (e.target.tagName !== 'SELECT') return;
+    var tr = e.target.closest('tr');
+    if (tr && tr === selectedRow) {
+      var seriesName = tr.children[0].textContent;
+      showDetailsFromRow(tr, seriesName);
+    }
+  });
+}
+
+loadPustotkiData();
+</script>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+</body>
+</html>
