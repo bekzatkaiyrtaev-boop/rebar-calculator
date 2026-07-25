@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Интерполяция — Электронный справочник конструктора</title>
+<style>
+  :root{
+    --bg:       #0f1117;
+    --surface:  #1a1d27;
+    --surface2: #22263a;
+    --border:   #2e3347;
+    --accent:   #4f8ef7;
+    --green:    #7dd3a8;
+    --warn:     #f4b942;
+    --red:      #ef4444;
+    --text:     #d6daf0;
+    --muted:    #6b7099;
+    --mono:     'JetBrains Mono','Courier New',monospace;
+    --sans:     'Inter','Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    margin:0;
+    line-height:1.55;
+    font-size:14px;
+  }
+  .container{
+    max-width:1100px;
+    margin:0 auto;
+    padding:24px 16px 64px;
+  }
+  h1{font-size:26px;margin-bottom:4px;text-align:center;color:#fff;}
+  .subtitle{color:var(--muted);margin-top:0;margin-bottom:24px;font-size:14px;text-align:center;}
+
+  .tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);}
+  .tab-btn{
+    background:none;border:none;color:var(--muted);
+    padding:10px 16px;font-size:15px;cursor:pointer;
+    border-bottom:2px solid transparent;
+    font-family:var(--sans);
+  }
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:16px;
+  }
+  .card h3{margin-top:0;font-size:16px;color:#fff;}
+
+  .row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+  .field{flex:1;min-width:110px;}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px;}
+  .field input{
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:6px;
+    color:var(--text);
+    padding:8px 10px;
+    font-size:15px;
+    font-family:var(--sans);
+  }
+  .field input:focus{outline:none;border-color:var(--accent);}
+
+  /* сетка билинейной таблицы 3x3: пусто | X1 | X2 ; Y1 | Z11 | Z21 ; Y2 | Z12 | Z22 */
+  .grid-table{
+    display:grid;
+    grid-template-columns:90px 1fr 1fr;
+    gap:8px;
+    align-items:center;
+    margin-bottom:16px;
+  }
+  .grid-table .corner{}
+  .grid-table .hdr input, .grid-table .side input{
+    background:var(--bg);border:1px solid var(--accent);border-radius:6px;
+    color:var(--accent);padding:6px 8px;text-align:center;width:100%;font-size:14px;font-family:var(--mono);
+  }
+  .grid-table .cell input{
+    background:var(--bg);border:1px solid var(--border);border-radius:6px;
+    color:var(--text);padding:6px 8px;text-align:center;width:100%;font-size:14px;font-family:var(--mono);
+  }
+  .grid-table .label-mini{font-size:11px;color:var(--muted);text-align:center;margin-bottom:2px;}
+
+  .target-row{display:flex;gap:12px;align-items:flex-end;margin-top:4px;}
+
+  details.steps{
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 14px;
+    margin-top:8px;
+    font-size:14px;
+    color:var(--muted);
+  }
+  details.steps summary{cursor:pointer;color:var(--text);font-size:14px;}
+  .step-line{margin:6px 0;font-family:var(--mono);font-size:13.5px;}
+
+  .result-card{
+    background:rgba(125,211,168,0.08);
+    border:1px solid rgba(125,211,168,0.35);
+    border-radius:10px;
+    padding:16px 20px;
+    margin-top:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .result-card .label{font-size:14px;color:var(--muted);}
+  .result-card .value{font-size:24px;font-weight:600;color:var(--green);font-family:var(--mono);}
+
+  .warn{color:var(--warn);font-size:13px;margin-top:8px;}
+
+  .hint{font-size:13px;color:var(--muted);margin-top:-4px;margin-bottom:16px;}
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+<div id="site-header"></div>
+
+<main class="container">
+  <h1>Интерполяция</h1>
+  <p class="subtitle">Линейная интерполяция табличных значений: по двум точкам и двумерная (по строке и столбцу)</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="linear">Линейная (2 точки)</button>
+    <button class="tab-btn" data-tab="bilinear">Двумерная (билинейная)</button>
+  </div>
+
+  <!-- ===================== ВКЛАДКА 1: ЛИНЕЙНАЯ ИНТЕРПОЛЯЦИЯ ===================== -->
+  <section id="tab-linear" class="tab-panel active">
+    <p class="hint">Используется, когда искомое значение X лежит между двумя известными точками таблицы (X1;Y1) и (X2;Y2).</p>
+    <div class="card">
+      <h3>Исходные точки</h3>
+      <div class="row">
+        <div class="field"><label>X1</label><input type="number" id="lin-x1" value="1" step="any"></div>
+        <div class="field"><label>Y1</label><input type="number" id="lin-y1" value="1.5" step="any"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>X2</label><input type="number" id="lin-x2" value="10" step="any"></div>
+        <div class="field"><label>Y2</label><input type="number" id="lin-y2" value="15" step="any"></div>
+      </div>
+      <h3>Искомая точка</h3>
+      <div class="row">
+        <div class="field"><label>X (задано)</label><input type="number" id="lin-x" value="5" step="any"></div>
+      </div>
+
+      <details class="steps" open>
+        <summary>Формула и расчёт</summary>
+        <div class="step-line">Y = Y1 + (X − X1) × (Y2 − Y1) / (X2 − X1)</div>
+        <div class="step-line" id="lin-substituted"></div>
+      </details>
+
+      <div class="warn" id="lin-warn" style="display:none;">X1 и X2 не должны совпадать — деление на ноль.</div>
+
+      <div class="result-card">
+        <span class="label">Y (интерполированное значение)</span>
+        <span class="value" id="lin-result">—</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ВКЛАДКА 2: БИЛИНЕЙНАЯ ИНТЕРПОЛЯЦИЯ ===================== -->
+  <section id="tab-bilinear" class="tab-panel">
+    <p class="hint">Используется для таблиц с двумя аргументами (строка и столбец), когда искомая точка лежит внутри прямоугольника из 4 известных значений.</p>
+    <div class="card">
+      <h3>Таблица значений (4 угловые точки)</h3>
+
+      <div class="grid-table">
+        <div class="corner"></div>
+        <div class="hdr">
+          <div class="label-mini">X1 (столбец)</div>
+          <input type="number" id="bl-x1" value="1" step="any">
+        </div>
+        <div class="hdr">
+          <div class="label-mini">X2 (столбец)</div>
+          <input type="number" id="bl-x2" value="10" step="any">
+        </div>
+
+        <div class="side">
+          <div class="label-mini">Y1 (строка)</div>
+          <input type="number" id="bl-y1" value="1" step="any">
+        </div>
+        <div class="cell">
+          <div class="label-mini">Z(X1,Y1)</div>
+          <input type="number" id="bl-z11" value="1" step="any">
+        </div>
+        <div class="cell">
+          <div class="label-mini">Z(X2,Y1)</div>
+          <input type="number" id="bl-z21" value="10" step="any">
+        </div>
+
+        <div class="side">
+          <div class="label-mini">Y2 (строка)</div>
+          <input type="number" id="bl-y2" value="2" step="any">
+        </div>
+        <div class="cell">
+          <div class="label-mini">Z(X1,Y2)</div>
+          <input type="number" id="bl-z12" value="2" step="any">
+        </div>
+        <div class="cell">
+          <div class="label-mini">Z(X2,Y2)</div>
+          <input type="number" id="bl-z22" value="20" step="any">
+        </div>
+      </div>
+
+      <h3>Искомая точка</h3>
+      <div class="target-row">
+        <div class="field"><label>X (столбец, задано)</label><input type="number" id="bl-xt" value="5" step="any"></div>
+        <div class="field"><label>Y (строка, задано)</label><input type="number" id="bl-yt" value="1.5" step="any"></div>
+      </div>
+
+      <details class="steps" open>
+        <summary>Промежуточные шаги</summary>
+        <div class="step-line">Шаг 1 — интерполяция по X при Y = Y1:</div>
+        <div class="step-line" id="bl-step1"></div>
+        <div class="step-line" style="margin-top:8px;">Шаг 2 — интерполяция по X при Y = Y2:</div>
+        <div class="step-line" id="bl-step2"></div>
+        <div class="step-line" style="margin-top:8px;">Шаг 3 — интерполяция по Y между результатами шагов 1 и 2:</div>
+        <div class="step-line" id="bl-step3"></div>
+      </details>
+
+      <div class="warn" id="bl-warn" style="display:none;">Проверьте данные: X1=X2 или Y1=Y2 — деление на ноль.</div>
+
+      <div class="result-card">
+        <span class="label">Z (интерполированное значение)</span>
+        <span class="value" id="bl-result">—</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+
+<script>
+// ---- переключение вкладок с сохранением состояния полей каждой вкладки ----
+const selectedState = { linear: {}, bilinear: {} };
+
+function saveTabState(tabId) {
+  const panel = document.getElementById('tab-' + tabId);
+  const inputs = panel.querySelectorAll('input');
+  const state = {};
+  inputs.forEach(inp => state[inp.id] = inp.value);
+  selectedState[tabId] = state;
+}
+
+function restoreTabState(tabId) {
+  const state = selectedState[tabId];
+  if (!state) return;
+  Object.keys(state).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = state[id];
+  });
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const current = document.querySelector('.tab-btn.active').dataset.tab;
+    saveTabState(current);
+
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+
+    restoreTabState(btn.dataset.tab);
+  });
+});
+
+// ---- форматирование чисел (убираем лишние нули) ----
+function fmt(n) {
+  if (!isFinite(n)) return '—';
+  return parseFloat(n.toFixed(4)).toString();
+}
+
+// ---- линейная интерполяция ----
+function calcLinear() {
+  const x1 = parseFloat(document.getElementById('lin-x1').value);
+  const y1 = parseFloat(document.getElementById('lin-y1').value);
+  const x2 = parseFloat(document.getElementById('lin-x2').value);
+  const y2 = parseFloat(document.getElementById('lin-y2').value);
+  const x  = parseFloat(document.getElementById('lin-x').value);
+
+  const warnEl = document.getElementById('lin-warn');
+  if (x2 === x1) {
+    warnEl.style.display = 'block';
+    document.getElementById('lin-result').textContent = '—';
+    document.getElementById('lin-substituted').textContent = '';
+    return;
+  }
+  warnEl.style.display = 'none';
+
+  const y = y1 + (x - x1) * (y2 - y1) / (x2 - x1);
+
+  document.getElementById('lin-substituted').textContent =
+    `Y = ${fmt(y1)} + (${fmt(x)} − ${fmt(x1)}) × (${fmt(y2)} − ${fmt(y1)}) / (${fmt(x2)} − ${fmt(x1)}) = ${fmt(y)}`;
+  document.getElementById('lin-result').textContent = fmt(y);
+}
+
+document.querySelectorAll('#tab-linear input').forEach(inp => {
+  inp.addEventListener('input', calcLinear);
+});
+
+// ---- билинейная (двумерная) интерполяция ----
+// Шаг 1: интерполяция по X при Y=Y1 -> Za
+// Шаг 2: интерполяция по X при Y=Y2 -> Zb
+// Шаг 3: интерполяция по Y между Za и Zb -> Zt
+function calcBilinear() {
+  const x1 = parseFloat(document.getElementById('bl-x1').value);
+  const x2 = parseFloat(document.getElementById('bl-x2').value);
+  const y1 = parseFloat(document.getElementById('bl-y1').value);
+  const y2 = parseFloat(document.getElementById('bl-y2').value);
+  const z11 = parseFloat(document.getElementById('bl-z11').value);
+  const z21 = parseFloat(document.getElementById('bl-z21').value);
+  const z12 = parseFloat(document.getElementById('bl-z12').value);
+  const z22 = parseFloat(document.getElementById('bl-z22').value);
+  const xt = parseFloat(document.getElementById('bl-xt').value);
+  const yt = parseFloat(document.getElementById('bl-yt').value);
+
+  const warnEl = document.getElementById('bl-warn');
+  if (x2 === x1 || y2 === y1) {
+    warnEl.style.display = 'block';
+    document.getElementById('bl-result').textContent = '—';
+    document.getElementById('bl-step1').textContent = '';
+    document.getElementById('bl-step2').textContent = '';
+    document.getElementById('bl-step3').textContent = '';
+    return;
+  }
+  warnEl.style.display = 'none';
+
+  const za = z11 + (xt - x1) * (z21 - z11) / (x2 - x1);
+  const zb = z12 + (xt - x1) * (z22 - z12) / (x2 - x1);
+  const zt = za + (yt - y1) * (zb - za) / (y2 - y1);
+
+  document.getElementById('bl-step1').textContent =
+    `Za = ${fmt(z11)} + (${fmt(xt)} − ${fmt(x1)}) × (${fmt(z21)} − ${fmt(z11)}) / (${fmt(x2)} − ${fmt(x1)}) = ${fmt(za)}`;
+  document.getElementById('bl-step2').textContent =
+    `Zb = ${fmt(z12)} + (${fmt(xt)} − ${fmt(x1)}) × (${fmt(z22)} − ${fmt(z12)}) / (${fmt(x2)} − ${fmt(x1)}) = ${fmt(zb)}`;
+  document.getElementById('bl-step3').textContent =
+    `Z = ${fmt(za)} + (${fmt(yt)} − ${fmt(y1)}) × (${fmt(zb)} − ${fmt(za)}) / (${fmt(y2)} − ${fmt(y1)}) = ${fmt(zt)}`;
+
+  document.getElementById('bl-result').textContent = fmt(zt);
+}
+
+document.querySelectorAll('#tab-bilinear input').forEach(inp => {
+  inp.addEventListener('input', calcBilinear);
+});
+
+// ---- первичный расчёт при загрузке ----
+calcLinear();
+calcBilinear();
+</script>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+</body>
+</html>
