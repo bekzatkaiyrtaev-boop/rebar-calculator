@@ -69,6 +69,22 @@ table.datatable tr.current-row td{background:rgba(79,142,247,0.12);color:var(--a
 
 .notes{padding:14px 16px;font-size:12px;line-height:1.8;color:var(--muted);}
 .notes b{color:var(--text);}
+
+details.card{padding:0;}
+details.card > summary{
+  list-style:none;cursor:pointer;background:var(--surface2);padding:12px 16px;
+  border-bottom:1px solid transparent;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+}
+details.card > summary::-webkit-details-marker{display:none;}
+details.card > summary::before{
+  content:'▸';color:var(--accent);font-size:11px;margin-right:8px;transition:transform .15s;display:inline-block;
+}
+details.card[open] > summary::before{transform:rotate(90deg);}
+details.card[open] > summary{border-bottom:1px solid var(--border);}
+details.card > summary .title{font-size:13px;font-weight:700;color:#fff;}
+details.card > summary .ref{font-family:var(--mono);font-size:10.5px;color:var(--accent);background:transparent;border:none;padding:0;opacity:.85;}
+details.card > summary .summary-flex{display:flex;align-items:center;justify-content:space-between;flex:1;gap:8px;flex-wrap:wrap;}
 </style>
 <link rel="stylesheet" href="site-header.css">
 <link rel="stylesheet" href="site-footer.css">
@@ -109,34 +125,28 @@ table.datatable tr.current-row td{background:rgba(79,142,247,0.12);color:var(--a
 </div>
 
 <!-- ══════ Полный сортамент по выбранному типоразмеру ══════ -->
-<div class="card">
-  <div class="card-header">
-    <span class="title">Все толщины стенки для выбранного типоразмера</span>
-  </div>
+<details class="card">
+  <summary><span class="summary-flex"><span class="title">Все толщины стенки для выбранного типоразмера</span></span></summary>
   <div style="overflow-x:auto;">
     <table class="datatable" id="fullTable"></table>
   </div>
-</div>
+</details>
 
 <!-- ══════ Условное обозначение ══════ -->
-<div class="card">
-  <div class="card-header"><span class="title">Условное обозначение при заказе</span></div>
+<details class="card">
+  <summary><span class="summary-flex"><span class="title">Условное обозначение при заказе</span></span></summary>
   <div class="text-block">
-    <p>Профиль прямоугольный (ПП) с размерами поперечного сечения 300×100×6 мм, мерной длины 6000 мм, из стали обычной хладостойкости, класса прочности КП245, с повышенным сопротивлением атмосферной коррозии:</p>
-    <p style="font-family:var(--mono);color:var(--accent);font-size:14px;text-align:center;padding:8px;background:var(--surface2);border-radius:6px;">ПП-300×100×6×6000-КП245-К-ГОСТ 30245-2012</p>
+    <p>Для выбранного профиля (<span id="markingShapeName">квадратный (ПК)</span>, <span id="markingDims">300×300</span>×<span id="markingT">12</span> мм), мерной длины 6000 мм, из стали обычной хладостойкости, класса прочности КП245:</p>
+    <p id="markingMerny" style="font-family:var(--mono);color:var(--accent);font-size:14px;text-align:center;padding:8px;background:var(--surface2);border-radius:6px;"></p>
     <p>То же, немерной длины:</p>
-    <p style="font-family:var(--mono);color:var(--accent);font-size:14px;text-align:center;padding:8px;background:var(--surface2);border-radius:6px;">ПП-300×100×6-КП245-К-ГОСТ 30245-2012</p>
-    <p>Профиль квадратный (ПК) 300×300×12 мм, длины кратной мерной (кр) 6000 мм, из стали высокой хладостойкости (X), класса прочности КП345:</p>
-    <p style="font-family:var(--mono);color:var(--accent);font-size:14px;text-align:center;padding:8px;background:var(--surface2);border-radius:6px;">ПК-300×300×12×6000кр-Х-КП345-ГОСТ 30245-2012</p>
+    <p id="markingNemerny" style="font-family:var(--mono);color:var(--accent);font-size:14px;text-align:center;padding:8px;background:var(--surface2);border-radius:6px;"></p>
+    <p style="color:var(--muted);font-size:12px;">ПК — профиль квадратный, ПП — профиль прямоугольный. После длины через дефис может добавляться класс хладостойкости (Х — повышенная) и признак повышенного сопротивления атмосферной коррозии (К).</p>
   </div>
-</div>
+</details>
 
 <!-- ══════ Классы прочности ══════ -->
-<div class="card">
-  <div class="card-header">
-    <span class="title">Механические свойства по классам прочности</span>
-    <span class="ref">Табл. 3</span>
-  </div>
+<details class="card">
+  <summary><span class="summary-flex"><span class="title">Механические свойства по классам прочности</span><span class="ref">Табл. 3</span></span></summary>
   <div style="overflow-x:auto;">
     <table class="datatable">
       <tr><th>Класс прочности</th><th>σ<sub>в</sub>, МПа (не менее)</th><th>σ<sub>т</sub>, МПа (не менее)</th><th>δ, % (не менее)</th><th>KCU⁻⁴⁰, Дж/см²</th><th>KCV⁻⁷⁰, Дж/см²</th></tr>
@@ -158,11 +168,11 @@ table.datatable tr.current-row td{background:rgba(79,142,247,0.12);color:var(--a
   <div class="notes">
     Профили обычной категории (классы 245–265) — статическая нагрузка, t<sub>расч</sub> не ниже −45°С. Классы 295–460 — статическое и динамическое нагружение, t<sub>расч</sub> не ниже −45°С. Категория <b>X</b> — динамическое нагружение и/или t<sub>расч</sub> ниже −45°С; не подвергается термообработке после контролируемой прокатки.
   </div>
-</div>
+</details>
 
 <!-- ══════ Технические требования ══════ -->
-<div class="card">
-  <div class="card-header"><span class="title">Сортамент и технические требования</span></div>
+<details class="card">
+  <summary><span class="summary-flex"><span class="title">Сортамент и технические требования</span></span></summary>
   <div class="text-block">
     <p><span class="num">4.6</span>По длине профили изготовляют немерной длины — от 4000 до 18000 мм; мерной и кратной мерной — в пределах немерной.</p>
     <p><span class="num">4.7</span>Предельное отклонение по длине мерных и кратных профилей — не более <b>+60,0 мм</b>, если иное не оговорено в заказе.</p>
@@ -172,7 +182,7 @@ table.datatable tr.current-row td{background:rgba(79,142,247,0.12);color:var(--a
     <p><span class="num">5.1</span>Материал: углеродистая сталь общего назначения и низколегированная (ГОСТ 27772, ГОСТ 14637, ГОСТ 16523), углеродистая качественная марок 10, 15, 20 (ГОСТ 1050), низколегированная (ГОСТ 19281, ГОСТ 17066). Марка стали, класс прочности и категория поставки указываются в заказе.</p>
     <p><span class="num">5.2</span>Категории по хладостойкости: обычная и высокая (обозначается буквой <b>X</b>). Категории по коррозионной стойкости: обычная и повышенная — присутствие меди 0,15–0,30% в составе стали, обозначается буквой <b>К</b>.</p>
   </div>
-</div>
+</details>
 
 <p style="text-align:center;color:var(--muted);font-size:11px;margin-top:8px;">Область применения — стальные гнутые замкнутые сварные квадратные и прямоугольные профили для строительных стальных конструкций.</p>
 
@@ -239,6 +249,14 @@ function render(){
   const t = parseFloat(document.getElementById('selT').value);
   const row = entry.rows.find(r => r.t === t);
   if (!row) return;
+
+  const prefix = currentShape === 'square' ? 'ПК' : 'ПП';
+  const dims = currentShape === 'square' ? `${entry.h}×${entry.h}` : `${entry.h}×${entry.b}`;
+  document.getElementById('markingShapeName').textContent = currentShape === 'square' ? 'квадратный (ПК)' : 'прямоугольный (ПП)';
+  document.getElementById('markingDims').textContent = dims;
+  document.getElementById('markingT').textContent = t;
+  document.getElementById('markingMerny').textContent = `${prefix}-${dims}×${t}×6000-КП245-ГОСТ 30245-2012`;
+  document.getElementById('markingNemerny').textContent = `${prefix}-${dims}×${t}-КП245-ГОСТ 30245-2012`;
 
   const grid = document.getElementById('resultGrid');
   if (currentShape === 'square'){
