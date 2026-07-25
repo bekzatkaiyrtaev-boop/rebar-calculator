@@ -194,10 +194,8 @@ table.refs td.def{color:var(--text);}
 <details class="card">
   <summary class="card-header"><span class="title">Условные обозначения при заказе</span></summary>
   <div class="text-block">
-    <p>Лист горячекатаный из стали Ст3сп по ГОСТ 380 с односторонним ромбическим рифлением размером 3,0×1000×2000 мм, нормальной точности по толщине, улучшенной плоскостности, с катаной кромкой:</p>
-    <p style="font-family:var(--mono);color:var(--accent);font-size:14px;text-align:center;padding:8px;background:var(--surface2);border-radius:6px;">Лист ромб В-К-ПУ-3,0×1000×2000 Ст3сп ГОСТ 8568-77</p>
-    <p>То же, с чечевичным рифлением:</p>
-    <p style="font-family:var(--mono);color:var(--accent);font-size:14px;text-align:center;padding:8px;background:var(--surface2);border-radius:6px;">Лист чечевица В-К-ПУ-3,0×1000×2000 Ст3сп ГОСТ 8568-77</p>
+    <p>Для выбранного листа — <span id="markTypeName">ромбическое</span> рифление, толщина основания <b id="markS">3,0</b> мм, из стали Ст3сп по ГОСТ 380, нормальной точности по толщине, улучшенной плоскостности, с катаной кромкой, размером 1000×2000 мм:</p>
+    <p id="markCode" style="font-family:var(--mono);color:var(--accent);font-size:14px;text-align:center;padding:8px;background:var(--surface2);border-radius:6px;"></p>
     <p>Рулонный горячекатаный прокат Ст3сп по ГОСТ 380 с ромбическим рифлением 3,0×1000 мм, высокой точности, с катаной кромкой:</p>
     <p style="font-family:var(--mono);color:var(--accent);font-size:14px;text-align:center;padding:8px;background:var(--surface2);border-radius:6px;">Рулон ромб А-К-3,0×1000 Ст3сп ГОСТ 8568-77</p>
   </div>
@@ -298,6 +296,12 @@ function render(){
 
   document.getElementById('card-drawing-rhomb').style.display = type === 'rhomb' ? '' : 'none';
   document.getElementById('card-drawing-lentil').style.display = type === 'lentil' ? '' : 'none';
+
+  const typeLabel = type === 'rhomb' ? 'ромб' : 'чечевица';
+  const sStr = String(s).replace('.', ',');
+  document.getElementById('markTypeName').textContent = type === 'rhomb' ? 'ромбическое' : 'чечевичное';
+  document.getElementById('markS').textContent = sStr;
+  document.getElementById('markCode').textContent = `Лист ${typeLabel} В-К-ПУ-${sStr}×1000×2000 Ст3сп ГОСТ 8568-77`;
 }
 
 buildSelectors();

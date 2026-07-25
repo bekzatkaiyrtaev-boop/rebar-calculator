@@ -92,6 +92,22 @@ table.datatable td.empty{color:var(--border);}
 .notes{padding:14px 16px;font-size:12px;line-height:1.8;color:var(--muted);}
 .notes b{color:var(--text);}
 
+details.card{padding:0;}
+details.card > summary{
+  list-style:none;cursor:pointer;background:var(--surface2);padding:12px 16px;
+  border-bottom:1px solid transparent;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+}
+details.card > summary::-webkit-details-marker{display:none;}
+details.card > summary::before{
+  content:'▸';color:var(--accent);font-size:11px;margin-right:8px;transition:transform .15s;display:inline-block;
+}
+details.card[open] > summary::before{transform:rotate(90deg);}
+details.card[open] > summary{border-bottom:1px solid var(--border);}
+details.card > summary .title{font-size:13px;font-weight:700;color:#fff;}
+details.card > summary .ref{font-family:var(--mono);font-size:10.5px;color:var(--accent);background:transparent;border:none;padding:0;opacity:.85;}
+details.card > summary .summary-flex{display:flex;align-items:center;justify-content:space-between;flex:1;gap:8px;flex-wrap:wrap;}
+
 /* ── Таблица терминов / НТД ── */
 table.refs{width:100%;border-collapse:collapse;font-size:12px;}
 table.refs td{padding:8px 12px;border-bottom:1px solid var(--border);}
@@ -151,35 +167,30 @@ table.refs td.def{color:var(--text);}
 </div>
 
 <!-- ══════ Полная таблица сортамента ══════ -->
-<div class="card">
-  <div class="card-header">
-    <span class="title">Сортамент — предельные нагрузки, кг, при ширине листа, мм</span>
-  </div>
+<details class="card">
+  <summary><span class="summary-flex"><span class="title">Сортамент — предельные нагрузки, кг, при ширине листа, мм</span></span></summary>
   <div style="overflow-x:auto;">
     <table class="datatable" id="fullTable"></table>
   </div>
   <div class="notes">
     Значения — для нагрузки, сосредоточенной по центральной линии, при защемлённых концах. Для равномерно распределённой нагрузки табличные значения умножают на <b>2,2</b>. При свободном опирании концов предельные нагрузки уменьшаются <b>вдвое</b>.
   </div>
-</div>
+</details>
 
 
 <!-- ══════ Условное обозначение ══════ -->
-<div class="card">
-  <div class="card-header"><span class="title">Условное обозначение при заказе</span></div>
+<details class="card">
+  <summary><span class="summary-flex"><span class="title">Условное обозначение при заказе</span></span></summary>
   <div class="text-block">
-    <p>Пример: лист просечно-вытяжной с формой просечки типа 1, номера 508, шириной 900 мм и длиной 2500 мм из стали Ст3сп:</p>
-    <p style="font-family:var(--mono);color:var(--accent);font-size:15px;text-align:center;padding:10px;background:var(--surface2);border-radius:6px;">Лист ПВ1 508×900×2500 Ст3сп ТУ 36.26.11-5-89</p>
+    <p>Для выбранного листа — номер <b id="markNum">508</b>, шириной <b id="markWidth">900</b> мм, с формой просечки типа 1, длиной 2500 мм, из стали Ст3сп:</p>
+    <p id="markCode" style="font-family:var(--mono);color:var(--accent);font-size:15px;text-align:center;padding:10px;background:var(--surface2);border-radius:6px;"></p>
     <p>Если в заказе тип просечки не указан, завод может поставить листы любой формы.</p>
   </div>
-</div>
+</details>
 
 <!-- ══════ Условное обозначение в рабочем проекте ══════ -->
-<div class="card">
-  <div class="card-header">
-    <span class="title">Условное обозначение в рабочем проекте</span>
-    <span class="ref">ГОСТ 21.101-97 · форма 7</span>
-  </div>
+<details class="card">
+  <summary><span class="summary-flex"><span class="title">Условное обозначение в рабочем проекте</span><span class="ref">ГОСТ 21.101-97 · форма 7</span></span></summary>
   <div style="overflow-x:auto;">
     <table class="datatable">
       <tr><th style="width:8%">Поз.</th><th style="width:22%">Обозначение</th><th>Наименование</th><th style="width:10%">Кол.</th><th style="width:12%">Масса ед., кг</th><th style="width:14%">Примечание</th></tr>
@@ -196,11 +207,11 @@ table.refs td.def{color:var(--text);}
   <div class="notes">
     На плане/разрезе элемент маркируется позиционной выноской (номер позиции в кружке или на полке), соответствующей строке спецификации. Масса единицы = масса 1 м² × площадь листа (масса 1 м² берётся из таблицы выше для соответствующего номера листа).
   </div>
-</div>
+</details>
 
 <!-- ══════ Технические требования ══════ -->
-<div class="card">
-  <div class="card-header"><span class="title">1. Технические требования</span></div>
+<details class="card">
+  <summary><span class="summary-flex"><span class="title">1. Технические требования</span></span></summary>
   <div class="text-block">
     <p><span class="num">1.3</span>Листы изготовляются из листовой углеродистой стали по <b>ГОСТ 14637-89</b> марок Ст3кп, Ст3сп и Ст3пс по <b>ГОСТ 380-88</b>, толщиной δ 4, 5 и 6 мм. По согласованию с потребителем допускается изготовление из других марок стали.</p>
     <p><span class="num">1.4</span>По ширине листы изготовляются размерами: <b>500, 600, 700, 800, 900, 1000, 1100, 1250 и 1400 мм</b>.</p>
@@ -215,25 +226,25 @@ table.refs td.def{color:var(--text);}
     <p><span class="num">1.9</span><b>Упаковка:</b> листы увязываются в пачки массой не более 5 т. Каждая пачка обвязывается в поперечном направлении через 1,0–1,5 м не менее чем двумя обвязками (проволока по ГОСТ 3282-74). Использовать обвязки для строповки пачек не допускается. При отгрузке в районы Крайнего Севера — на одну закрутку больше.</p>
     <p><span class="num">1.10</span><b>Маркировка:</b> на фанерные/металлические ярлыки или на непросекаемую часть верхнего листа — товарный знак изготовителя, условное обозначение листа, номер партии, масса нетто. Наносится ударным способом или несмываемой краской, высота знаков 5–20 мм.</p>
   </div>
-</div>
+</details>
 
-<div class="card">
-  <div class="card-header"><span class="title">2. Правила приёмки</span></div>
+<details class="card">
+  <summary><span class="summary-flex"><span class="title">2. Правила приёмки</span></span></summary>
   <div class="text-block">
     <p><span class="num">2.1</span>Листы принимаются партиями. Партия должна состоять из листов одной марки стали, одного номера, одного размера по ширине и длине.</p>
     <p><span class="num">2.2</span>Контролю качества поверхности и геометрических размеров подвергают <b>5%</b> листов партии, но не менее трёх листов.</p>
     <p><span class="num">2.3</span>При неудовлетворительном результате хотя бы по одному показателю проводятся повторные испытания на удвоенном количестве образцов. Результаты повторной проверки распространяются на всю партию.</p>
   </div>
-</div>
+</details>
 
-<div class="card">
-  <div class="card-header"><span class="title">4. Транспортирование и хранение</span></div>
+<details class="card">
+  <summary><span class="summary-flex"><span class="title">4. Транспортирование и хранение</span></span></summary>
   <div class="text-block">
     <p><span class="num">4.1</span>Транспортирование — всеми видами транспорта в соответствии с действующими правилами перевозки, погрузки и крепления грузов.</p>
     <p><span class="num">4.2</span>При ж/д транспорте — в открытом подвижном составе. Допускается в крытых вагонах при массе пачки не более 1 т.</p>
     <p><span class="num">4.3–4.4</span>Хранение — в штабелях в горизонтальном положении. Пачки укладываются на подкладки (толщина ≥50 мм, ширина ≥100 мм), прокладки между пачками — толщина ≥20 мм, ширина ≥100 мм. Штабель предохраняется от атмосферных осадков.</p>
   </div>
-</div>
+</details>
 
 <p style="text-align:center;color:var(--muted);font-size:11px;margin-top:8px;">Действует в редакции с изменением № 1. Область применения — просечно-вытяжные листы для настилов, площадок и ступеней маршевых лестниц в производственных зданиях, эксплуатируемых при расчётной температуре минус 65 °С и выше.</p>
 
@@ -326,6 +337,10 @@ function render(){
   const rawLoad = sheet.loads[width];
   const load = applyMode(rawLoad);
   document.getElementById('v_load').textContent = load !== null ? load + ' кг' : '—';
+
+  document.getElementById('markNum').textContent = num;
+  document.getElementById('markWidth').textContent = width;
+  document.getElementById('markCode').textContent = `Лист ПВ1 ${num}×${width}×2500 Ст3сп ТУ 36.26.11-5-89`;
 
   renderFullTable(num, width);
 }

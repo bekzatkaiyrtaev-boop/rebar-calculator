@@ -189,7 +189,8 @@ details.card > summary .summary-flex{display:flex;align-items:center;justify-con
     <p><b>С</b> в номере балки — балки для армировки шахтных стволов; <b>С</b> в номере швеллера — швеллеры для автомобильной промышленности.</p>
     <p>Буква «а» после номера — усиленное исполнение (увеличенная толщина стенки/полки при том же номере).</p>
     <p>По точности прокатки: <b>А</b> — высокая точность, <b>В</b> — обычная точность (введено изм. № 2).</p>
-    <p>Пример обозначения: <span style="font-family:var(--mono);color:var(--accent);">Балка 20С-В ГОСТ 19425-74</span> — балка № 20 армировки шахтных стволов, обычной точности прокатки.</p>
+    <p>Для выбранного выше профиля — номер <b id="desigNomer">20С</b>, обычной точности прокатки:</p>
+    <p id="desigCode" style="font-family:var(--mono);color:var(--accent);font-size:14px;text-align:center;padding:8px;background:var(--surface2);border-radius:6px;"></p>
   </div>
 </details>
 
@@ -231,6 +232,14 @@ function selectType(t){
   document.getElementById('selectBeam').classList.toggle('active', t === 'beam');
   document.getElementById('selectChannel').classList.toggle('active', t === 'channel');
   renderFullTable();
+  updateMarking();
+}
+
+function updateMarking(){
+  const r = currentType === 'beam' ? BEAMS[parseInt(selBeam.value)] : CHANNELS[parseInt(selChannel.value)];
+  const label = currentType === 'beam' ? 'Балка' : 'Швеллер';
+  document.getElementById('desigNomer').textContent = r.nomer;
+  document.getElementById('desigCode').textContent = `${label} ${r.nomer}-В ГОСТ 19425-74`;
 }
 
 function fmt(v){ return (v===null||v===undefined) ? '—' : v; }
@@ -258,6 +267,7 @@ function renderBeam(){
   document.getElementById('legF').textContent = fmt(r.F);
   document.getElementById('legM').textContent = fmt(r.mass);
   renderFullTable(r.nomer);
+  if (currentType === 'beam') updateMarking();
 }
 
 const selChannel = document.getElementById('selChannel');
@@ -285,6 +295,7 @@ function renderChannel(){
   document.getElementById('legF2').textContent = fmt(r.F);
   document.getElementById('legM2').textContent = fmt(r.mass);
   renderFullTable(r.nomer);
+  if (currentType === 'channel') updateMarking();
 }
 
 function renderFullTable(curNomer){
