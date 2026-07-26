@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Рёбристые плиты покрытия 6х3м — серия 1.465.1-17 — Электронный справочник конструктора</title>
+
+<style>
+  :root {
+    --bg:       #0f1117;
+    --surface:  #1a1d27;
+    --surface2: #22263a;
+    --border:   #2e3347;
+    --accent:   #4f8ef7;
+    --green:    #7dd3a8;
+    --warn:     #f4b942;
+    --red:      #ef4444;
+    --text:     #d6daf0;
+    --muted:    #6b7099;
+    --mono:     'JetBrains Mono','Courier New',monospace;
+    --sans:     'Inter','Segoe UI',sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .page-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    text-align: center;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    margin: 0 0 20px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .combined-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 780px) {
+    .filters-grid { grid-template-columns: 1fr; }
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field label {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  select, input[type="number"], input[type="text"] {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 9px 10px;
+    font-family: var(--sans);
+    font-size: 14px;
+  }
+
+  select:focus, input[type="number"]:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .result-count {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .table-scroll {
+    overflow: auto;
+    margin-top: 8px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  table.datatable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  table.datatable th, table.datatable td {
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  table.datatable td.marka-cell, table.datatable td.type-cell {
+    text-align: left;
+    white-space: normal;
+  }
+
+  table.datatable th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  table.datatable td.marka-cell {
+    font-family: var(--mono);
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  table.datatable tbody tr {
+    cursor: pointer;
+  }
+
+  table.datatable tbody tr:hover {
+    background: rgba(79, 142, 247, 0.06);
+  }
+
+  table.datatable tbody tr.row-selected {
+    background: rgba(79, 142, 247, 0.14);
+  }
+
+  .detail-panel {
+    background: #ffffff;
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: none;
+  }
+
+  .detail-panel.visible {
+    display: block;
+  }
+
+  .detail-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #111318;
+    font-family: var(--mono);
+  }
+
+  .detail-sub {
+    color: #5a5f70;
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  .detail-body {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .detail-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 440px;
+    flex: 1 1 380px;
+  }
+
+  .detail-stats .design-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 6px 0;
+    border-bottom: 1px solid #e2e2e2;
+  }
+
+  .detail-stats .design-row .k {
+    color: #6b6f80;
+    font-size: 13px;
+  }
+
+  .detail-stats .design-row .v {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: #111318;
+    text-align: right;
+  }
+
+  .detail-stats .design-row .v.seismic-yes {
+    color: #b8860b;
+  }
+
+  .detail-stats .design-row .v.seismic-no {
+    color: #9298ab;
+  }
+
+  .detail-stats .design-row.dt-type .v {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 400;
+    text-align: left;
+  }
+
+  .detail-sketch {
+    flex: 0 0 380px;
+    max-width: 380px;
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .detail-sketch img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 260px;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+
+  .detail-sketch-placeholder {
+    width: 260px;
+    min-height: 160px;
+    border: 1px dashed #c7cad6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9298ab;
+    font-size: 12px;
+    text-align: center;
+    padding: 16px;
+  }
+
+  .detail-fire-note {
+    font-size: 12px;
+    color: #5a5f70;
+    text-align: left;
+    max-width: 320px;
+    line-height: 1.4;
+  }
+
+  .footnote {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 16px;
+  }
+
+  .notes-section {
+    margin: 28px 0 12px;
+  }
+
+  .notes-section summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .notes-section summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .notes-section summary::before {
+    content: '▸';
+    display: inline-block;
+    margin-right: 6px;
+    color: var(--accent);
+    transition: transform 0.15s ease;
+  }
+
+  .notes-section[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .notes-section summary:hover {
+    color: var(--accent);
+  }
+
+  .notes-list {
+    margin: 16px 0 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .notes-list li {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+
+<div class="page-wrap">
+  <div id="site-header"></div>
+
+  <h1>Рёбристые плиты покрытия 6х3м</h1>
+  <p class="subtitle">Серия 1.465.1-17</p>
+
+  <div class="combined-card">
+    <div class="filters-grid">
+      <div class="field">
+        <label for="typeSelect">Тип плиты</label>
+        <select id="typeSelect"></select>
+      </div>
+      <div class="field">
+        <label for="categorySelect">Категория воздействия среды</label>
+        <select id="categorySelect"></select>
+      </div>
+      <div class="field">
+        <label for="seismicSelect">Наличие сейсмики</label>
+        <select id="seismicSelect">
+          <option value="no">Без сейсмики</option>
+          <option value="yes">Только сейсмостойкие</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="result-count" id="resultCount"></div>
+
+    <div class="table-scroll">
+    <table class="datatable">
+      <thead id="tableHead"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-title" id="dtMarking"></div>
+    <div class="detail-sub">Кликните по строке в таблице ещё раз, чтобы скрыть панель</div>
+    <div class="detail-body">
+      <div class="detail-stats">
+        <div class="design-row"><div class="k">Нагрузка с учётом веса плиты при коэф. надёжности γf&gt;1</div><div class="v" id="dtL1"></div></div>
+        <div class="design-row"><div class="k">Нагрузка с учётом веса плиты при коэф. надёжности γf=1</div><div class="v" id="dtL2"></div></div>
+        <div class="design-row"><div class="k">Нагрузка без учёта веса плиты при коэф. надёжности γf&gt;1</div><div class="v" id="dtL3"></div></div>
+        <div class="design-row"><div class="k">Нагрузка без учёта веса плиты при коэф. надёжности γf=1</div><div class="v" id="dtL4"></div></div>
+        <div class="design-row"><div class="k">Класс бетона</div><div class="v" id="dtClass"></div></div>
+        <div class="design-row"><div class="k">Расход бетона, м&sup3;</div><div class="v" id="dtCm3"></div></div>
+        <div class="design-row"><div class="k">Расход стали, кг</div><div class="v" id="dtSteel"></div></div>
+        <div class="design-row"><div class="k">Масса, т</div><div class="v" id="dtMass"></div></div>
+        <div class="design-row"><div class="k">Сейсмостойкость</div><div class="v" id="dtSeismic"></div></div>
+        <div class="design-row dt-type"><div class="k">Тип плиты</div><div class="v" id="dtType"></div></div>
+      </div>
+      <div class="detail-sketch" id="dtSketch">
+        <img id="dtSketchImg" src="" alt="Схема плиты" style="max-width:100%;">
+        <div class="detail-fire-note">Предел огнестойкости плиты равен 0,5 часа</div>
+        <div class="detail-fire-note" id="dtLightNote1" style="display:none;">Указанные в таблице величины полезных нагрузок соответствуют плитам из керамзитобетона. Для плит из аглопоритобетона и шлакопемзобетона величины полезных нагрузок должны быть уменьшены на 0,2 кПа (20 кгс/м&sup2;).</div>
+        <div class="detail-fire-note" id="dtLightNote2" style="display:none;">Масса плит указана в скобках: значение вне скобок — плиты из керамзитобетона, значение в скобках — плиты из аглопоритобетона или шлакопемзобетона.</div>
+      </div>
+    </div>
+  </div>
+
+  <details class="notes-section">
+    <summary>Типовые примечания к монтажу рёбристых плит покрытия</summary>
+    <ol class="notes-list">
+      <li>Монтаж рёбристых плит покрытия выполнять в соответствии с проектом, требованиями EN 1992-1-1, EN 13670 и действующих национальных приложений.</li>
+      <li>Плиты укладывать на слой кладочного раствора класса M10 толщиной 20 мм.</li>
+      <li>Минимальную длину опирания плит принимать согласно проекту.</li>
+      <li>Продольные и поперечные швы, а также монолитные участки после монтажа очистить и замонолитить мелкозернистым бетоном класса не ниже C20/25.</li>
+      <li>Анкеровку плит между собой и с несущими конструкциями выполнять в соответствии с узлами проекта.</li>
+      <li>Отверстия для пропуска инженерных коммуникаций выполнять только в местах, предусмотренных проектом. Выполнение отверстий в несущих ребрах плит не допускается (см. разделы ОВ, ВК).</li>
+      <li>Выполнение отверстий, штраб, вырезов и иных повреждений плит, не предусмотренных проектом, не допускается.</li>
+      <li>Монтаж плит производить после достижения раствором под опорами проектной прочности.</li>
+      <li>При монтаже обеспечить полное заполнение раствором опорной поверхности плит без образования пустот.</li>
+      <li>После окончания монтажа проверить отметки верха плит. Допустимые отклонения принимать согласно EN 13670 и требованиям проекта.</li>
+      <li>Все сварные соединения и открытые металлические элементы после окончания монтажных работ защитить от коррозии согласно проекту.</li>
+      <li>При выполнении монтажных работ соблюдать требования проекта производства работ (ППР), действующих норм по охране труда и технике безопасности.</li>
+      <li>Не допускается складирование строительных материалов и оборудования на смонтированных плитах покрытия сверх нагрузок, предусмотренных проектом производства работ.</li>
+      <li>Все размеры указаны в миллиметрах, отметки — в метрах.</li>
+    </ol>
+  </details>
+
+  <p class="footnote">Данные — серия 1.465.1-17 (плиты 6х3м), таблица «Плиты из тяжелого/легкого бетона без проёмов / с проёмами». Признак сейсмостойкости — наличие буквы «С» в марке плиты.</p>
+</div>
+
+<div id="site-footer"></div>
+
+<script>
+const REBR_PICS = {
+  "ris1": "rebristye-6x3/ris1.jpg",
+  "ris2": "rebristye-6x3/ris2.jpg",
+  "ris3": "rebristye-6x3/ris3.jpg",
+  "ris4": "rebristye-6x3/ris4.jpg",
+  "ris5": "rebristye-6x3/ris5.jpg",
+  "ris6": "rebristye-6x3/ris6.jpg",
+  "ris7": "rebristye-6x3/ris7.jpg"
+};
+let REBR_DATA = [];
+// [marka, ris, l1, l2, l3, l4, cclass, cm3, steel, mass, category, type, seismic]
+
+
+function idx(name) {
+  return { marka:0, ris:1, l1:2, l2:3, l3:4, l4:5, cclass:6, cm3:7, steel:8, mass:9, category:10, type:11, seismic:12 }[name];
+}
+
+var ROUND_OPENING_MARK = 'с проемом в полке d';
+
+function isRoundOpening(type) {
+  return (type || '').indexOf(ROUND_OPENING_MARK) !== -1;
+}
+
+var FULL_HEAD = ''
+  + '<tr>'
+  + '<th rowspan="4">Марка</th>'
+  + '<th colspan="4">Равномерно-распределённая нагрузка кПа (кгс/м\u00b2)</th>'
+  + '<th rowspan="4">Класс бетона</th>'
+  + '<th colspan="2">Расход материалов</th>'
+  + '<th rowspan="4">Масса, т</th>'
+  + '</tr>'
+  + '<tr>'
+  + '<th colspan="2">с учётом веса плиты</th>'
+  + '<th colspan="2">без учёта веса плиты</th>'
+  + '<th rowspan="3">Бетон, м\u00b3</th>'
+  + '<th rowspan="3">Сталь, кг</th>'
+  + '</tr>'
+  + '<tr><th colspan="4">при коэффициенте надёжности по нагрузке</th></tr>'
+  + '<tr><th>\u03b3f&gt;1</th><th>\u03b3f=1</th><th>\u03b3f&gt;1</th><th>\u03b3f=1</th></tr>';
+
+var ROUND_HEAD = ''
+  + '<tr>'
+  + '<th rowspan="2">Марка</th>'
+  + '<th colspan="2">Равномерно-распределённая нагрузка, кПа (кгс/м\u00b2), с учётом веса плиты при коэффициенте надёжности по нагрузке</th>'
+  + '<th rowspan="2">Класс бетона</th>'
+  + '<th colspan="2">Расход материалов</th>'
+  + '<th rowspan="2">Масса, т</th>'
+  + '</tr>'
+  + '<tr>'
+  + '<th>\u03b3f&gt;1</th>'
+  + '<th>\u03b3f=1</th>'
+  + '<th>Бетон, м\u00b3</th>'
+  + '<th>Сталь, кг</th>'
+  + '</tr>';
+
+var BACKEND = 'https://rebar-backend-henna.vercel.app/api/sheet-data';
+
+async function loadRebrData() {
+  var tableBody = document.getElementById('tableBody');
+  tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px;">Загрузка данных...</td></tr>';
+  try {
+    var res = await fetch(BACKEND + '?book=climat&sheet=Plity_rebr_6x3', {
+      headers: { 'x-app-key': 'spravochnik-km-2026-x7k9' }
+    });
+    var json = await res.json();
+    var records = (json.records || []).filter(function (r) { return r.marka; });
+
+    // В таблице "Категория" и "Тип плиты" — объединённые ячейки: заполнена
+    // только первая строка группы, остальные приходят с сервера пустыми.
+    // Протягиваем последнее непустое значение вниз.
+    var lastCategory = '', lastType = '';
+    records.forEach(function (r) {
+      if (r.category) lastCategory = r.category; else r.category = lastCategory;
+      if (r.plate_type) lastType = r.plate_type; else r.plate_type = lastType;
+    });
+
+    REBR_DATA = records.map(function (r) {
+      return [
+        r.marka, r.ris,
+        r.load_gf1_uch, r.load_gf1_bez, r.load_gf_uch, r.load_gf_bez,
+        r.concrete_class, r.concrete_m3, r.steel_kg, r.mass_t,
+        r.category, r.plate_type,
+        r.marka.indexOf('С') !== -1
+      ];
+    });
+
+    tableBody.innerHTML = '';
+    initPage();
+  } catch (e) {
+    tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--red);padding:24px;">Ошибка загрузки данных — обновите страницу</td></tr>';
+    console.error('Ошибка загрузки данных рёбристых плит 6х3м:', e);
+  }
+}
+
+function initPage() {
+  var typeSelect = document.getElementById('typeSelect');
+  var categorySelect = document.getElementById('categorySelect');
+  var seismicSelect = document.getElementById('seismicSelect');
+  var tableBody = document.getElementById('tableBody');
+  var resultCount = document.getElementById('resultCount');
+
+  function uniqueOrdered(field) {
+    var seen = {};
+    var out = [];
+    REBR_DATA.forEach(function (row) {
+      var v = row[idx(field)];
+      if (v && !seen[v]) { seen[v] = true; out.push(v); }
+    });
+    return out;
+  }
+
+  function fillSelect(select, values, defaultValue) {
+    select.innerHTML = '';
+    values.forEach(function (v) {
+      var opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = v;
+      select.appendChild(opt);
+    });
+    if (defaultValue && values.indexOf(defaultValue) !== -1) {
+      select.value = defaultValue;
+    }
+  }
+
+  fillSelect(typeSelect, uniqueOrdered('type'), 'Плиты из тяжелого бетона без проемов в полке');
+  fillSelect(categorySelect, uniqueOrdered('category'), 'Здания с неагрессивным воздействием газообразной среды');
+
+  function fill(td, value) {
+    td.textContent = value || '\u2014';
+  }
+
+  function fillText(id, value) {
+    document.getElementById(id).textContent = value || '\u2014';
+  }
+
+  var selectedRow = null;
+
+  function hideDetails() {
+    if (selectedRow) selectedRow.classList.remove('row-selected');
+    selectedRow = null;
+    document.getElementById('detailPanel').classList.remove('visible');
+  }
+
+  function showDetailsFromRow(row, tr) {
+    if (selectedRow) selectedRow.classList.remove('row-selected');
+    tr.classList.add('row-selected');
+    selectedRow = tr;
+
+    fillText('dtMarking', row[idx('marka')]);
+    fillText('dtL1', row[idx('l1')]);
+    fillText('dtL2', row[idx('l2')]);
+    fillText('dtL3', row[idx('l3')]);
+    fillText('dtL4', row[idx('l4')]);
+    fillText('dtClass', row[idx('cclass')]);
+    fillText('dtCm3', row[idx('cm3')]);
+    fillText('dtSteel', row[idx('steel')]);
+    fillText('dtMass', row[idx('mass')]);
+    fillText('dtSeismic', row[idx('seismic')] ? 'Да' : 'Нет');
+    var seismicEl = document.getElementById('dtSeismic');
+    seismicEl.classList.toggle('seismic-yes', !!row[idx('seismic')]);
+    seismicEl.classList.toggle('seismic-no', !row[idx('seismic')]);
+    fillText('dtType', row[idx('type')]);
+
+    var isLightConcrete = (row[idx('type')] || '').indexOf('легкого') !== -1;
+    document.getElementById('dtLightNote1').style.display = isLightConcrete ? '' : 'none';
+    document.getElementById('dtLightNote2').style.display = isLightConcrete ? '' : 'none';
+
+    var risNum = row[idx('ris')];
+    var img = document.getElementById('dtSketchImg');
+    img.src = REBR_PICS['ris' + risNum] || '';
+
+    document.getElementById('detailPanel').classList.add('visible');
+  }
+
+  function render() {
+    var typeFilter = typeSelect.value;
+    var categoryFilter = categorySelect.value;
+    var seismicFilter = seismicSelect.value;
+
+    var filtered = REBR_DATA.filter(function (row) {
+      if (typeFilter && row[idx('type')] !== typeFilter) return false;
+      if (categoryFilter && row[idx('category')] !== categoryFilter) return false;
+      if (seismicFilter === 'yes' && !row[idx('seismic')]) return false;
+      if (seismicFilter === 'no' && row[idx('seismic')]) return false;
+      return true;
+    });
+
+    resultCount.textContent = 'Найдено плит: ' + filtered.length;
+    hideDetails();
+
+    var roundMode = isRoundOpening(typeFilter);
+    document.getElementById('tableHead').innerHTML = roundMode ? ROUND_HEAD : FULL_HEAD;
+    var loadFields = roundMode ? ['l1', 'l2'] : ['l1', 'l2', 'l3', 'l4'];
+
+    tableBody.innerHTML = '';
+    filtered.forEach(function (row) {
+      var tr = document.createElement('tr');
+      tr.addEventListener('click', function () {
+        if (tr === selectedRow) {
+          hideDetails();
+        } else {
+          showDetailsFromRow(row, tr);
+        }
+      });
+
+      var markaTd = document.createElement('td');
+      markaTd.className = 'marka-cell';
+      fill(markaTd, row[idx('marka')]);
+      tr.appendChild(markaTd);
+
+      loadFields.concat(['cclass', 'cm3', 'steel', 'mass']).forEach(function (f) {
+        var td = document.createElement('td');
+        fill(td, row[idx(f)]);
+        tr.appendChild(td);
+      });
+
+      tableBody.appendChild(tr);
+    });
+  }
+
+  typeSelect.addEventListener('change', render);
+  categorySelect.addEventListener('change', render);
+  seismicSelect.addEventListener('change', render);
+
+  render();
+}
+
+loadRebrData();
+</script>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+</body>
+</html>
