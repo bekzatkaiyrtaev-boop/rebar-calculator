@@ -130,12 +130,17 @@ input[type="number"] {
   line-height: 1.5;
   margin: 0 0 24px;
 }
-#googleSignInBtnGate {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
+.auth-login-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #2e3347;
+  border-radius: 999px;
+  color: #d7dae8;
+  font-size: 13px;
+  padding: 7px 18px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
 }
-.auth-gate-admin {
+.auth-login-btn:hover { color: #4f8ef7; border-color: #4f8ef7; }
   display: block;
   color: #6b7099;
   font-size: 12px;
@@ -150,3 +155,139 @@ input[type="number"] {
   text-decoration: none;
 }
 .auth-gate-back:hover { color: #4f8ef7; }
+
+/* ── Кнопка "Войти через Google" в гейте ── */
+.auth-google-btn {
+  display: block;
+  width: 100%;
+  background: #fff;
+  border: none;
+  border-radius: 10px;
+  color: #1f1f1f;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 16px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.auth-google-btn:hover { opacity: .88; }
+
+/* ── Разделитель "или" ── */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #6b7099;
+  font-size: 12px;
+  margin-bottom: 18px;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #2e3347;
+}
+
+/* ── Вкладки "Почта и пароль" / "Ссылка на почту" ── */
+.auth-tabs {
+  display: flex;
+  gap: 6px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid #2e3347;
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 16px;
+}
+.auth-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-radius: 7px;
+  color: #6b7099;
+  font-size: 12.5px;
+  padding: 8px 6px;
+  cursor: pointer;
+  transition: color .15s, background .15s;
+}
+.auth-tab.active {
+  background: rgba(79,142,247,0.14);
+  color: #4f8ef7;
+}
+
+/* ── Содержимое вкладок: поля и кнопки ── */
+.auth-tab-panel {
+  text-align: left;
+}
+.auth-tab-panel input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #0d0f18;
+  border: 1px solid #2e3347;
+  border-radius: 8px;
+  color: #d7dae8;
+  font-size: 13.5px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  outline: none;
+  transition: border-color .15s;
+}
+.auth-tab-panel input:focus { border-color: #4f8ef7; }
+.auth-tab-panel input::placeholder { color: #565b7d; }
+
+.auth-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.auth-actions button {
+  flex: 1;
+  border-radius: 8px;
+  font-size: 13px;
+  padding: 9px 10px;
+  cursor: pointer;
+  border: 1px solid #2e3347;
+  transition: opacity .15s, border-color .15s;
+}
+#authLoginBtn {
+  background: #4f8ef7;
+  border-color: #4f8ef7;
+  color: #fff;
+}
+#authLoginBtn:hover { opacity: .88; }
+#authRegisterBtn {
+  background: none;
+  color: #d7dae8;
+}
+#authRegisterBtn:hover { border-color: #4f8ef7; color: #4f8ef7; }
+
+#authSendLinkBtn {
+  width: 100%;
+  background: #4f8ef7;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  padding: 10px 12px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  transition: opacity .15s;
+}
+#authSendLinkBtn:hover { opacity: .88; }
+
+.auth-hint {
+  color: #6b7099;
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 6px 0 0;
+}
+
+.auth-gate-error {
+  color: #f76c6c;
+  font-size: 12.5px;
+  line-height: 1.4;
+  min-height: 0;
+  margin: 4px 0 14px;
+}
+.auth-gate-error:empty { margin: 0; }
