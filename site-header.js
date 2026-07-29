@@ -119,25 +119,41 @@
     appId: "1:943673115707:web:7d57e67174f4c30bb9481e"
   };
   const USER_LOG_API_URL = 'https://rebar-backend-henna.vercel.app/api/log-user';
+  const PAGEVIEW_LOG_API_URL = 'https://rebar-backend-henna.vercel.app/api/log-pageview';
   const EMAIL_LINK_STORAGE_KEY = 'esk_email_for_link'; // почта, ждущая перехода по ссылке из письма
 
   const authMount = document.getElementById('siteAuth');
   const isCalculatorPage = current !== 'index.html' && current !== 'about.html';
   let authGateEl = null;
+  let pageViewLogged = false; // чтобы не логировать один и тот же просмотр повторно
 
   // Отправляем данные на бэкенд для учёта пользователей (не блокирует интерфейс).
   // Вызывается только в момент реального входа/регистрации, а не на
   // каждой странице — иначе счётчик считал бы одного человека много раз.
-  function logUser(user){
+  // method: 'google' | 'password' | 'link'
+  function logUser(user, method){
     fetch(USER_LOG_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: user.displayName || (user.email ? user.email.split('@')[0] : ''),
         email: user.email,
-        picture: user.photoURL || ''
+        method: method
       })
     }).catch(function(){ /* тихо игнорируем — учёт не критичен для работы сайта */ });
+  }
+
+  // Логируем просмотр страницы-калькулятора — один раз за загрузку страницы
+  function logPageView(user){
+    if (pageViewLogged || !user || !user.email) return;
+    pageViewLogged = true;
+    const pageEntry = SITE_PAGES.find(p => p.href === current);
+    const pageLabel = pageEntry ? pageEntry.title : current;
+    fetch(PAGEVIEW_LOG_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: user.email, page: pageLabel })
+    }).catch(function(){ /* тихо игнорируем */ });
   }
 
   function renderSignedIn(user){
@@ -236,7 +252,7 @@
       showGateError('');
       const provider = new firebase.auth.GoogleAuthProvider();
       firebase.auth().signInWithPopup(provider)
-        .then(function(result){ logUser(result.user); })
+        .then(function(result){ logUser(result.user, 'google'); })
         .catch(function(err){ showGateError(friendlyError(err)); });
     });
 
@@ -247,7 +263,7 @@
       const password = document.getElementById('authPasswordInput').value;
       if (!email || !password) { showGateError('Заполните почту и пароль.'); return; }
       firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(function(cred){ logUser(cred.user); })
+        .then(function(cred){ logUser(cred.user, 'password'); })
         .catch(function(err){ showGateError(friendlyError(err)); });
     });
 
@@ -258,7 +274,7 @@
       const password = document.getElementById('authPasswordInput').value;
       if (!email || !password) { showGateError('Заполните почту и пароль.'); return; }
       firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then(function(cred){ logUser(cred.user); })
+        .then(function(cred){ logUser(cred.user, 'password'); })
         .catch(function(err){ showGateError(friendlyError(err)); });
     });
 
@@ -306,7 +322,7 @@
       .then(function(cred){
         try { localStorage.removeItem(EMAIL_LINK_STORAGE_KEY); } catch(e){}
         window.history.replaceState({}, document.title, window.location.pathname);
-        logUser(cred.user);
+        logUser(cred.user, 'link');
       })
       .catch(function(err){ window.alert(friendlyError(err)); });
   }
@@ -340,6 +356,7 @@
         if (user){
           renderSignedIn(user);
           hideAuthGate();
+          if (isCalculatorPage) logPageView(user);
         } else {
           renderSignedOut();
           if (isCalculatorPage) showAuthGate();
