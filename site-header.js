@@ -101,111 +101,83 @@
      ══════════════════════════════════════════════════════════════ */
 
   /* ══════════════════════════════════════════════════════════════
-     АВТОРИЗАЦИЯ ЧЕРЕЗ GOOGLE
-     Использует Google Identity Services (кнопка "Войти через Google").
-     После входа сохраняем данные пользователя в localStorage (чтобы
-     не логиниться заново на каждой странице) и отправляем на бэкенд
-     для учёта (сколько людей пользуется справочником).
+     АВТОРИЗАЦИЯ ЧЕРЕЗ FIREBASE AUTHENTICATION
+     Способы входа: Google, почта+пароль, ссылка на почту (без пароля).
+     Firebase сам хранит сессию в браузере — повторно логиниться на
+     каждой странице не нужно. Это не защита данных (сайт статичный),
+     а фильтр от случайных посетителей + учёт того, кто пользуется
+     справочником.
      ══════════════════════════════════════════════════════════════ */
 
-  // Client ID из Google Cloud Console (не секретный, можно хранить в коде)
-  const GOOGLE_CLIENT_ID = '911707760655-toihq4a9jn9qb6khnat8rsbs2ahm39pd.apps.googleusercontent.com';
+  // Конфиг проекта Firebase (не секретный, можно хранить в коде открыто)
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyAG5WypvPBA2xjM4BuHukq_EelHkSBFrM8",
+    authDomain: "esk-kz.firebaseapp.com",
+    projectId: "esk-kz",
+    storageBucket: "esk-kz.firebasestorage.app",
+    messagingSenderId: "943673115707",
+    appId: "1:943673115707:web:7d57e67174f4c30bb9481e"
+  };
   const USER_LOG_API_URL = 'https://rebar-backend-henna.vercel.app/api/log-user';
-  const AUTH_STORAGE_KEY = 'esk_user';
-
-  // Почты, для которых гейт можно снять вводом e-mail (без реального Google-
-  // попапа) — нужно автору для разработки на localhost, где попап Google
-  // всё равно не откроется (домен не зарегистрирован в OAuth-клиенте).
-  const ADMIN_EMAILS = ['bekzat.kaiyrtaev@gmail.com'];
+  const EMAIL_LINK_STORAGE_KEY = 'esk_email_for_link'; // почта, ждущая перехода по ссылке из письма
 
   const authMount = document.getElementById('siteAuth');
+  const isCalculatorPage = current !== 'index.html' && current !== 'about.html';
+  let authGateEl = null;
 
-  function getSavedUser(){
-    try {
-      const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch(e){ return null; }
-  }
-
-  function saveUser(user){
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-  }
-
-  function clearUser(){
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-  }
-
-  // Разбираем JWT-токен от Google, чтобы достать имя/почту/фото
-  function decodeJwt(token){
-    try {
-      const payload = token.split('.')[1];
-      const decoded = decodeURIComponent(
-        atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
-          .split('')
-          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      return JSON.parse(decoded);
-    } catch(e){ return null; }
+  // Отправляем данные на бэкенд для учёта пользователей (не блокирует интерфейс).
+  // Вызывается только в момент реального входа/регистрации, а не на
+  // каждой странице — иначе счётчик считал бы одного человека много раз.
+  function logUser(user){
+    fetch(USER_LOG_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: user.displayName || (user.email ? user.email.split('@')[0] : ''),
+        email: user.email,
+        picture: user.photoURL || ''
+      })
+    }).catch(function(){ /* тихо игнорируем — учёт не критичен для работы сайта */ });
   }
 
   function renderSignedIn(user){
+    const name = user.displayName || (user.email ? user.email.split('@')[0] : 'Пользователь');
     authMount.innerHTML = `
       <div class="auth-user">
-        <img class="auth-avatar" src="${user.picture}" alt="${user.name}">
-        <span class="auth-name">${user.name}</span>
+        ${user.photoURL ? `<img class="auth-avatar" src="${user.photoURL}" alt="${name}">` : ''}
+        <span class="auth-name">${name}</span>
         <button class="auth-logout" id="authLogoutBtn" title="Выйти">Выйти</button>
       </div>
     `;
     document.getElementById('authLogoutBtn').addEventListener('click', function(){
-      clearUser();
-      renderSignedOut();
+      firebase.auth().signOut();
     });
   }
 
   function renderSignedOut(){
-    authMount.innerHTML = `<div id="googleSignInBtn"></div>`;
-    if (window.google && google.accounts && google.accounts.id){
-      google.accounts.id.renderButton(
-        document.getElementById('googleSignInBtn'),
-        { theme: 'outline', size: 'medium', text: 'signin', locale: 'ru' }
-      );
-    }
+    authMount.innerHTML = `<button type="button" class="auth-login-btn" id="openAuthGateBtn">Войти</button>`;
+    const btn = document.getElementById('openAuthGateBtn');
+    if (btn) btn.addEventListener('click', showAuthGate);
   }
 
-  function handleGoogleSignIn(response){
-    const profile = decodeJwt(response.credential);
-    if (!profile) return;
-    const user = {
-      name: profile.name,
-      email: profile.email,
-      picture: profile.picture
+  function showGateError(msg){
+    const el = document.getElementById('authGateError');
+    if (el) el.textContent = msg || '';
+  }
+
+  // Переводим коды ошибок Firebase в понятные фразы на русском
+  function friendlyError(err){
+    const map = {
+      'auth/invalid-email': 'Некорректная почта.',
+      'auth/user-not-found': 'Пользователь с такой почтой не найден.',
+      'auth/wrong-password': 'Неверный пароль.',
+      'auth/invalid-credential': 'Неверная почта или пароль.',
+      'auth/email-already-in-use': 'Эта почта уже зарегистрирована — попробуйте войти.',
+      'auth/weak-password': 'Пароль слишком короткий (минимум 6 символов).',
+      'auth/popup-closed-by-user': 'Окно входа закрыто.'
     };
-    saveUser(user);
-    renderSignedIn(user);
-    hideAuthGate();
-
-    // Отправляем данные на бэкенд для учёта пользователей (не блокирует интерфейс)
-    fetch(USER_LOG_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(user)
-    }).catch(function(){ /* тихо игнорируем — учёт не критичен для работы сайта */ });
+    return map[err.code] || ('Ошибка входа: ' + err.message);
   }
-  window.handleGoogleSignIn = handleGoogleSignIn;
-
-  /* ══════════════════════════════════════════════════════════════
-     ОГРАНИЧЕНИЕ ДОСТУПА К КАЛЬКУЛЯТОРАМ
-     Простое и надёжное правило: закрыто ВСЁ, кроме index.html и
-     about.html. Не зависит от SECTIONS/site-structure.js — так гейт
-     работает даже если на какой-то странице забыли подключить этот
-     файл (раньше именно это было причиной, что доступ был открыт
-     везде). Это программная блокировка на уровне браузера — не
-     защита данных, а фильтр для случайных посетителей и способ
-     учитывать реальных пользователей справочника.
-     ══════════════════════════════════════════════════════════════ */
-  const isCalculatorPage = current !== 'index.html' && current !== 'about.html';
-  let authGateEl = null;
 
   function showAuthGate(){
     if (authGateEl) return;
@@ -214,28 +186,102 @@
     authGateEl.id = 'authGate';
     authGateEl.innerHTML = `
       <div class="auth-gate-box">
-        <h2>Доступ по входу через Google</h2>
-        <p>Чтобы открыть расчётные материалы справочника, войдите через свой Google-аккаунт — это бесплатно и займёт пару секунд.</p>
-        <div id="googleSignInBtnGate"></div>
-        <a class="auth-gate-admin" href="#" id="authGateAdminLink">Я автор — войти по e-mail</a>
+        <h2>Доступ к справочнику</h2>
+        <p>Войдите, чтобы открыть расчётные материалы справочника.</p>
+
+        <button type="button" class="auth-google-btn" id="authGoogleBtn">Войти через Google</button>
+
+        <div class="auth-divider"><span>или</span></div>
+
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab active" data-tab="password">Почта и пароль</button>
+          <button type="button" class="auth-tab" data-tab="link">Ссылка на почту</button>
+        </div>
+
+        <div class="auth-tab-panel" id="authTabPassword">
+          <input type="email" id="authEmailInput" placeholder="Почта" autocomplete="email">
+          <input type="password" id="authPasswordInput" placeholder="Пароль" autocomplete="current-password">
+          <div class="auth-actions">
+            <button type="button" id="authLoginBtn">Войти</button>
+            <button type="button" id="authRegisterBtn">Зарегистрироваться</button>
+          </div>
+          <a href="#" class="auth-gate-admin" id="authForgotLink">Забыли пароль?</a>
+        </div>
+
+        <div class="auth-tab-panel" id="authTabLink" style="display:none">
+          <input type="email" id="authLinkEmailInput" placeholder="Почта" autocomplete="email">
+          <button type="button" id="authSendLinkBtn">Отправить ссылку для входа</button>
+          <p class="auth-hint" id="authLinkStatus"></p>
+        </div>
+
+        <p class="auth-gate-error" id="authGateError"></p>
         <a class="auth-gate-back" href="index.html">← Вернуться к содержанию</a>
       </div>
     `;
     document.body.appendChild(authGateEl);
-    renderGateButtonIfReady();
 
-    document.getElementById('authGateAdminLink').addEventListener('click', function(e){
+    // Переключение вкладок "Почта и пароль" / "Ссылка на почту"
+    authGateEl.querySelectorAll('.auth-tab').forEach(function(tab){
+      tab.addEventListener('click', function(){
+        authGateEl.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('authTabPassword').style.display = tab.dataset.tab === 'password' ? 'block' : 'none';
+        document.getElementById('authTabLink').style.display = tab.dataset.tab === 'link' ? 'block' : 'none';
+        showGateError('');
+      });
+    });
+
+    // Вход через Google
+    document.getElementById('authGoogleBtn').addEventListener('click', function(){
+      showGateError('');
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider)
+        .then(function(result){ logUser(result.user); })
+        .catch(function(err){ showGateError(friendlyError(err)); });
+    });
+
+    // Вход по почте + паролю
+    document.getElementById('authLoginBtn').addEventListener('click', function(){
+      showGateError('');
+      const email = document.getElementById('authEmailInput').value.trim();
+      const password = document.getElementById('authPasswordInput').value;
+      if (!email || !password) { showGateError('Заполните почту и пароль.'); return; }
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(function(cred){ logUser(cred.user); })
+        .catch(function(err){ showGateError(friendlyError(err)); });
+    });
+
+    // Регистрация по почте + паролю
+    document.getElementById('authRegisterBtn').addEventListener('click', function(){
+      showGateError('');
+      const email = document.getElementById('authEmailInput').value.trim();
+      const password = document.getElementById('authPasswordInput').value;
+      if (!email || !password) { showGateError('Заполните почту и пароль.'); return; }
+      firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then(function(cred){ logUser(cred.user); })
+        .catch(function(err){ showGateError(friendlyError(err)); });
+    });
+
+    // Забыли пароль
+    document.getElementById('authForgotLink').addEventListener('click', function(e){
       e.preventDefault();
-      const email = (window.prompt('E-mail автора:') || '').trim().toLowerCase();
-      if (!email) return;
-      if (ADMIN_EMAILS.includes(email)) {
-        const user = { name: 'Автор', email, picture: '' };
-        saveUser(user);
-        renderSignedIn(user);
-        hideAuthGate();
-      } else {
-        window.alert('Эта почта не в списке авторов.');
-      }
+      const email = document.getElementById('authEmailInput').value.trim();
+      if (!email) { showGateError('Сначала введите почту в поле выше.'); return; }
+      firebase.auth().sendPasswordResetEmail(email)
+        .then(function(){ showGateError('Письмо для сброса пароля отправлено на ' + email + '.'); })
+        .catch(function(err){ showGateError(friendlyError(err)); });
+    });
+
+    // Вход по ссылке на почту (без пароля)
+    document.getElementById('authSendLinkBtn').addEventListener('click', function(){
+      const email = document.getElementById('authLinkEmailInput').value.trim();
+      const statusEl = document.getElementById('authLinkStatus');
+      if (!email) { statusEl.textContent = 'Введите почту.'; return; }
+      const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
+      firebase.auth().sendSignInLinkToEmail(email, actionCodeSettings).then(function(){
+        try { localStorage.setItem(EMAIL_LINK_STORAGE_KEY, email); } catch(e){}
+        statusEl.textContent = 'Ссылка отправлена на ' + email + ' — проверьте почту (и папку «Спам»).';
+      }).catch(function(err){ statusEl.textContent = friendlyError(err); });
     });
   }
 
@@ -247,45 +293,60 @@
     document.body.style.overflow = '';
   }
 
-  function renderGateButtonIfReady(){
-    const gateBtn = document.getElementById('googleSignInBtnGate');
-    if (gateBtn && window.google && google.accounts && google.accounts.id){
-      google.accounts.id.renderButton(
-        gateBtn,
-        { theme: 'filled_blue', size: 'large', text: 'signin_with', locale: 'ru' }
-      );
+  // Если мы попали на страницу по ссылке из письма — завершаем вход
+  function completeEmailLinkSignInIfNeeded(){
+    if (!firebase.auth().isSignInWithEmailLink(window.location.href)) return;
+    let email = null;
+    try { email = localStorage.getItem(EMAIL_LINK_STORAGE_KEY); } catch(e){}
+    if (!email){
+      email = window.prompt('Подтвердите почту, на которую пришла ссылка:');
     }
+    if (!email) return;
+    firebase.auth().signInWithEmailLink(email, window.location.href)
+      .then(function(cred){
+        try { localStorage.removeItem(EMAIL_LINK_STORAGE_KEY); } catch(e){}
+        window.history.replaceState({}, document.title, window.location.pathname);
+        logUser(cred.user);
+      })
+      .catch(function(err){ window.alert(friendlyError(err)); });
   }
 
   if (authMount){
-    const saved = getSavedUser();
-    if (saved){
-      renderSignedIn(saved);
-    } else if (isCalculatorPage){
-      showAuthGate();
+    // Подключаем Firebase SDK (compat-версия — работает через обычные
+    // <script> без сборщика и import'ов, как остальной код на сайте)
+    function loadScript(src){
+      return new Promise(function(resolve, reject){
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
     }
 
-    // Подключаем скрипт Google Identity Services, если его ещё нет на странице
-    if (!document.getElementById('google-identity-script')){
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.id = 'google-identity-script';
-      script.onload = function(){
-        google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleGoogleSignIn
-        });
-        if (!saved){
+    const FB_VER = '10.14.1';
+    const loadPromise = window.__firebaseSdkLoading || (window.__firebaseSdkLoading =
+      loadScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-app-compat.js`)
+        .then(function(){ return loadScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-auth-compat.js`); })
+    );
+
+    loadPromise.then(function(){
+      if (!firebase.apps.length){
+        firebase.initializeApp(FIREBASE_CONFIG);
+      }
+      completeEmailLinkSignInIfNeeded();
+
+      firebase.auth().onAuthStateChanged(function(user){
+        if (user){
+          renderSignedIn(user);
+          hideAuthGate();
+        } else {
           renderSignedOut();
-          renderGateButtonIfReady();
+          if (isCalculatorPage) showAuthGate();
         }
-      };
-      document.head.appendChild(script);
-    } else if (!saved){
-      renderSignedOut();
-      renderGateButtonIfReady();
-    }
+      });
+    }).catch(function(err){
+      console.error('Не удалось загрузить Firebase SDK:', err);
+    });
   }
 })();
