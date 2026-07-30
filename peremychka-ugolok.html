@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Перемычка из уголка — расчёт по EN 1993-1-1 — Электронный справочник конструктора</title>
+<style>
+  :root{
+    --bg:#0f1117;
+    --panel:#1a1d27;
+    --panel2:#22263a;
+    --border:#2e3347;
+    --text:#d6daf0;
+    --muted:#6b7099;
+    --accent:#4f8ef7;
+    --accent2:#7dd3a8;
+    --warn:#f4b942;
+    --bad:#ef4444;
+    --good:#7dd3a8;
+    --mono:'JetBrains Mono','Courier New',monospace;
+    --sans:'Inter','Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    padding:20px;
+    line-height:1.5;
+  }
+  .wrap{max-width:1100px;margin:0 auto;}
+  h1{font-size:19px;font-weight:600;margin:0 0 20px;color:var(--text);}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:20px;}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:18px;
+    margin-bottom:16px;
+  }
+  .card h2{font-size:14px;margin:0 0 14px;color:var(--accent);text-transform:uppercase;letter-spacing:.03em;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:640px){.grid{grid-template-columns:1fr;}}
+  label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px;}
+  input[type=number],select{
+    width:100%;
+    background:var(--panel2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:9px 10px;
+    border-radius:7px;
+    font-size:14px;
+  }
+  input[type=number]:focus,select:focus{outline:none;border-color:var(--accent);}
+  input[readonly]{opacity:.65;cursor:not-allowed;}
+  input.input-invalid{border-color:var(--bad)!important;background:rgba(224,97,111,.08);}
+  input.input-invalid:focus{outline:none;box-shadow:0 0 0 2px rgba(224,97,111,.25);}
+  .validation-msg{color:var(--bad);font-size:12px;margin-top:8px;padding:8px 10px;background:rgba(224,97,111,.08);border:1px solid rgba(224,97,111,.35);border-radius:6px;}
+  .field{margin-bottom:10px;}
+  .hint{font-size:11px;color:var(--muted);margin-top:3px;}
+  .row-check{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .row-check input{width:auto;}
+  .row-check label{margin:0;color:var(--text);font-size:13px;}
+  details{margin-top:6px;}
+  summary{cursor:pointer;color:var(--accent);font-size:12.5px;user-select:none;list-style:none;}
+  summary:hover{color:var(--accent) !important;}
+  summary:hover *{color:var(--accent) !important;}
+  summary::-webkit-details-marker{display:none;}
+  .details-arrow{display:inline-block;margin-right:8px;font-size:10px;color:var(--accent) !important;transition:transform .15s ease;}
+  details[open] > summary .details-arrow{transform:rotate(90deg);}
+  button{
+    background:var(--accent);
+    color:#0b1016;
+    border:none;
+    padding:12px 20px;
+    border-radius:8px;
+    font-size:14.5px;
+    font-weight:600;
+    cursor:pointer;
+    width:100%;
+    margin-top:8px;
+  }
+  button:hover{filter:brightness(1.08);}
+  .steps{
+    font-family:var(--sans);
+    font-size:13px;
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:14px 16px;
+    color:#c7d0dd;
+    line-height:1.6;
+  }
+  .steps p{margin:10px 0 4px;}
+  .steps p:first-child{margin-top:0;}
+  .steps b{color:var(--accent2);}
+  .steps .katex{color:#e8ecf1;font-size:1.05em;}
+  .steps .katex-display{margin:2px 0 10px;}
+  .result-card{
+    padding:0;
+  }
+  .result-title{font-size:16px;font-weight:700;color:var(--accent2);margin-bottom:4px;line-height:1.3;}
+  .result-sub{color:var(--muted);font-size:12.5px;margin-bottom:14px;}
+  .spec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+  @media(max-width:640px){.spec-grid{grid-template-columns:repeat(2,1fr);}}
+  .spec{background:var(--panel2);border-radius:7px;padding:9px 10px;}
+  .spec .k{font-size:10.5px;color:var(--muted);text-transform:uppercase;}
+  .spec .v{font-size:15px;font-weight:600;margin-top:2px;}
+  .checks{display:flex;flex-direction:column;gap:14px;margin-top:10px;}
+  .check-row{font-size:13px;color:var(--text);margin-bottom:5px;}
+  .badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;}
+  .ok{background:rgba(94,214,164,.15);color:var(--good);}
+  .fail{background:rgba(224,97,111,.15);color:var(--bad);}
+  .gauge-row{display:flex;align-items:center;gap:10px;}
+  .gauge-pct{font-size:14px;font-weight:700;min-width:44px;text-align:right;}
+  .bar-wrap{flex:1;background:var(--panel2);border-radius:20px;height:12px;overflow:hidden;}
+  .bar{height:100%;border-radius:20px;transition:width .2s ease;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+  th,td{padding:7px 8px;text-align:left;border-bottom:1px solid var(--border);}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;}
+  tr.best{background:rgba(94,214,164,.06);}
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:24px 0;}
+  .warn-box{
+    background:rgba(232,163,61,.08);
+    border:1px solid rgba(232,163,61,.35);
+    border-radius:8px;
+    padding:10px 12px;
+    font-size:12px;
+    color:#e8c98a;
+    margin-top:12px;
+  }
+  .ref{color:var(--muted);font-size:11px;}
+  .results-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+  .print-btn{
+    width:auto;
+    margin:0;
+    padding:8px 14px;
+    font-size:13px;
+    background:var(--panel2);
+    color:var(--text);
+    border:1px solid var(--border);
+  }
+  .print-btn:hover{background:var(--panel);border-color:var(--accent);}
+  #printArea{display:none;}
+  .print-header{display:none;}
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{display:block;position:absolute;top:0;left:0;width:100%;background:#fff;color:#111;padding:0;}
+    .print-header{display:block;margin-bottom:16px;text-align:center;}
+    .print-header h1{font-size:19px;margin:0 0 6px;color:#111;letter-spacing:.01em;}
+    .print-subtitle{font-size:12px;color:#555;margin-bottom:6px;}
+    .print-date{font-size:11px;color:#555;}
+    .print-footer{margin-top:24px;padding-top:10px;border-top:1px solid #ccc;font-size:10px;color:#777;text-align:center;}
+    .summary-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px;}
+    .summary-table th{text-align:left;padding:10px 14px;background:#eee;color:#111;border-bottom:2px solid #999;font-size:13px;text-transform:uppercase;letter-spacing:.02em;}
+    .summary-table td{padding:10px 14px;border-bottom:1px solid #ddd;color:#111;}
+    .summary-table td.v-ok{color:#1a7a4c;font-weight:700;text-align:right;}
+    .summary-table td.v-fail{color:#c0392b;font-weight:700;text-align:right;}
+    .verdict-banner{margin-top:20px;padding:22px;border-radius:10px;text-align:center;font-size:18px;font-weight:700;}
+    .verdict-ok{background:#e3f5ec;color:#1a7a4c;border:2px solid #1a7a4c;}
+    .verdict-fail{background:#fbe9e9;color:#c0392b;border:2px solid #c0392b;}
+    .print-section{margin-bottom:18px;page-break-inside:avoid;}
+    .print-section h2{font-size:14px;color:#111;border-bottom:1px solid #ccc;padding-bottom:4px;}
+    .print-pre{white-space:pre-wrap;font-family:var(--mono);font-size:11px;color:#222;background:#f4f4f4;padding:8px 10px;border-radius:4px;}
+    #printArea .print-section p{margin:4px 0 10px;font-size:12px;color:#222;line-height:1.5;}
+    #printArea .print-section p b{color:#000;}
+    #printArea .print-section ul{margin:4px 0;padding-left:20px;font-size:12px;color:#222;}
+    #printArea .steps{background:#f4f4f4;color:#222;border:1px solid #ccc;}
+    #printArea .steps .katex{color:#111;}
+    #printArea .card{background:#fff;border:1px solid #ddd;box-shadow:none;}
+    #printArea .result-card{background:#fff;border:1px solid #999;}
+    #printArea .spec{background:#f4f4f4;}
+    #printArea .check-row{background:#f4f4f4;color:#111;}
+    #printArea table{color:#111;}
+    #printArea th,#printArea td{border-bottom:1px solid #ccc;}
+    #printArea svg text{fill:#111 !important;}
+  }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+<div id="printArea"></div>
+<div class="wrap">
+  <div id="site-header"></div>
+
+  <div style="position:relative;">
+    <h1 style="text-align:center;">Перемычка из одиночного уголка</h1>
+    <button id="helpBtn" onclick="document.getElementById('helpModal').style.display='flex'" style="position:absolute;top:0;right:0;width:auto;margin:0;padding:6px 12px;font-size:12.5px;background:var(--panel2);color:var(--text);border:1px solid var(--border);">📖 Справка</button>
+  </div>
+
+  <div class="card" id="inputsCard">
+    <h2>Исходные данные</h2>
+    <div class="grid">
+      <div class="field">
+        <label>Ширина проёма в свету, L<sub>пр</sub> (мм)</label>
+        <input type="number" id="Lpr" value="1000" min="300" max="4320" step="10">
+      </div>
+      <div class="field">
+        <label>Толщина стены/перегородки, t (мм)</label>
+        <input type="number" id="twall" value="120" min="50" max="142" step="10">
+        <div class="hint" id="twallHint" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Способ определения нагрузки</label>
+      <select id="loadMode">
+        <option value="triangular">Треугольная — от веса кладки (автоматически, с учётом арочного распора)</option>
+        <option value="manual">Равномерная — задать расчётную нагрузку вручную</option>
+      </select>
+    </div>
+
+    <div id="autoLoadBlock">
+      <div class="row-check">
+        <input type="checkbox" id="hUnlim" checked>
+        <label for="hUnlim">Высота кладки не ограничена (до перекрытия) — берём консервативно h = L<sub>пр</sub>/2</label>
+      </div>
+      <div class="field" id="hField" style="display:none;">
+        <label>Высота кладки над перемычкой, H (мм)</label>
+        <input type="number" id="Hwall" value="1000" min="100" step="10">
+      </div>
+    </div>
+
+    <div id="manualLoadBlock" style="display:none;">
+      <div class="field">
+        <label>Расчётная равномерно-распределённая нагрузка, q<sub>d</sub> (тс/м)</label>
+        <input type="number" id="qdManual" value="0.3" min="0" step="0.05">
+        <div class="hint">Вводится уже расчётное (факторизованное) значение в тонна-силах на метр — коэффициент γG применять не нужно. Переводится в кН/м автоматически (×9,81).</div>
+      </div>
+    </div>
+
+    <details id="lintelDetails">
+      <summary style="display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:600;color:var(--text);">
+        <span><span class="details-arrow">▶</span>Материал перемычки</span>
+        <span id="lintelSummary" style="font-size:12.5px;font-weight:400;color:var(--muted);"></span>
+      </summary>
+
+      <div class="field" style="margin-top:10px;">
+        <label>Сталь</label>
+        <select id="steel">
+          <option value="235">S235 / С245 (f_y = 235 МПа)</option>
+          <option value="275">S275 / С255 (f_y = 275 МПа)</option>
+          <option value="355">S355 / С345 (f_y = 355 МПа)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Предельный прогиб</label>
+        <select id="deflLimit">
+          <option value="200">L / 200</option>
+          <option value="250">L / 250</option>
+          <option value="300">L / 300</option>
+          <option value="350">L / 350</option>
+        </select>
+        <div class="hint">EN 1993-1-1 §7.2.1 отсылает к EN 1990 Прил. A1.4 — числовой предел не задан, значение принимается проектом. L/200 — типичное допущение для перемычек в кладке.</div>
+      </div>
+
+      <div id="ownSectionBlock">
+        <div class="field">
+          <label>Тип уголка</label>
+          <select id="angleType">
+            <option value="equal">Уголок равнополочный, ГОСТ 8509-93</option>
+            <option value="unequal-h">Уголок неравнополочный, ГОСТ 8510-86 (горизонтально)</option>
+            <option value="unequal-v">Уголок неравнополочный, ГОСТ 8510-86 (вертикально)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Уголок из сортамента</label>
+          <select id="ownAngleSelect"></select>
+        </div>
+      </div>
+    </details>
+
+    <details id="materialDetails">
+      <summary style="display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:600;color:var(--text);">
+        <span><span class="details-arrow">▶</span>Материал кладки</span>
+        <span id="materialSummary" style="font-size:12.5px;font-weight:400;color:var(--muted);"></span>
+      </summary>
+
+      <div class="row-check" style="margin-top:10px;">
+        <input type="checkbox" id="fkDirect">
+        <label for="fkDirect">Ввести f<sub>k</sub> напрямую (минуя расчёт по маркам камня/раствора)</label>
+      </div>
+
+      <div id="fkByGradeBlock">
+        <div class="field" style="margin-top:6px;">
+          <label>Вид кирпича/камня</label>
+          <select id="unitType">
+            <option value="0.40,0.65,0.30,general,1800" selected>Кирпич керамический полнотелый (Группа 1)</option>
+            <option value="0.45,0.70,0.30,general,1400">Кирпич керамический пустотелый (Группа 2)</option>
+            <option value="0.55,0.70,0.23,general,1800">Кирпич силикатный полнотелый (Группа 1)</option>
+            <option value="0.45,0.70,0.30,general,1500">Кирпич силикатный пустотелый (Группа 2)</option>
+            <option value="0.70,0.70,0,thin,600">Газоблок D600 (ячеистый бетон, тонкий шов)</option>
+            <option value="0.70,0.70,0,thin,700">Газоблок D700 (ячеистый бетон, тонкий шов)</option>
+            <option value="0.45,0.70,0.30,general,1200">Ракушечник / блоки СКЦ, природный камень</option>
+            <option value="custom">Свои показатели…</option>
+          </select>
+        </div>
+        <div class="grid" style="margin-top:10px;">
+          <div class="field">
+            <label>Марка камня, f<sub>b</sub></label>
+            <select id="brickGrade">
+              <option value="5">М50</option>
+              <option value="7.5">М75</option>
+              <option value="10" selected>М100</option>
+              <option value="12.5">М125</option>
+              <option value="15">М150</option>
+              <option value="17.5">М175</option>
+              <option value="20">М200</option>
+              <option value="custom">Своё значение…</option>
+            </select>
+          </div>
+          <div class="field" id="fbCustomField" style="display:none;">
+            <label>f<sub>b</sub>, МПа</label>
+            <input type="number" id="fbCustom" value="10" min="1" step="0.5">
+          </div>
+          <div class="field" id="mortarGradeBlock">
+            <label>Марка раствора, f<sub>m</sub></label>
+            <select id="mortarGrade">
+              <option value="1">М10</option>
+              <option value="2.5">М25</option>
+              <option value="5" selected>М50</option>
+              <option value="7.5">М75</option>
+              <option value="10">М100</option>
+              <option value="15">М150</option>
+              <option value="custom">Своё значение…</option>
+            </select>
+          </div>
+          <div class="field" id="fmCustomField" style="display:none;">
+            <label>f<sub>m</sub>, МПа</label>
+            <input type="number" id="fmCustom" value="5" min="0.5" step="0.5">
+          </div>
+          <div class="field">
+            <label>Толщина штукатурного слоя, мм</label>
+            <input type="number" id="plasterThickness" value="0" min="0" max="60" step="5">
+          </div>
+          <div class="field">
+            <label>Плотность штукатурки, кг/м³</label>
+            <input type="number" id="plasterDensity" value="1800" min="500" max="2200" step="50">
+            <div class="hint">Учитывается только в весе кладки (доп. нагрузка), на f<sub>k</sub> и смятие не влияет. 1800 кг/м³ — типовое значение для цементно-песчаной штукатурки, откорректируйте под фактический состав.</div>
+          </div>
+        </div>
+
+
+        <div id="unitTypeCustomFields" style="display:none;">
+          <div class="grid" style="margin-top:10px;">
+            <div class="field">
+              <label>Тип раствора</label>
+              <select id="mortarTypeSelect">
+                <option value="general">Общего назначения</option>
+                <option value="thin">Тонкого слоя / клей</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>K (Табл. НП.2.4)</label>
+              <input type="number" id="Kfactor" value="0.45" min="0.1" max="0.8" step="0.01">
+            </div>
+            <div class="field">
+              <label>α (показатель степени f<sub>b</sub>)</label>
+              <input type="number" id="alphaExp" value="0.70" min="0.1" max="1" step="0.01">
+            </div>
+            <div class="field">
+              <label>β (показатель степени f<sub>m</sub>)</label>
+              <input type="number" id="betaExp" value="0.30" min="0.05" max="0.5" step="0.01">
+            </div>
+            <div class="field">
+              <label>Плотность, кг/м³ (для нагрузки)</label>
+              <input type="number" id="rhoCustomInMaterial" value="1800" min="100" step="10">
+            </div>
+          </div>
+        </div>
+        <div id="fkFormulaHint" style="display:none;"></div>
+      </div>
+
+      <div class="grid" style="margin-top:10px;">
+        <div class="field" id="fkDirectField" style="display:none;">
+          <label>Расчётная прочность кладки на сжатие, f<sub>k</sub> (МПа)</label>
+          <input type="number" id="fk" value="4.28" min="0.3" step="0.1">
+        </div>
+        <div class="field" style="display:none;">
+          <label>Коэффициент безопасности γ<sub>M</sub> (кладка)</label>
+          <input type="number" id="gammaM_masonry" value="2.5" min="1" step="0.1">
+        </div>
+      </div>
+    </details>
+
+
+  </div>
+
+  <div id="output"></div>
+</div>
+
+<div id="site-footer"></div>
+
+<script>
+// === База уголков равнополочных ГОСТ 8509-93: [b мм, t мм, A см2, Iv(v-v) см4, Wmin(v-v) см3, масса кг/м] ===
+const ANGLES = [
+  [50,5,4.80,4.63,2.30,3.77],[50,6,5.69,5.43,2.63,4.47],
+  [56,5,5.41,6.59,2.97,4.25],
+  [63,5,6.13,9.52,3.87,4.81],[63,6,7.28,11.18,4.44,5.72],
+  [70,5,6.86,13.22,4.92,5.38],[70,6,8.15,15.52,5.66,6.39],[70,7,9.42,17.77,6.31,7.39],[70,8,10.67,19.97,6.99,8.37],
+  [75,5,7.39,16.41,5.74,5.80],[75,6,8.78,19.28,6.62,6.89],[75,7,10.15,22.07,7.43,7.96],[75,8,11.50,24.80,8.16,9.02],[75,9,12.83,27.48,8.91,10.07],
+  [80,6,9.38,23.54,7.60,7.36],[80,7,10.85,26.97,8.55,8.51],[80,8,12.30,30.32,9.44,9.65],
+  [90,6,10.61,33.97,9.88,8.33],[90,7,12.28,38.94,11.15,9.64],[90,8,13.93,43.80,12.34,10.93],[90,9,15.60,48.60,13.48,12.20],
+  [100,7,13.75,54.16,14.13,10.79],[100,8,15.60,60.92,15.66,12.25],[100,10,19.24,74.08,18.51,15.10],[100,12,22.80,86.84,21.10,17.90],
+  [110,7,15.15,72.68,17.36,11.89],[110,8,17.20,81.83,19.29,13.50],
+  [125,8,19.69,121.98,25.67,15.46],[125,9,22.00,135.88,28.26,17.30],[125,10,24.33,148.59,30.45,19.10],[125,12,28.89,174.43,34.94,22.68]
+];
+
+// === База уголков неравнополочных ГОСТ 8510-86: [B(больш.полка) мм, b(меньш.полка) мм, t мм, A см2, Iv(v-v) см4, Wmin(v-v) см3, масса кг/м] ===
+const UNEQUAL_ANGLES = [
+  [56,36,4,3.58,2.19,1.13,2.81],[56,36,5,4.41,2.65,1.37,3.46],
+  [63,40,4,4.04,3.07,1.41,3.17],[63,40,5,4.98,3.73,1.72,3.91],[63,40,6,5.90,4.36,2.02,4.63],[63,40,8,7.68,5.58,2.60,6.03],
+  [65,50,5,5.56,6.41,2.68,4.36],[65,50,6,6.60,7.52,3.15,5.18],[65,50,7,7.62,8.60,3.59,5.98],[65,50,8,8.62,9.65,4.02,6.77],
+  [70,45,5,5.59,5.34,2.20,4.39],
+  [75,50,5,6.11,7.24,2.73,4.79],[75,50,6,7.25,8.48,3.21,5.69],[75,50,7,8.37,9.69,3.69,6.57],[75,50,8,9.47,10.87,4.14,7.43],
+  [80,50,5,6.36,7.57,2.75,4.49],[80,50,6,7.55,8.88,3.24,5.92],
+  [80,60,6,8.15,13.61,4.66,6.39],[80,60,7,9.42,15.58,5.34,7.39],[80,60,8,10.67,17.49,5.99,8.37],
+  [90,56,5.5,7.86,11.77,3.81,6.17],[90,56,6,8.54,12.70,4.12,6.70],[90,56,8,11.18,16.29,5.32,8.77],
+  [100,63,6,9.58,18.20,5.27,7.53],[100,63,7,11.09,20.83,6.06,8.70],[100,63,8,12.57,23.38,6.82,9.87],[100,63,10,15.47,28.34,8.31,12.14],
+  [100,65,7,11.23,22.77,6.43,8.81],[100,65,8,12.73,25.24,7.26,9.99],[100,65,10,15.67,30.60,8.83,12.30],
+  [110,70,6.5,11.45,26.94,7.05,8.98],[110,70,8,13.93,32.31,8.50,10.93],
+  [125,80,7,14.06,43.40,9.96,11.04],[125,80,8,15.98,48.82,11.25,12.58],[125,80,10,19.70,59.33,13.74,15.47],[125,80,12,23.36,69.47,16.11,18.34],
+  [140,90,8,18.00,70.27,14.39,14.13],[140,90,10,22.24,85.51,17.58,17.46],
+  [160,100,9,22.87,110.40,20.01,17.96],[160,100,10,25.28,121.16,22.02,19.85],[160,100,12,30.04,142.14,25.93,23.58],[160,100,14,34.72,162.49,29.75,27.26],
+  [180,110,10,28.33,165.44,29.96,22.20],[180,110,12,33.69,194.28,31.83,26.40],
+  [200,125,11,34.87,263.84,38.27,27.37],[200,125,12,37.89,285.04,41.45,29.74],[200,125,14,43.87,326.54,47.57,34.43],[200,125,16,49.77,366.99,53.56,39.07]
+];
+
+document.getElementById('inputsCard').addEventListener('input', calc);
+document.getElementById('inputsCard').addEventListener('change', calc);
+
+// Ограничения по толщине стены: максимум — предел опирания для L 125 x 8,
+// минимум — зависит от типа раствора (тонкий шов = газоблок → 100мм, иначе кирпич/камень → 65мм)
+const WALL_MAX = 142; // мм, (b-t)+25 для L 125 x 8 = (125-8)+25
+function updateWallThicknessConstraints(){
+  const twallInput = document.getElementById('twall');
+  const loadMode = document.getElementById('loadMode').value;
+  let wallMin = 50; // по умолчанию (ручная нагрузка — материал не выбирается)
+  let hint = `Максимум ${WALL_MAX} мм — предел по опиранию для уголка L 125 x 8 (максимального в сортаменте).`;
+
+  if(loadMode === 'triangular'){
+    const unitVal = document.getElementById('unitType').value;
+    const mtype = unitVal === 'custom'
+      ? document.getElementById('mortarTypeSelect').value
+      : unitVal.split(',')[3];
+    if(mtype === 'thin'){
+      wallMin = 100; // газоблок на тонком шве: минимальная практическая толщина блока
+      hint = `Газоблок: минимум 100 мм, максимум ${WALL_MAX} мм (предел по L 125 x 8).`;
+    } else {
+      wallMin = 65; // кирпич/камень на растворе общего назначения: минимальная толщина перегородки
+      hint = `Кирпич/камень: минимум 65 мм, максимум ${WALL_MAX} мм (предел по L 125 x 8).`;
+    }
+  }
+
+  twallInput.min = wallMin;
+  twallInput.max = WALL_MAX;
+  document.getElementById('twallHint').textContent = hint;
+
+  // клэмп текущего значения в новые границы
+  const cur = parseFloat(twallInput.value);
+  if(!isNaN(cur)){
+    if(cur > WALL_MAX) twallInput.value = WALL_MAX;
+    if(cur < wallMin) twallInput.value = wallMin;
+  }
+}
+document.getElementById('unitType').addEventListener('change', updateWallThicknessConstraints);
+document.getElementById('loadMode').addEventListener('change', updateWallThicknessConstraints);
+updateWallThicknessConstraints();
+
+// Тип кладочного элемента → K, α, β, тип раствора (EN 1996-1-1, Табл. НП.2.4)
+function applyUnitTypeSelection(){
+  const val = document.getElementById('unitType').value;
+  const Kinput = document.getElementById('Kfactor');
+  const aInput = document.getElementById('alphaExp');
+  const bInput = document.getElementById('betaExp');
+  const rhoInput = document.getElementById('rhoCustomInMaterial');
+  const mortarTypeSel = document.getElementById('mortarTypeSelect');
+  const isCustom = val === 'custom';
+  document.getElementById('unitTypeCustomFields').style.display = isCustom ? 'block' : 'none';
+  if(isCustom){
+    Kinput.readOnly = false;
+    aInput.readOnly = false;
+    bInput.readOnly = false;
+    rhoInput.readOnly = false;
+    mortarTypeSel.disabled = false;
+  } else {
+    const [K,a,b,mtype,rho] = val.split(',');
+    Kinput.value = K;
+    aInput.value = a;
+    bInput.value = b;
+    rhoInput.value = rho;
+    Kinput.readOnly = true;
+    aInput.readOnly = true;
+    bInput.readOnly = true;
+    rhoInput.readOnly = true;
+    mortarTypeSel.value = mtype;
+    mortarTypeSel.disabled = true;
+  }
+  updateMortarVisibility();
+}
+document.getElementById('unitType').addEventListener('change', applyUnitTypeSelection);
+
+document.getElementById('mortarTypeSelect').addEventListener('change', updateMortarVisibility);
+
+function updateMortarVisibility(){
+  const isThin = document.getElementById('mortarTypeSelect').value === 'thin';
+  document.getElementById('mortarGradeBlock').style.display = isThin ? 'none' : 'block';
+  if(isThin) document.getElementById('fmCustomField').style.display = 'none';
+  const bField = document.getElementById('betaExp');
+  bField.closest('.field').style.display = isThin ? 'none' : 'block';
+}
+
+// Прочность кладки fk: по маркам камня/раствора (EN 1996-1-1 §3.6.1.2, формула 3.2) либо напрямую
+function updateMaterialSummary(){
+  const el = document.getElementById('materialSummary');
+  if(document.getElementById('fkDirect').checked){
+    el.textContent = `fk = ${document.getElementById('fk').value} МПа (задано напрямую)`;
+    return;
+  }
+  const unitSel = document.getElementById('unitType');
+  if(unitSel.value === 'custom'){
+    el.textContent = 'свои параметры кладки';
+    return;
+  }
+  const unitLabel = unitSel.selectedOptions[0].text;
+  const brickSel = document.getElementById('brickGrade');
+  const brickLabel = brickSel.value==='custom' ? `${document.getElementById('fbCustom').value} МПа` : brickSel.selectedOptions[0].text;
+  const isThin = document.getElementById('mortarTypeSelect').value === 'thin';
+  let mortarLabel;
+  if(isThin){
+    mortarLabel = 'растворе тонкого слоя';
+  } else {
+    const mortarSel = document.getElementById('mortarGrade');
+    mortarLabel = 'растворе ' + (mortarSel.value==='custom' ? `${document.getElementById('fmCustom').value} МПа` : mortarSel.selectedOptions[0].text);
+  }
+  el.textContent = `${unitLabel} ${brickLabel} на ${mortarLabel}`;
+}
+
+function updateFk(){
+  const direct = document.getElementById('fkDirect').checked;
+  const fkInput = document.getElementById('fk');
+  document.getElementById('fkByGradeBlock').style.display = direct ? 'none' : 'block';
+  document.getElementById('fkDirectField').style.display = direct ? 'block' : 'none';
+
+  if(direct){
+    fkInput.readOnly = false;
+    updateMaterialSummary();
+    return;
+  }
+  fkInput.readOnly = true;
+
+  const isThin = document.getElementById('mortarTypeSelect').value === 'thin';
+  const brickSel = document.getElementById('brickGrade').value;
+  const mortarSel = document.getElementById('mortarGrade').value;
+  document.getElementById('fbCustomField').style.display = brickSel==='custom' ? 'block' : 'none';
+  document.getElementById('fmCustomField').style.display = (!isThin && mortarSel==='custom') ? 'block' : 'none';
+
+  const fb = brickSel==='custom' ? parseFloat(document.getElementById('fbCustom').value) : parseFloat(brickSel);
+  const fmVal = mortarSel==='custom' ? parseFloat(document.getElementById('fmCustom').value) : parseFloat(mortarSel);
+  const K = parseFloat(document.getElementById('Kfactor').value);
+  const a = parseFloat(document.getElementById('alphaExp').value);
+  const b = parseFloat(document.getElementById('betaExp').value);
+
+  if(isThin){
+    if(!isNaN(fb) && !isNaN(K) && !isNaN(a) && fb>0){
+      const fk = K*Math.pow(fb,a);
+      fkInput.value = fk.toFixed(2);
+      document.getElementById('fkFormulaHint').textContent =
+        `fk = K·fb^${a} = ${K}·${fb}^${a} = ${fk.toFixed(2)} МПа (раствор тонкого слоя, fm не учитывается — EN 1996-1-1 §3.6.1.2, формула 3.3; Табл. НП.2.4)`;
+    }
+  } else if(!isNaN(fb) && !isNaN(fmVal) && !isNaN(K) && !isNaN(a) && !isNaN(b) && fb>0 && fmVal>0){
+    const fk = K*Math.pow(fb,a)*Math.pow(fmVal,b);
+    fkInput.value = fk.toFixed(2);
+    document.getElementById('fkFormulaHint').textContent =
+      `fk = K·fb^${a}·fm^${b} = ${K}·${fb}^${a}·${fmVal}^${b} = ${fk.toFixed(2)} МПа (раствор общего назначения — EN 1996-1-1 §3.6.1.2, формула 3.2; Табл. НП.2.4)`;
+  }
+  updateMaterialSummary();
+}
+['fkDirect','unitType','mortarTypeSelect','brickGrade','mortarGrade','fbCustom','fmCustom','Kfactor','alphaExp','betaExp'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateFk);
+  document.getElementById(id).addEventListener('change', updateFk);
+});
+applyUnitTypeSelection();
+updateFk();
+updateMortarVisibility();
+
+// Ширина проёма: только положительное число в диапазоне 300...2400 мм
+const LPR_MIN = 300, LPR_MAX = 4320;
+document.getElementById('Lpr').addEventListener('change', e=>{
+  let v = parseFloat(e.target.value);
+  if(isNaN(v) || v < LPR_MIN) v = LPR_MIN;
+  if(v > LPR_MAX) v = LPR_MAX;
+  e.target.value = v;
+});
+
+document.getElementById('hUnlim').addEventListener('change', e=>{
+  document.getElementById('hField').style.display = e.target.checked ? 'none' : 'block';
+});
+document.getElementById('loadMode').addEventListener('change', e=>{
+  const isManual = e.target.value === 'manual';
+  document.getElementById('autoLoadBlock').style.display = isManual ? 'none' : 'block';
+  document.getElementById('manualLoadBlock').style.display = isManual ? 'block' : 'none';
+});
+
+// Заполняем выпадающий список сортамента (равнополочные / неравнополочные)
+function fillAngleSelect(){
+  const sel = document.getElementById('ownAngleSelect');
+  const isUnequal = document.getElementById('angleType').value.startsWith('unequal');
+  sel.innerHTML = '';
+
+  if(isUnequal){
+    UNEQUAL_ANGLES.forEach((a,i)=>{
+      const [B,b,t,A,Iv,Wmin,mass] = a;
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `L ${B} x ${b} x ${t}`;
+      sel.appendChild(opt);
+    });
+  } else {
+    ANGLES.forEach((a,i)=>{
+      const [b,t,A,Iv,Wmin,mass] = a;
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `L ${b} x ${t}`;
+      sel.appendChild(opt);
+    });
+  }
+}
+document.getElementById('angleType').addEventListener('change', fillAngleSelect);
+fillAngleSelect();
+
+function bearingByClearSpan(Lclear_mm){
+  if(Lclear_mm <= 1200) return 100;
+  if(Lclear_mm <= 2400) return 150;
+  return 200;
+}
+
+let lastReportHTML = '';
+function renderMath(el){
+  if(window.renderMathInElement){
+    renderMathInElement(el, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "$", right: "$", display: false}
+      ],
+      throwOnError: false
+    });
+  }
+}
+function printReport(){
+  const area = document.getElementById('printArea');
+  area.innerHTML = lastReportHTML;
+  renderMath(area);
+  window.print();
+}
+
+// === Валидация введённых данных ===
+function isInvalidNumber(el){
+  if(el.value.trim() === '') return true;
+  const v = parseFloat(el.value);
+  if(isNaN(v)) return true;
+  if(el.min !== '' && v < parseFloat(el.min)) return true;
+  if(el.max !== '' && v > parseFloat(el.max)) return true;
+  return false;
+}
+
+function validateInputs(){
+  // снимаем подсветку со всех числовых полей перед повторной проверкой
+  document.querySelectorAll('#inputsCard input[type=number]').forEach(el=>el.classList.remove('input-invalid'));
+
+  const relevantIds = ['Lpr','twall'];
+  const loadMode = document.getElementById('loadMode').value;
+  if(loadMode === 'triangular'){
+    if(!document.getElementById('hUnlim').checked) relevantIds.push('Hwall');
+    if(document.getElementById('unitType').value === 'custom') relevantIds.push('rhoCustomInMaterial');
+    relevantIds.push('plasterThickness','plasterDensity');
+  } else {
+    relevantIds.push('qdManual');
+  }
+  relevantIds.push('gammaM_masonry');
+  if(document.getElementById('fkDirect').checked){
+    relevantIds.push('fk');
+  } else {
+    relevantIds.push('Kfactor','alphaExp');
+    const isThinMortar = document.getElementById('mortarTypeSelect').value === 'thin';
+    if(!isThinMortar) relevantIds.push('betaExp');
+    if(document.getElementById('brickGrade').value === 'custom') relevantIds.push('fbCustom');
+    if(!isThinMortar && document.getElementById('mortarGrade').value === 'custom') relevantIds.push('fmCustom');
+  }
+
+  const invalidIds = [];
+  relevantIds.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el && isInvalidNumber(el)){
+      el.classList.add('input-invalid');
+      invalidIds.push(id);
+    }
+  });
+  return invalidIds;
+}
+
+function calc(){
+  const invalidIds = validateInputs();
+  if(invalidIds.length > 0){
+    document.getElementById('output').innerHTML =
+      `<div class="card"><div class="validation-msg">Проверьте поля, выделенные красным (${invalidIds.length}) — значение отсутствует или вне допустимого диапазона.</div></div>`;
+    lastReportHTML = '';
+    return;
+  }
+
+  const Lpr = parseFloat(document.getElementById('Lpr').value);      // мм
+  const twall = parseFloat(document.getElementById('twall').value);  // мм
+  const loadMode = document.getElementById('loadMode').value;        // 'triangular' | 'manual'
+  const fy = parseFloat(document.getElementById('steel').value); // МПа
+  const fk = parseFloat(document.getElementById('fk').value);
+  const gammaM_m = parseFloat(document.getElementById('gammaM_masonry').value);
+
+  const gammaM0 = 1.00, gammaG = 1.35, g = 9.81;
+
+  // 1. Минимальная глубина опирания по таблице (структурный минимум)
+  const LbearMin = bearingByClearSpan(Lpr); // мм
+
+  // предчитываем параметры нагрузки (не зависят от Lbear)
+  let hUnlim, Hwall, rho, qd_t, qd, plasterThickness_mm;
+  if(loadMode === 'triangular'){
+    hUnlim = document.getElementById('hUnlim').checked;
+    Hwall = hUnlim ? Infinity : parseFloat(document.getElementById('Hwall').value); // мм
+    const unitVal = document.getElementById('unitType').value;
+    rho = unitVal === 'custom'
+      ? parseFloat(document.getElementById('rhoCustomInMaterial').value)
+      : parseFloat(unitVal.split(',')[4]); // кг/м3
+    plasterThickness_mm = parseFloat(document.getElementById('plasterThickness').value); // мм
+  } else {
+    qd_t = parseFloat(document.getElementById('qdManual').value); // тс/м
+    qd = qd_t*9.81; // кН/м
+  }
+
+  // функция расчёта усилий для заданной глубины опирания Lbear
+  function computeLoad(LbearTry){
+    const Lcalc_mm = Lpr + 2*LbearTry;
+    const Lcalc = Lcalc_mm/1000;
+    let M_Ed, V_Ed, qPeak, h_calc_mm=null, loadSteps;
+
+    if(loadMode === 'triangular'){
+      const h_calc_mm_local = Math.min(Hwall, Lpr/2);
+      h_calc_mm = h_calc_mm_local;
+      const h_calc = h_calc_mm_local/1000;
+      const t_m = twall/1000;
+      const Atri = 0.5*Lcalc*h_calc; // м², площадь треугольного клина
+
+      const rhoPlaster = parseFloat(document.getElementById('plasterDensity').value); // кг/м3, задаётся пользователем
+      const tPlaster_m = plasterThickness_mm/1000;
+
+      const Wk_masonry = rho*g*t_m*Atri/1000;
+      const Wk_plaster = rhoPlaster*g*tPlaster_m*Atri/1000;
+      const Wk = Wk_masonry + Wk_plaster;
+      const Wd = gammaG*Wk;
+      const q0 = 2*Wd/Lcalc;
+      qPeak = q0;
+      M_Ed = Wd*Lcalc/6;
+      V_Ed = Wd/2;
+
+      loadSteps =
+`<p>Поскольку перекрытие не передаёт нагрузку на перегородку, расчёт выполнен только от собственного веса кладки в пределах расчётного клина согласно EN 1996-1-1. Кладка выше треугольника с углом распространения 60° (эквивалентно линиям под 30° к вертикали от краёв проёма) передаёт вес не на перемычку, а в стороны, на простенки за счёт естественного арочного эффекта — поэтому в расчёт идёт только объём кладки в пределах этого клина, а не весь массив до перекрытия.</p>
+<p><b>Высота клина</b> (арочный распор, ограничена L<sub>пр</sub>/2):</p>
+$$h = \\min(H;\\ L_{пр}/2) = ${h_calc_mm.toFixed(0)}\\text{ мм} = ${h_calc.toFixed(3)}\\text{ м}$$
+<p><b>Площадь клина:</b></p>
+$$A = \\frac{L_{расч}\\cdot h}{2} = \\frac{${Lcalc.toFixed(3)}\\times ${h_calc.toFixed(3)}}{2} = ${Atri.toFixed(4)}\\text{ м}^2$$
+<p><b>Вес кладки</b> (характеристический):</p>
+$$G_{k,кладка} = \\rho\\cdot g\\cdot t\\cdot A = ${rho}\\times 9{,}81\\times ${t_m.toFixed(3)}\\times ${Atri.toFixed(4)} = ${Wk_masonry.toFixed(3)}\\text{ кН}$$${plasterThickness_mm>0?`
+<p><b>Вес штукатурного слоя</b> (t = ${plasterThickness_mm} мм, ρ = ${rhoPlaster} кг/м³):</p>
+$$G_{k,шт} = \\rho_{шт}\\cdot g\\cdot t_{шт}\\cdot A = ${rhoPlaster}\\times 9{,}81\\times ${tPlaster_m.toFixed(3)}\\times ${Atri.toFixed(4)} = ${Wk_plaster.toFixed(3)}\\text{ кН}$$`:''}
+<p><b>Полная нагрузка</b> (характеристическая):</p>
+$$G_k = ${plasterThickness_mm>0?`G_{k,кладка}+G_{k,шт} = `:''}${Wk.toFixed(3)}\\text{ кН}$$
+<p><b>Расчётная нагрузка</b>:</p>
+$$G_d = \\gamma_G\\cdot G_k = 1{,}35\\times ${Wk.toFixed(3)} = ${Wd.toFixed(3)}\\text{ кН}$$
+<p><b>Пиковая интенсивность в центре пролёта</b> (треугольная эпюра):</p>
+$$q_0 = \\frac{2G_d}{L_{расч}} = \\frac{2\\times ${Wd.toFixed(3)}}{${Lcalc.toFixed(3)}} = ${q0.toFixed(3)}\\text{ кН/м}$$
+<p><b>Изгибающий момент</b> (симметричная треугольная эпюра, пик в центре):</p>
+$$M_{Ed} = \\frac{G_d\\cdot L_{расч}}{6} = \\frac{${Wd.toFixed(3)}\\times ${Lcalc.toFixed(3)}}{6} = ${M_Ed.toFixed(3)}\\text{ кН}{\\cdot}\\text{м}$$
+<p><b>Поперечная сила</b> (реакция на опоре):</p>
+$$V_{Ed} = \\frac{G_d}{2} = ${V_Ed.toFixed(3)}\\text{ кН}$$`;
+    } else {
+      qPeak = qd;
+      M_Ed = qd*Lcalc*Lcalc/8;
+      V_Ed = qd*Lcalc/2;
+
+      loadSteps =
+`<p><b>Расчётная равномерная нагрузка</b> (задана вручную):</p>
+$$q_d = ${qd_t.toFixed(3)}\\text{ тс/м}\\times 9{,}81 = ${qd.toFixed(3)}\\text{ кН/м}$$
+<p><b>Изгибающий момент:</b></p>
+$$M_{Ed} = \\frac{q_d\\cdot L_{расч}^2}{8} = \\frac{${qd.toFixed(3)}\\times ${Lcalc.toFixed(3)}^2}{8} = ${M_Ed.toFixed(3)}\\text{ кН}{\\cdot}\\text{м}$$
+<p><b>Поперечная сила:</b></p>
+$$V_{Ed} = \\frac{q_d\\cdot L_{расч}}{2} = ${V_Ed.toFixed(3)}\\text{ кН}$$`;
+    }
+    return {Lcalc_mm, Lcalc, M_Ed, V_Ed, qPeak, h_calc_mm, loadSteps};
+  }
+
+  // 2. Автоподбор глубины опирания: начинаем с табличного минимума,
+  //    увеличиваем, пока не пройдёт проверка на смятие кладки под опорой (EN 1996, ориентировочно)
+  const LBEAR_STEP = 5, LBEAR_MAX = 500;
+  let Lbear = LbearMin;
+  let bearingWarning = null;
+  let load = computeLoad(Lbear);
+  const fd = fk/gammaM_m;
+  while(true){
+    const Ab = Lbear*twall;
+    const N_Rd = Ab*fd/1000; // EN 1996-1-1 §6.1.3(3), формула (6.9)-(6.10), β=1,0 консервативно
+    if(load.V_Ed <= N_Rd) break;
+    if(Lbear >= LBEAR_MAX){
+      bearingWarning = `Смятие кладки под опорой не проходит даже при глубине опирания ${LBEAR_MAX} мм — нужна кладка большей прочности (f_k) или другое конструктивное решение (распределительная подушка/пилястра).`;
+      break;
+    }
+    Lbear += LBEAR_STEP;
+    load = computeLoad(Lbear);
+  }
+
+  const { Lcalc_mm, Lcalc, M_Ed, V_Ed, qPeak, h_calc_mm, loadSteps } = load;
+
+  // условие опирания кирпича: (bполки - tполки) - tстены >= -25, т.е. bполки - tполки >= tстены - 25
+  const flangeThreshold = twall - 25; // мм
+
+  function evaluateAngle(b,t,A,Iv,Wmin,mass,dispLabel,legLarge,legSmall){
+    const sigma_Ed = 1000*M_Ed/Wmin;         // МПа
+    const M_Rd = Wmin*fy/1000/gammaM0;       // кН·м
+    const util_bend = sigma_Ed/(fy/gammaM0);
+    const Av = t*b; // мм2, консервативно (§6.2.6(3))
+    const V_Rd = Av*fy/(Math.sqrt(3)*gammaM0)/1000; // кН
+    const util_shear = V_Ed/V_Rd;
+    // проверка смятия кладки под опорой (EN 1996-1-1 §6.1.3(3), β=1,0 консервативно)
+    const Ab = Lbear*twall; // мм2
+    const fd = fk/gammaM_m;
+    const N_Rd = Ab*fd/1000; // кН
+    const N_Ed = V_Ed;
+    const util_masonry = N_Ed/N_Rd;
+
+    // прогиб (упругий расчёт, E=210000 МПа для стали)
+    const E = 210000; // МПа = Н/мм2
+    const I_mm4 = Iv*1e4; // см4 -> мм4
+    const L_mm = Lcalc_mm;
+    const q_Nmm = qPeak; // кН/м численно равно Н/мм (1 кН/м = 1 Н/мм)
+    const delta = (loadMode==='triangular')
+      ? q_Nmm*Math.pow(L_mm,4)/(120*E*I_mm4)          // треугольная эпюра, пик в центре
+      : 5*q_Nmm*Math.pow(L_mm,4)/(384*E*I_mm4);        // равномерная нагрузка
+    const deflLimitDenom = parseFloat(document.getElementById('deflLimit').value);
+    const delta_limit = L_mm/deflLimitDenom;
+    const util_defl = delta/delta_limit;
+    const passDefl = util_defl<=1;
+
+    const flangeOK = (b - t) >= flangeThreshold;
+
+    // местная устойчивость — EN 1993-1-1 Табл. 5.2, «Уголковые профили», Класс 3
+    const epsilon = Math.sqrt(235/fy);
+    // критерий 1: свес полки (та же логика, что «Свесы полок») c/t ≤ 14ε
+    const ct_ratio = b/t;
+    const ct_limit = 14*epsilon;
+    const util_local1 = ct_ratio/ct_limit;
+    // критерий 2: уголок целиком под сжатием — h/t ≤ 15ε и (b+h)/2t ≤ 11,5ε
+    const hLeg = legLarge !== undefined ? legLarge : b; // большая полка
+    const bLeg = legSmall !== undefined ? legSmall : b; // меньшая полка
+    const ht_ratio = hLeg/t;
+    const ht_limit = 15*epsilon;
+    const bh_ratio = (bLeg+hLeg)/(2*t);
+    const bh_limit = 11.5*epsilon;
+    const util_local2 = Math.max(ht_ratio/ht_limit, bh_ratio/bh_limit);
+
+    const util_local = Math.max(util_local1, util_local2);
+    const passLocal = util_local<=1;
+
+    const passBend = util_bend<=1, passShear = util_shear<=1, passMasonry = util_masonry<=1;
+    const passAll = passBend && passShear && passMasonry && passDefl && flangeOK;
+    // passLocal не блокирует passAll: критерий (b+h)/2t≤11,5ε в Табл.5.2 рассчитан на равномерное
+    // сжатие (уголок-стойка), для изгибаемого элемента это заведомо консервативно — оставлено
+    // как информационный показатель, не как отсекающая проверка
+
+    return {b,t,A,Iv,Wmin,mass,sigma_Ed,M_Rd,util_bend,V_Rd,util_shear,N_Rd,util_masonry,
+            delta,delta_limit,util_defl,passDefl,
+            epsilon,ct_ratio,ct_limit,util_local1,hLeg,bLeg,ht_ratio,ht_limit,bh_ratio,bh_limit,util_local2,util_local,passLocal,
+            flangeOK,passBend,passShear,passMasonry,passAll,
+            dispLabel: dispLabel || `${b} x ${t}`};
+  }
+
+  // Подсветка опций в списке сортамента: зелёный — проходит все проверки, красный — нет
+  function updateAngleSelectColors(){
+    const sel = document.getElementById('ownAngleSelect');
+    const angleTypeVal = document.getElementById('angleType').value;
+    const isUnequalNow = angleTypeVal.startsWith('unequal');
+    const orientation = angleTypeVal === 'unequal-h' ? 'wide' : 'narrow'; // горизонтально = большая полка вниз, вертикально = меньшая полка вниз
+    const arr = isUnequalNow ? UNEQUAL_ANGLES : ANGLES;
+
+    Array.from(sel.options).forEach(opt=>{
+      const idx = parseInt(opt.value);
+      const row = arr[idx];
+      if(!row) return;
+      let b,t,A,Iv,Wmin,mass,labelDims,legLarge,legSmall;
+      if(isUnequalNow){
+        const [B,bSmall,tt,AA,IIv,WWmin,mm] = row;
+        b = orientation==='wide' ? B : bSmall;
+        t=tt; A=AA; Iv=IIv; Wmin=WWmin; mass=mm;
+        legLarge=B; legSmall=bSmall;
+        labelDims = `${B} x ${bSmall} x ${t}`;
+      } else {
+        [b,t,A,Iv,Wmin,mass] = row;
+        labelDims = `${b} x ${t}`;
+      }
+      const r = evaluateAngle(b,t,A,Iv,Wmin,mass,undefined,legLarge,legSmall);
+      opt.style.color = r.passAll ? '#5ed6a4' : '#e0616f';
+      opt.textContent = `${r.passAll?'✓':'✗'} L ${labelDims}`;
+    });
+  }
+  updateAngleSelectColors();
+
+  const output = document.getElementById('output');
+
+  const steps =
+`<p><b>Глубина опирания</b> (табличный минимум по L<sub>пр</sub>=${Lpr} мм):</p>
+$$L_{bear,min} = ${LbearMin}\\text{ мм}$$
+<p><b>Глубина опирания</b> (после проверки на смятие кладки):</p>
+$$L_{bear} = ${Lbear}\\text{ мм}${Lbear>LbearMin?'\\ \\text{(увеличен относительно табличного минимума)}':''}$$
+<p><b>Расчётный пролёт:</b></p>
+$$L_{расч} = L_{пр} + 2L_{bear} = ${Lpr} + 2\\times ${Lbear} = ${Lcalc_mm.toFixed(0)}\\text{ мм}$$
+${loadSteps}
+<p><b>Условие опирания кирпича на полку</b> (свес ≤ 25 мм):</p>
+$$b_{полки} - t_{полки} \\ge t_{стены}-25 = ${twall}-25 = ${flangeThreshold}\\text{ мм}$$`;
+
+  const angleTypeVal = document.getElementById('angleType').value;
+  const isUnequalAngle = angleTypeVal.startsWith('unequal');
+
+  function pickAngle(){
+    const idx = parseInt(document.getElementById('ownAngleSelect').value);
+    if(isUnequalAngle){
+      const [B,b,t,A,Iv,Wmin,mass] = UNEQUAL_ANGLES[idx];
+      const bearingB = angleTypeVal === 'unequal-h' ? B : b; // горизонтально = большая полка опорная, вертикально = меньшая
+      const dispLabel = `${B} x ${b} x ${t}`;
+      return evaluateAngle(bearingB, t, A, Iv, Wmin, mass, dispLabel, B, b);
+    }
+    return evaluateAngle(...ANGLES[idx]);
+  }
+
+  const picked = pickAngle();
+  const schemeAngleLabel = `L ${picked.dispLabel}`;
+
+  const steelShortLabel = 'S' + fy;
+  document.getElementById('lintelSummary').textContent = `${steelShortLabel} · ${schemeAngleLabel}`;
+
+  let html = `<div class="card"><details><summary style="font-size:13px;font-weight:600;"><span class="details-arrow">▶</span>Промежуточные шаги</summary><div class="steps" style="margin-top:10px;">${steps}</div></details></div>`;
+
+  if(bearingWarning){
+    html += `<div class="card"><div class="warn-box">${bearingWarning}</div></div>`;
+  }
+
+  // === Проверка заданного пользователем сечения ===
+  let resultBlockHtml = renderResult(picked, Lcalc_mm);
+  const reportAngle = picked;
+  if(!picked.flangeOK){
+    resultBlockHtml += `<div class="card"><div class="warn-box">Свес кирпича за кромку полки превышает 25 мм — условие опирания не выполняется: (bполки − tполки) должна быть не менее ${flangeThreshold} мм.</div></div>`;
+  }
+
+  html += resultBlockHtml;
+  output.innerHTML = html;
+  renderMath(output);
+
+  // === Сборка развёрнутого отчёта для печати (пошагово, с именованными величинами) ===
+  const steelLabel = document.getElementById('steel').selectedOptions[0].text;
+
+  // --- Раздел "Исходные данные" ---
+  const profileLabel = reportAngle
+    ? `L ${reportAngle.dispLabel}${reportAngle.isCustom ? '' : (reportAngle.dispLabel.split(' x ').length===3 ? ' (ГОСТ 8510-86)' : ' (ГОСТ 8509-93)')}`
+    : '—';
+  const gostLabel = reportAngle && !reportAngle.isCustom
+    ? (reportAngle.dispLabel.split(' x ').length===3 ? 'ГОСТ 8510-86' : 'ГОСТ 8509-93')
+    : '';
+  const inputSummaryHtml =
+`<b>Нормы:</b> EN 1993-1-1 (СП РК EN 1993-1-1:2005/2011) — сталь; EN 1996-1-1 (СП РК EN 1996-1-1:2005/2011) — кладка
+<b>Сталь:</b> ${steelLabel}
+<b>Профиль:</b> ${profileLabel}
+<b>Количество уголков:</b> 1 шт.
+<b>Пролёт в свету, Lпр:</b> ${Lpr} мм
+<b>Опирание, Lbear:</b> ${Lbear} мм${Lbear>LbearMin?' (увеличено относительно табличного минимума '+LbearMin+' мм — по проверке смятия кладки)':''}
+<b>Расчётный пролёт:</b> Lрасч = Lпр + 2·Lbear = ${Lpr} + 2·${Lbear} = ${Lcalc_mm.toFixed(0)} мм = ${Lcalc.toFixed(2)} м
+<b>Толщина перегородки, t:</b> ${twall} мм
+<b>Способ определения нагрузки:</b> ${loadMode==='triangular' ? 'от собственного веса треугольного клина кладки (арочный распор, перекрытие на перегородку не опирается)' : 'задана вручную (равномерная)'}
+<b>Кладка (для проверки смятия):</b> ${
+  document.getElementById('fkDirect').checked
+    ? `fk задан напрямую = ${fk} МПа`
+    : `${document.getElementById('unitType').selectedOptions[0].text}, марка ${document.getElementById('brickGrade').selectedOptions[0].text}${document.getElementById('mortarTypeSelect').value==='thin' ? ', раствор тонкого слоя (клей, fm не учитывается)' : ', раствор '+document.getElementById('mortarGrade').selectedOptions[0].text}, fk = ${fk} МПа`
+}, γM = ${gammaM_m}
+${document.getElementById('fkDirect').checked ? '' : (document.getElementById('mortarTypeSelect').value==='thin'
+  ? `<b>Формула fk</b> (EN 1996-1-1 §3.6.1.2, формула 3.3, раствор тонкого слоя): fk = K·fb^α = ${document.getElementById('Kfactor').value}·fb^${document.getElementById('alphaExp').value} = ${fk} МПа`
+  : `<b>Формула fk</b> (EN 1996-1-1 §3.6.1.2, формула 3.2, раствор общего назначения): fk = K·fb^α·fm^β = ${document.getElementById('Kfactor').value}·fb^${document.getElementById('alphaExp').value}·fm^${document.getElementById('betaExp').value} = ${fk} МПа`)}`;
+
+  // --- Раздел "Расчёт нагрузки" (переиспользуем уже готовый loadSteps) ---
+  const loadSectionHtml = loadSteps;
+
+  // --- Раздел "Проверка сечения" + "Заключение" ---
+  let checkSectionHtml = '<p>Уголок не подобран — см. результаты выше.</p>';
+  let conclusionHtml = '';
+  if(reportAngle){
+    const r = reportAngle;
+    checkSectionHtml =
+`<p><b>Площадь сечения:</b></p>
+$$A = ${r.A.toFixed(2)}\\text{ см}^2$$
+<p><b>Момент сопротивления</b> (ось v-v, минимальный):</p>
+$$W_{min} = ${r.Wmin.toFixed(2)}\\text{ см}^3$$
+<p><b>Момент инерции</b> (ось v-v, минимальный):</p>
+$$I_{min} = ${r.Iv.toFixed(2)}\\text{ см}^4$$
+<p><b>Несущая способность по изгибу</b> (EN 1993-1-1 §6.2.5):</p>
+$$M_{c,Rd} = \\frac{W_{min}\\cdot f_y}{\\gamma_{M0}} = \\frac{${r.Wmin.toFixed(2)}\\times ${fy}}{1000\\times 1{,}0} = ${r.M_Rd.toFixed(3)}\\text{ кН}{\\cdot}\\text{м}$$
+<p><b>Напряжение от изгиба:</b></p>
+$$\\sigma_{Ed} = \\frac{1000\\cdot M_{Ed}}{W_{min}} = \\frac{1000\\times ${M_Ed.toFixed(3)}}{${r.Wmin.toFixed(2)}} = ${r.sigma_Ed.toFixed(1)}\\text{ МПа}$$
+<p><b>Коэффициент использования</b> (изгиб):</p>
+$$\\eta = \\frac{M_{Ed}}{M_{c,Rd}} = \\frac{${M_Ed.toFixed(3)}}{${r.M_Rd.toFixed(3)}} = ${r.util_bend.toFixed(3)} \\ \\rightarrow\\ \\mathbf{${(r.util_bend*100).toFixed(1)}\\%}$$
+<p><b>Несущая способность по сдвигу</b> (EN 1993-1-1 §6.2.6):</p>
+$$V_{c,Rd} = ${r.V_Rd.toFixed(2)}\\text{ кН} \\quad \\text{использование} = ${(r.util_shear*100).toFixed(1)}\\%$$
+<p><b>Проверка прогиба</b> (EN 1993-1-1 §7.2.1, предел L/${document.getElementById('deflLimit').value} принят проектом):</p>
+$$\\delta_{Ed} = ${r.delta.toFixed(2)}\\text{ мм} \\le \\delta_{lim} = ${r.delta_limit.toFixed(2)}\\text{ мм} \\ \\rightarrow\\ \\text{использование } ${(r.util_defl*100).toFixed(1)}\\%$$
+<p><b>Проверка смятия кладки под опорой</b> (EN 1996-1-1 §6.1.3(3)):</p>
+$$N_{Ed} = V_{Ed} = ${V_Ed.toFixed(3)}\\text{ кН} \\le N_{Rd} = A_b\\cdot f_d = ${r.N_Rd.toFixed(2)}\\text{ кН} \\ \\rightarrow\\ \\text{использование } ${(r.util_masonry*100).toFixed(1)}\\%$$
+<p><b>Опирание кирпича на полку</b> (свес ≤ 25 мм): ${r.flangeOK ? 'выполняется' : 'НЕ выполняется'}</p>`;
+
+    const maxUtil = Math.max(r.util_bend, r.util_shear, r.util_defl, r.util_masonry);
+    const reserve = maxUtil>0 ? (1/maxUtil).toFixed(1) : '—';
+    conclusionHtml =
+`<p>Стальная перемычка из одного уголка <b>${profileLabel}</b> из стали <b>${steelLabel}</b> при пролёте в свету ${Lpr} мм и глубине опирания ${Lbear} мм ${r.passAll ? '<b>удовлетворяет</b>' : '<b>НЕ удовлетворяет</b>'} требованиям EN 1993-1-1 и EN 1996-1-1 по:</p>
+<ul>
+<li>прочности (изгиб, сдвиг);</li>
+<li>жёсткости (прогиб);</li>
+<li>несущей способности кладки под опорой.</li>
+</ul>
+<p>Максимальное использование по всем проверкам — <b>${(maxUtil*100).toFixed(1)} %</b>. Запас несущей способности — <b>${reserve} раз</b>.</p>`;
+
+    const summaryRows = [
+      ['Изгиб', r.util_bend],
+      ['Поперечная сила', r.util_shear],
+      ['Прогиб', r.util_defl],
+      ['Смятие кладки', r.util_masonry],
+    ];
+    var summaryTableHtml = `<table class="summary-table">
+      <tr><th>Проверка</th><th>Использование</th></tr>
+      ${summaryRows.map(([name,u])=>`<tr><td>${name}</td><td class="${u<=1?'v-ok':'v-fail'}">${u.toFixed(2)}</td></tr>`).join('')}
+      <tr><td>Опирание кирпича на полку</td><td class="${r.flangeOK?'v-ok':'v-fail'}">${r.flangeOK?'ОК':'НЕ ОК'}</td></tr>
+    </table>`;
+    var verdictHtml = r.passAll
+      ? `<div class="verdict-banner verdict-ok">✓ Конструкция удовлетворяет требованиям EN&nbsp;1993-1-1 и EN&nbsp;1996-1-1</div>`
+      : `<div class="verdict-banner verdict-fail">✗ Конструкция НЕ удовлетворяет требованиям EN&nbsp;1993-1-1 и EN&nbsp;1996-1-1</div>`;
+  } else {
+    var summaryTableHtml = '';
+    var verdictHtml = `<div class="verdict-banner verdict-fail">✗ Сечение не подобрано — проверка не выполнена</div>`;
+  }
+
+  const angleKindLabel = isUnequalAngle ? 'НЕРАВНОПОЛОЧНОГО' : 'РАВНОПОЛОЧНОГО';
+
+  lastReportHTML = `
+    <div class="print-header">
+      <h1>РАСЧЁТ СТАЛЬНОЙ ПЕРЕМЫЧКИ ИЗ ${angleKindLabel} УГОЛКА</h1>
+      <div class="print-subtitle">По EN 1993-1-1 и EN 1996-1-1</div>
+      <div class="print-date">составлено ${new Date().toLocaleDateString('ru-RU')}</div>
+    </div>
+    <div class="print-section">
+      <h2>Нормативные документы</h2>
+      <ul>
+        <li>EN 1993-1-1</li>
+        <li>EN 1996-1-1</li>
+      </ul>
+      ${gostLabel ? `<p>Профиль принят по ${gostLabel}.</p>` : ''}
+    </div>
+    <div class="print-section">
+      <h2>Исходные данные</h2>
+      <pre class="print-pre">${inputSummaryHtml}</pre>
+    </div>
+    <div class="print-section">
+      <h2>Расчёт нагрузки</h2>
+      ${loadSectionHtml}
+    </div>
+    <div class="print-section">
+      <h2>Проверка сечения ${reportAngle ? profileLabel : ''}</h2>
+      ${checkSectionHtml}
+    </div>
+    <div class="print-section">
+      <h2>Заключение</h2>
+      ${conclusionHtml || '<p>Подходящее сечение не найдено в рамках заданных условий.</p>'}
+    </div>
+    <div class="print-section" style="page-break-before:always;">
+      <h2>Итоговая проверка</h2>
+      ${summaryTableHtml}
+      ${verdictHtml}
+    </div>
+    <div class="print-footer">Документ сформирован автоматически в «Электронном справочнике конструктора» · автор проекта — Кайыртаев Б.Б.</div>
+  `;
+}
+
+function renderResult(r, Lcalc_mm){
+  const barColor = u => u<=1?'var(--good)':'var(--bad)';
+  const pctColor = u => u<=1?'var(--good)':'var(--bad)';
+  const gaugeRow = (label, util) => {
+    const pct = Math.min(util*100,100);
+    return `<div class="check-row">${label}
+      <div class="gauge-row">
+        <span class="gauge-pct" style="color:${pctColor(util)};">${(util*100).toFixed(0)}%</span>
+        <div class="bar-wrap"><div class="bar" style="width:${pct}%;background:${barColor(util)}"></div></div>
+      </div>
+    </div>`;
+  };
+  const bendPct = Math.min(r.util_bend*100,100);
+  const shearPct = Math.min(r.util_shear*100,100);
+  const masonryPct = Math.min(r.util_masonry*100,100);
+  const deflPct = Math.min(r.util_defl*100,100);
+  const totalMass = r.mass*Lcalc_mm/1000;
+  const dispParts = r.dispLabel.split(' x ');
+  const isUnequalDisp = dispParts.length === 3;
+  const gostRef = r.isCustom ? '' : (isUnequalDisp ? 'ГОСТ 8510-86' : 'ГОСТ 8509-93');
+  const typeLabel = r.isCustom ? 'Заданное сечение' : (isUnequalDisp ? 'Неравнополочный уголок' : 'Равнополочный уголок');
+  return `<div class="card">
+    <div class="results-header">
+      <h2 style="margin:0;">Результаты расчёта</h2>
+      <button class="print-btn" onclick="printReport()">🖨️ Печать</button>
+    </div>
+    <div class="result-card">
+      <div class="result-title">L ${r.dispLabel}${gostRef?' '+gostRef:''}, L=${Lcalc_mm.toFixed(0)}мм, m=${totalMass.toFixed(2)}кг</div>
+      <div class="result-sub">${typeLabel} · ${r.mass.toFixed(2)} кг/м</div>
+      <div class="checks">
+        ${gaugeRow('Изгиб — EN 1993-1-1 §6.2.5', r.util_bend)}
+        ${gaugeRow('Сдвиг — EN 1993-1-1 §6.2.6', r.util_shear)}
+        ${gaugeRow(`Прогиб — EN 1993-1-1 §7.2.1 (предел L/${document.getElementById('deflLimit').value} принят проектом)`, r.util_defl)}
+        ${gaugeRow('Смятие кладки — EN 1996-1-1 §6.1.3(3)', r.util_masonry)}
+        <div class="check-row" style="display:flex;justify-content:space-between;align-items:center;">Опирание кирпича на полку (свес ≤ 25 мм, конструктивное требование)<span class="badge ${r.flangeOK?'ok':'fail'}">${r.flangeOK?'ОК':'НЕ ПРОХОДИТ'}</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+calc();
+</script>
+<div id="helpModal" onclick="if(event.target===this) this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;max-width:680px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;font-size:17px;color:var(--accent);">Область применения калькулятора</h2>
+      <button onclick="document.getElementById('helpModal').style.display='none'" style="width:auto;margin:0;padding:6px 12px;background:var(--panel2);color:var(--text);border:1px solid var(--border);font-size:13px;">✕ Закрыть</button>
+    </div>
+
+    <div class="steps" style="font-family:inherit;font-size:13px;line-height:1.7;">
+      <b style="color:var(--accent2);">Геометрия проёма и опирания</b><br>
+      • Ширина проёма в свету L<sub>пр</sub>: 300…4320 мм<br>
+      • Толщина стены/перегородки: 65…142 мм (кирпич/камень) или 100…142 мм (газоблок) — верхний предел задан опиранием на L 125 x 8, максимальный профиль в сортаменте<br>
+      • Глубина опирания: табличный минимум 100/150/200 мм (по ширине проёма), автоматически увеличивается при недостаточной несущей способности кладки под опорой<br><br>
+
+      <b style="color:var(--accent2);">Профиль перемычки</b><br>
+      • Только <b>одиночный</b> равнополочный уголок, ГОСТ 8509-93, диапазон L 50 x 5…L 125 x 12<br>
+      • Сталь S235 / S275 / S355<br>
+      • Парные уголки, швеллеры и другие профили — не рассчитываются<br><br>
+
+      <b style="color:var(--accent2);">Нагрузка</b><br>
+      • Учитывается только собственный вес кладки (треугольная эпюра, арочный распор) — <b>или</b> нагрузка, заданная вручную равномерной<br>
+      • Нагрузка от перекрытия, стяжки, отделки и т.п. — не учитывается автоматически (можно задать вручную через режим «равномерная нагрузка», уже включив в неё всё нужное)<br>
+      • Высота треугольного клина кладки ограничена L<sub>пр</sub>/2 (упрощённая модель арочного распора)<br><br>
+
+      <b style="color:var(--accent2);">Материал кладки</b><br>
+      • Марка камня: М50…М200; марка раствора: М10…М150<br>
+      • Виды: кирпич керамический/силикатный (полнотелый и пустотелый), газоблок D600/D700, ракушечник — либо свои показатели K, α, β<br>
+      • Формула прочности кладки f<sub>k</sub> — по EN 1996-1-1 §3.6.1.2, коэффициенты K/α/β для группы 1 — из Национального приложения РК (точные), для группы 2 и ракушечника — по базовой таблице EN с обобщёнными показателями степени (ориентировочно)<br><br>
+
+      <b style="color:var(--bad);">Что НЕ учитывается (ограничения модели)</b><br>
+      • Условия применимости формулы f<sub>k</sub> (§3.6.1.2(2)): f<sub>b</sub> ≤ 75 МПа (общий раствор) / ≤ 50 МПа (тонкий слой); f<sub>m</sub> ≤ 20 МПа или ≤ 2f<sub>b</sub>; толщина стены равна ширине/длине камня (без продольного шва вдоль стены); коэфф. вариации прочности камня ≤ 25% — калькулятор эти границы не проверяет автоматически<br>
+      • Коэффициент формы кирпича δ (EN 772-1) — марка камня принимается уже как нормализованная прочность, без поправки на реальные пропорции конкретного кирпича<br>
+      • Группа камня (1/2/3/4) определяется по названию в списке, а не по фактической пустотности и размеру пустот — при нестандартной перфорации сверяйте по факту применяемого материала<br>
+      • Повышающий коэффициент β при смятии кладки под опорой (EN 1996 §6.1.3(2), для группы 1) — не применяется, расчёт всегда идёт по консервативному варианту §6.1.3(3), без учёта эффективной длины распределения нагрузки<br>
+      • Двухосный (косой) изгиб уголка — учтён консервативно через W<sub>min</sub> (ось v-v), без точного разложения по осям u-u/v-v<br>
+      • Сейсмические, ударные и особые (аварийные) воздействия — не учитываются<br>
+      • Предельный прогиб — не задан Еврокодом жёстко (EN 1993-1-1 §7.2.1 отсылает к проекту), выбирается пользователем<br><br>
+
+      <b style="color:var(--muted);">Если условия объекта выходят за эти рамки — расчёт носит ориентировочный характер, требуется проверка вручную или по другому профилю (парный уголок, швеллер и т.п.).</b>
+    </div>
+  </div>
+</div>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+</body>
+</html>

@@ -214,3 +214,59 @@ document.getElementById('markingMerny').textContent = `${prefix}-${dims}×${t}×
 Уже сделано (пример для копирования): `trubi.html`, `trubi-8732.html`,
 `trubi-10704.html`, `dvutavry-gost.html`, `shvellery.html`, `ugolki.html`,
 `pv-listy.html`, `rifl-listy.html`, `special-beams-19425.html`.
+
+## 10. Пошаговые расчёты с формулами — KaTeX
+
+Для калькуляторов с развёрнутым «Промежуточные шаги» / отчётом, где
+формулы должны выглядеть как в учебнике (дроби, индексы, греческие буквы),
+а не одной строкой текста — использовать **KaTeX**, а не собирать формулы
+вручную из HTML/юникода. Пример: `peremychka-ugolok.html`.
+
+Подключение (в `<head>`, после общего `<style>`):
+```html
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+```
+
+Рендер — одна общая функция, вызывается на контейнере после того, как в
+него вставлен HTML со строками формул:
+```js
+function renderMath(el){
+  if(window.renderMathInElement){
+    renderMathInElement(el, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "$", right: "$", display: false}
+      ],
+      throwOnError: false
+    });
+  }
+}
+// после output.innerHTML = html;
+renderMath(output);
+```
+
+Сами формулы — обычные LaTeX-строки в шаблонных литералах JS, между `$$...$$`:
+```js
+`$$M_{Ed} = \\frac{G_d\\cdot L_{расч}}{6} = \\frac{${Wd.toFixed(3)}\\times ${Lcalc.toFixed(3)}}{6} = ${M_Ed.toFixed(3)}\\text{ кН·м}$$`
+```
+Кириллица внутри `\text{...}` работает (даёт неопасный warning в консоли
+`unicodeTextInMathMode`, не ошибку) — так и подписываются русские
+переменные/единицы измерения.
+
+**Известная ловушка:** символ «·» (точка умножения) **нельзя** ставить
+внутри `\text{...}` — KaTeX внутренне подменяет его на макрос `\cdotp`,
+который не разворачивается в текстовом режиме, и на странице печатается
+буквально `\cdotp` вместо точки. Если между двумя текстовыми частями
+(например, единицами кН и м) нужна точка — выносить её в математический
+режим отдельно:
+```js
+// неправильно:            \\text{ кН·м}
+// правильно:               \\text{ кН}{\\cdot}\\text{м}
+```
+
+Если на странице есть кнопка печати (`window.print()` в `#printArea`) —
+`renderMath()` нужно вызвать второй раз на `#printArea` после того, как
+туда скопирован `lastReportHTML`, иначе в напечатанной версии формулы
+останутся необработанным LaTeX-текстом.
