@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Перемычка из уголка — расчёт по EN 1993-1-1 — Электронный справочник конструктора</title>
+<title>Перемычка из пары уголков — расчёт по EN 1993-1-1 — Электронный справочник конструктора</title>
 <style>
   :root{
     --bg:#0f1117;
@@ -196,9 +196,10 @@
   <div id="site-header"></div>
 
   <div style="position:relative;">
-    <h1 style="text-align:center;">Перемычка из одиночного уголка</h1>
+    <h1 style="text-align:center;">Перемычка из пары уголков</h1>
     <button id="helpBtn" onclick="document.getElementById('helpModal').style.display='flex'" style="position:absolute;top:0;right:0;width:auto;margin:0;padding:6px 12px;font-size:12.5px;background:var(--panel2);color:var(--text);border:1px solid var(--border);">📖 Справка</button>
   </div>
+  <div class="sub" style="text-align:center;margin-top:-14px;">Два одинаковых уголка по обеим граням стены, горизонтальные полки навстречу друг другу — стянуты планками, работают совместно</div>
 
   <div class="card" id="inputsCard">
     <h2>Исходные данные</h2>
@@ -211,7 +212,7 @@
           </div>
           <div class="field">
             <label>Толщина стены/перегородки, t (мм)</label>
-            <input type="number" id="twall" value="120" min="50" max="142" step="10">
+            <input type="number" id="twall" value="250" min="65" max="510" step="10">
             <div class="hint" id="twallHint" style="display:none;"></div>
           </div>
         </div>
@@ -275,7 +276,7 @@
 
       <div id="ownSectionBlock">
         <div class="field">
-          <label>Тип уголка</label>
+          <label>Тип уголка (оба уголка пары — одинаковые)</label>
           <select id="angleType">
             <option value="equal">Уголок равнополочный, ГОСТ 8509-93</option>
             <option value="unequal-h">Уголок неравнополочный, ГОСТ 8510-86 (горизонтально)</option>
@@ -285,6 +286,11 @@
         <div class="field">
           <label>Уголок из сортамента</label>
           <select id="ownAngleSelect"></select>
+          <div class="hint">Выбор применяется сразу к обоим уголкам пары (симметричное сечение).</div>
+        </div>
+        <div class="field">
+          <label>Соединительные планки пары</label>
+          <div class="hint" id="battenInfo" style="color:var(--text);"></div>
         </div>
       </div>
     </details>
@@ -411,7 +417,7 @@
 <div id="site-footer"></div>
 
 <script>
-// === База уголков равнополочных ГОСТ 8509-93: [b мм, t мм, A см2, Iv(v-v) см4, Wmin(v-v) см3, масса кг/м] ===
+// === База уголков равнополочных ГОСТ 8509-93: [b мм, t мм, A см2, Iv(v-v) см4, Wmin(v-v) см3, масса кг/м] — свойства ОДНОГО уголка ===
 const ANGLES = [
   [50,5,4.80,4.63,2.30,3.77],[50,6,5.69,5.43,2.63,4.47],
   [56,5,5.41,6.59,2.97,4.25],
@@ -422,10 +428,16 @@ const ANGLES = [
   [90,6,10.61,33.97,9.88,8.33],[90,7,12.28,38.94,11.15,9.64],[90,8,13.93,43.80,12.34,10.93],[90,9,15.60,48.60,13.48,12.20],
   [100,7,13.75,54.16,14.13,10.79],[100,8,15.60,60.92,15.66,12.25],[100,10,19.24,74.08,18.51,15.10],[100,12,22.80,86.84,21.10,17.90],
   [110,7,15.15,72.68,17.36,11.89],[110,8,17.20,81.83,19.29,13.50],
-  [125,8,19.69,121.98,25.67,15.46],[125,9,22.00,135.88,28.26,17.30],[125,10,24.33,148.59,30.45,19.10],[125,12,28.89,174.43,34.94,22.68]
+  [125,8,19.69,121.98,25.67,15.46],[125,9,22.00,135.88,28.26,17.30],[125,10,24.33,148.59,30.45,19.10],[125,12,28.89,174.43,34.94,22.68],[125,14,33.37,199.62,39.10,26.20],[125,16,37.77,224.29,43.10,29.65],
+  [140,9,24.72,192.03,35.92,19.41],[140,10,27.33,210.96,39.05,21.45],[140,12,32.49,248.01,44.97,25.50],
+  [160,10,31.43,319.33,52.52,24.67],[160,11,34.42,347.77,56.53,27.02],[160,12,37.39,375.78,60.53,29.35],[160,14,43.57,430.81,68.15,34.20],[160,16,49.07,484.64,75.92,38.52],[160,18,54.79,537.46,82.08,43.01],[160,20,60.40,589.43,90.02,47.41],
+  [180,11,38.80,499.78,72.86,30.47],[180,12,42.19,540.45,78.15,33.12],
+  [200,12,47.10,749.40,98.68,36.97],[200,13,50.85,805.35,105.07,39.92],[200,14,54.60,861.00,111.50,42.80],[200,16,61.98,969.74,123.77,48.65],[200,20,76.54,1181.92,146.62,60.08],[200,25,94.29,1438.38,172.68,74.02],[200,30,111.54,1698.16,193.06,87.56],
+  [220,14,60.38,1158.56,138.62,47.40],[220,16,68.58,1305.52,153.34,53.83],
+  [250,16,78.40,1942.09,203.45,61.55],[250,18,87.72,2157.78,223.39,68.86],[250,20,96.96,2370.01,242.52,76.11],[250,22,106.12,2579.04,260.52,83.31],[250,25,119.71,2887.26,287.14,93.97],[250,28,133.12,3189.89,311.98,104.50],[250,30,141.96,3388.98,327.82,111.44],[250,35,163.71,3879.37,366.13,128.51]
 ];
 
-// === База уголков неравнополочных ГОСТ 8510-86: [B(больш.полка) мм, b(меньш.полка) мм, t мм, A см2, Iv(v-v) см4, Wmin(v-v) см3, масса кг/м] ===
+// === База уголков неравнополочных ГОСТ 8510-86: [B(больш.полка) мм, b(меньш.полка) мм, t мм, A см2, Iv(v-v) см4, Wmin(v-v) см3, масса кг/м] — свойства ОДНОГО уголка ===
 const UNEQUAL_ANGLES = [
   [56,36,4,3.58,2.19,1.13,2.81],[56,36,5,4.41,2.65,1.37,3.46],
   [63,40,4,4.04,3.07,1.41,3.17],[63,40,5,4.98,3.73,1.72,3.91],[63,40,6,5.90,4.36,2.02,4.63],[63,40,8,7.68,5.58,2.60,6.03],
@@ -447,20 +459,59 @@ const UNEQUAL_ANGLES = [
 
 // === Расчётная схема перемычки (статичная, не зависит от введённых данных) ===
 // Используется и в живом просмотре (#schemeImage), и в печатном отчёте (lastReportHTML).
-const SCHEME_SVG_HTML = `<img class="scheme-photo" src="Картинки/peremychka-scheme.png" alt="Расчётная схема перемычки: Lbear, Lпр, Lрасч и деталь опирания полки на кладку (свес ≤25 мм)">`;
+const SCHEME_SVG_HTML = `<img class="scheme-photo" src="Картинки/peremychka-scheme2.png" alt="Расчётная схема перемычки из пары уголков: Lbear, Lпр, Lрасч, соединительная планка и деталь сечения пары уголков">`;
 document.getElementById('schemeImage').innerHTML = SCHEME_SVG_HTML;
 
 document.getElementById('inputsCard').addEventListener('input', calc);
 document.getElementById('inputsCard').addEventListener('change', calc);
 
-// Ограничения по толщине стены: максимум — предел опирания для L 125 x 8,
-// минимум — зависит от типа раствора (тонкий шов = газоблок → 100мм, иначе кирпич/камень → 65мм)
-const WALL_MAX = 142; // мм, (b-t)+25 для L 125 x 8 = (125-8)+25
+// === Сохранение введённых данных между визитами (localStorage) ===
+const FORM_STORAGE_KEY = 'esk-peremychka-2ugolka-v1';
+const FORM_FIELD_IDS = [
+  'loadMode','hUnlim','fkDirect','unitType','mortarTypeSelect','angleType','steel','deflLimit',
+  'Lpr','twall','Hwall','qdManual','plasterThickness','plasterDensity',
+  'brickGrade','fbCustom','mortarGrade','fmCustom','Kfactor','alphaExp','betaExp','rhoCustomInMaterial',
+  'gammaM_masonry','fk','ownAngleSelect'
+];
+function saveFormState(){
+  try{
+    const state = {};
+    FORM_FIELD_IDS.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      state[id] = (el.type === 'checkbox') ? el.checked : el.value;
+    });
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+function loadFormState(){
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if(!raw) return;
+    const state = JSON.parse(raw);
+    FORM_FIELD_IDS.forEach(id=>{
+      if(!(id in state)) return;
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(el.type === 'checkbox') el.checked = state[id];
+      else el.value = state[id];
+      el.dispatchEvent(new Event('change', {bubbles:true}));
+    });
+  }catch(e){}
+}
+document.getElementById('inputsCard').addEventListener('input', saveFormState);
+document.getElementById('inputsCard').addEventListener('change', saveFormState);
+
+// Ограничения по толщине стены: минимум — зависит от типа раствора (тонкий шов = газоблок →
+// 100мм, иначе кирпич/камень → 65мм), максимум задан пользователем (510мм) — при большой толщине
+// стены проверка на коллизию уголков (2*(b-t) <= t_стены) может не выполняться ни одним профилем
+// из сортамента, тогда калькулятор покажет предупреждение, а не блокирует ввод.
+const WALL_MAX = 510; // мм
 function updateWallThicknessConstraints(){
   const twallInput = document.getElementById('twall');
   const loadMode = document.getElementById('loadMode').value;
-  let wallMin = 50; // по умолчанию (ручная нагрузка — материал не выбирается)
-  let hint = `Максимум ${WALL_MAX} мм — предел по опиранию для уголка L 125 x 8 (максимального в сортаменте).`;
+  let wallMin = 65; // по умолчанию (ручная нагрузка — материал не выбирается)
+  let hint = `Диапазон ${wallMin}…${WALL_MAX} мм.`;
 
   if(loadMode === 'triangular'){
     const unitVal = document.getElementById('unitType').value;
@@ -469,10 +520,10 @@ function updateWallThicknessConstraints(){
       : unitVal.split(',')[3];
     if(mtype === 'thin'){
       wallMin = 100; // газоблок на тонком шве: минимальная практическая толщина блока
-      hint = `Газоблок: минимум 100 мм, максимум ${WALL_MAX} мм (предел по L 125 x 8).`;
+      hint = `Газоблок: минимум 100 мм, максимум ${WALL_MAX} мм.`;
     } else {
       wallMin = 65; // кирпич/камень на растворе общего назначения: минимальная толщина перегородки
-      hint = `Кирпич/камень: минимум 65 мм, максимум ${WALL_MAX} мм (предел по L 125 x 8).`;
+      hint = `Кирпич/камень: минимум 65 мм, максимум ${WALL_MAX} мм.`;
     }
   }
 
@@ -608,7 +659,7 @@ applyUnitTypeSelection();
 updateFk();
 updateMortarVisibility();
 
-// Ширина проёма: только положительное число в диапазоне 300...2400 мм
+// Ширина проёма: только положительное число в диапазоне 300...4320 мм
 const LPR_MIN = 300, LPR_MAX = 4320;
 document.getElementById('Lpr').addEventListener('change', e=>{
   let v = parseFloat(e.target.value);
@@ -759,7 +810,8 @@ function calc(){
     qd = qd_t*9.81; // кН/м
   }
 
-  // функция расчёта усилий для заданной глубины опирания Lbear
+  // функция расчёта усилий для заданной глубины опирания Lbear (суммарная нагрузка от стены
+  // не зависит от числа уголков — та же кладка давит на ту же перемычку)
   function computeLoad(LbearTry){
     const Lcalc_mm = Lpr + 2*LbearTry;
     const Lcalc = Lcalc_mm/1000;
@@ -785,7 +837,7 @@ function calc(){
       V_Ed = Wd/2;
 
       loadSteps =
-`<p>Поскольку перекрытие не передаёт нагрузку на перегородку, расчёт выполнен только от собственного веса кладки в пределах расчётного клина согласно EN 1996-1-1. Кладка выше треугольника с углом распространения 60° (эквивалентно линиям под 30° к вертикали от краёв проёма) передаёт вес не на перемычку, а в стороны, на простенки за счёт естественного арочного эффекта — поэтому в расчёт идёт только объём кладки в пределах этого клина, а не весь массив до перекрытия.</p>
+`<p>Поскольку перекрытие не передаёт нагрузку на перегородку, расчёт выполнен только от собственного веса кладки в пределах расчётного клина согласно EN 1996-1-1. Кладка выше треугольника с углом распространения 60° (эквивалентно линиям под 30° к вертикали от краёв проёма) передаёт вес не на перемычку, а в стороны, на простенки за счёт естественного арочного эффекта — поэтому в расчёт идёт только объём кладки в пределах этого клина, а не весь массив до перекрытия. Полная нагрузка от кладки воспринимается парой уголков совместно (не делится по числу уголков).</p>
 <p><b>Высота клина</b> (арочный распор, ограничена L<sub>пр</sub>/2):</p>
 $$h = \\min(H;\\ L_{пр}/2) = ${h_calc_mm.toFixed(0)}\\text{ мм} = ${h_calc.toFixed(3)}\\text{ м}$$
 <p><b>Площадь клина:</b></p>
@@ -810,7 +862,7 @@ $$V_{Ed} = \\frac{G_d}{2} = ${V_Ed.toFixed(3)}\\text{ кН}$$`;
       V_Ed = qd*Lcalc/2;
 
       loadSteps =
-`<p><b>Расчётная равномерная нагрузка</b> (задана вручную):</p>
+`<p><b>Расчётная равномерная нагрузка</b> (задана вручную, воспринимается парой уголков совместно):</p>
 $$q_d = ${qd_t.toFixed(3)}\\text{ тс/м}\\times 9{,}81 = ${qd.toFixed(3)}\\text{ кН/м}$$
 <p><b>Изгибающий момент:</b></p>
 $$M_{Ed} = \\frac{q_d\\cdot L_{расч}^2}{8} = \\frac{${qd.toFixed(3)}\\times ${Lcalc.toFixed(3)}^2}{8} = ${M_Ed.toFixed(3)}\\text{ кН}{\\cdot}\\text{м}$$
@@ -821,7 +873,9 @@ $$V_{Ed} = \\frac{q_d\\cdot L_{расч}}{2} = ${V_Ed.toFixed(3)}\\text{ кН}$$
   }
 
   // 2. Автоподбор глубины опирания: начинаем с табличного минимума,
-  //    увеличиваем, пока не пройдёт проверка на смятие кладки под опорой (EN 1996, ориентировочно)
+  //    увеличиваем, пока не пройдёт проверка на смятие кладки под опорой (EN 1996, ориентировочно).
+  //    Площадь смятия не зависит от числа уголков — оба вместе перекрывают ту же толщину стены,
+  //    что и один уголок в одиночной схеме.
   const LBEAR_STEP = 5, LBEAR_MAX = 500;
   let Lbear = LbearMin;
   let bearingWarning = null;
@@ -841,26 +895,32 @@ $$V_{Ed} = \\frac{q_d\\cdot L_{расч}}{2} = ${V_Ed.toFixed(3)}\\text{ кН}$$
 
   const { Lcalc_mm, Lcalc, M_Ed, V_Ed, qPeak, h_calc_mm, loadSteps } = load;
 
-  // условие опирания кирпича: (bполки - tполки) - tстены >= -25, т.е. bполки - tполки >= tстены - 25
-  const flangeThreshold = twall - 25; // мм
-
   function evaluateAngle(b,t,A,Iv,Wmin,mass,dispLabel,legLarge,legSmall){
-    const sigma_Ed = 1000*M_Ed/Wmin;         // МПа
-    const M_Rd = Wmin*fy/1000/gammaM0;       // кН·м
+    // свойства ПАРЫ (2 одинаковых уголка, работают совместно, стянуты планками)
+    const A2 = 2*A, Iv2 = 2*Iv, Wmin2 = 2*Wmin, mass2 = 2*mass;
+
+    const sigma_Ed = 1000*M_Ed/Wmin2;         // МПа
+    const M_Rd = Wmin2*fy/1000/gammaM0;       // кН·м
     const util_bend = sigma_Ed/(fy/gammaM0);
-    const Av = t*b; // мм2, консервативно (§6.2.6(3))
+    const Av = 2*t*b; // мм2, консервативно (§6.2.6(3)) — сумма двух полок
     const V_Rd = Av*fy/(Math.sqrt(3)*gammaM0)/1000; // кН
     const util_shear = V_Ed/V_Rd;
-    // проверка смятия кладки под опорой (EN 1996-1-1 §6.1.3(3), β=1,0 консервативно)
+    // проверка смятия кладки под опорой (EN 1996-1-1 §6.1.3(3), β=1,0 консервативно) —
+    // площадь смятия та же, что у одиночного уголка (пара вместе перекрывает ту же толщину стены)
     const Ab = Lbear*twall; // мм2
     const fd = fk/gammaM_m;
     const N_Rd = Ab*fd/1000; // кН
     const N_Ed = V_Ed;
     const util_masonry = N_Ed/N_Rd;
 
-    // прогиб (упругий расчёт, E=210000 МПа для стали)
+    // проверка, что пара уголков помещается в толще стены: полки, направленные навстречу друг
+    // другу от разных граней, суммарно не должны превышать толщину стены (иначе полки столкнутся
+    // друг с другом в середине сечения)
+    const fitOK = 2*(b - t) <= twall;
+
+    // прогиб (упругий расчёт, E=210000 МПа для стали, момент инерции — суммарный по паре)
     const E = 210000; // МПа = Н/мм2
-    const I_mm4 = Iv*1e4; // см4 -> мм4
+    const I_mm4 = Iv2*1e4; // см4 -> мм4
     const L_mm = Lcalc_mm;
     const q_Nmm = qPeak; // кН/м численно равно Н/мм (1 кН/м = 1 Н/мм)
     const delta = (loadMode==='triangular')
@@ -871,9 +931,8 @@ $$V_{Ed} = \\frac{q_d\\cdot L_{расч}}{2} = ${V_Ed.toFixed(3)}\\text{ кН}$$
     const util_defl = delta/delta_limit;
     const passDefl = util_defl<=1;
 
-    const flangeOK = (b - t) >= flangeThreshold;
-
-    // местная устойчивость — EN 1993-1-1 Табл. 5.2, «Уголковые профили», Класс 3
+    // местная устойчивость — EN 1993-1-1 Табл. 5.2, «Уголковые профили», Класс 3 (свойства одного
+    // уголка сечения, не зависят от числа уголков в паре)
     const epsilon = Math.sqrt(235/fy);
     // критерий 1: свес полки (та же логика, что «Свесы полок») c/t ≤ 14ε
     const ct_ratio = b/t;
@@ -892,15 +951,16 @@ $$V_{Ed} = \\frac{q_d\\cdot L_{расч}}{2} = ${V_Ed.toFixed(3)}\\text{ кН}$$
     const passLocal = util_local<=1;
 
     const passBend = util_bend<=1, passShear = util_shear<=1, passMasonry = util_masonry<=1;
-    const passAll = passBend && passShear && passMasonry && passDefl && flangeOK;
+    const passAll = passBend && passShear && passMasonry && passDefl && fitOK;
     // passLocal не блокирует passAll: критерий (b+h)/2t≤11,5ε в Табл.5.2 рассчитан на равномерное
     // сжатие (уголок-стойка), для изгибаемого элемента это заведомо консервативно — оставлено
     // как информационный показатель, не как отсекающая проверка
 
-    return {b,t,A,Iv,Wmin,mass,sigma_Ed,M_Rd,util_bend,V_Rd,util_shear,N_Rd,util_masonry,
+    return {b,t,A:A2,Iv:Iv2,Wmin:Wmin2,mass:mass2,A1:A,Iv1:Iv,Wmin1:Wmin,mass1:mass,
+            sigma_Ed,M_Rd,util_bend,V_Rd,util_shear,N_Rd,util_masonry,fitOK,
             delta,delta_limit,util_defl,passDefl,
             epsilon,ct_ratio,ct_limit,util_local1,hLeg,bLeg,ht_ratio,ht_limit,bh_ratio,bh_limit,util_local2,util_local,passLocal,
-            flangeOK,passBend,passShear,passMasonry,passAll,
+            passBend,passShear,passMasonry,passAll,
             dispLabel: dispLabel || `${b} x ${t}`};
   }
 
@@ -944,8 +1004,8 @@ $$L_{bear} = ${Lbear}\\text{ мм}${Lbear>LbearMin?'\\ \\text{(увеличен 
 <p><b>Расчётный пролёт:</b></p>
 $$L_{расч} = L_{пр} + 2L_{bear} = ${Lpr} + 2\\times ${Lbear} = ${Lcalc_mm.toFixed(0)}\\text{ мм}$$
 ${loadSteps}
-<p><b>Условие опирания кирпича на полку</b> (свес ≤ 25 мм):</p>
-$$b_{полки} - t_{полки} \\ge t_{стены}-25 = ${twall}-25 = ${flangeThreshold}\\text{ мм}$$`;
+<p><b>Проверка на коллизию уголков</b> (не сталкиваются ли полки пары, направленные навстречу друг другу от разных граней стены):</p>
+$$2\\,(b_{полки} - t_{полки}) \\le t_{стены} = ${twall}\\text{ мм}$$`;
 
   const angleTypeVal = document.getElementById('angleType').value;
   const isUnequalAngle = angleTypeVal.startsWith('unequal');
@@ -962,10 +1022,24 @@ $$b_{полки} - t_{полки} \\ge t_{стены}-25 = ${twall}-25 = ${flang
   }
 
   const picked = pickAngle();
-  const schemeAngleLabel = `L ${picked.dispLabel}`;
+  const schemeAngleLabel = `2L ${picked.dispLabel}`;
 
   const steelShortLabel = 'S' + fy;
   document.getElementById('lintelSummary').textContent = `${steelShortLabel} · ${schemeAngleLabel}`;
+
+  // Соединительные планки пары (без длины — она зависит от толщины стены, показана в шагах расчёта):
+  // шаг — по аналогии с гибкостью одной ветви между планками λ1=a/iv≤40 (EN 1993-1-1 §6.4.3(4) /
+  // SP 16.13330 п.7.2.7, для сжатых составных стержней — здесь применено как консервативная оценка
+  // против кручения); сечение — конструктивный минимум, не расчётное: раскрепляющее усилие (~2,5%
+  // от условного усилия в поясе) во всём диапазоне калькулятора на 1-2 порядка меньше несущей
+  // способности такой планки, поэтому усилие отдельно не подбирается.
+  const PLATE_THK_STEPS = [6,8,10,12,14,16,20,25,30,35,40];
+  const battenIv_mm = Math.sqrt(picked.Iv1/picked.A1)*10; // радиус инерции одного уголка iv, см -> мм
+  const battenStep_mm = Math.floor(40*battenIv_mm/10)*10; // шаг планок, округлён вниз до 10 мм
+  const battenThk_mm = PLATE_THK_STEPS.find(v=>v>=Math.max(6,picked.t)) || PLATE_THK_STEPS[PLATE_THK_STEPS.length-1];
+  const battenWidth_mm = 80;
+  document.getElementById('battenInfo').textContent =
+    `Шаг a ≤ ${battenStep_mm} мм (не менее 2 планок на пролёт — у опор и в середине) · сечение ${battenThk_mm}×${battenWidth_mm} мм (конструктивный минимум)`;
 
   let html = `<div class="card"><details><summary style="font-size:13px;font-weight:600;"><span class="details-arrow">▶</span>Промежуточные шаги</summary><div class="steps" style="margin-top:10px;">${steps}</div></details></div>`;
 
@@ -976,8 +1050,8 @@ $$b_{полки} - t_{полки} \\ge t_{стены}-25 = ${twall}-25 = ${flang
   // === Проверка заданного пользователем сечения ===
   let resultBlockHtml = renderResult(picked, Lcalc_mm);
   const reportAngle = picked;
-  if(!picked.flangeOK){
-    resultBlockHtml += `<div class="card"><div class="warn-box">Свес кирпича за кромку полки превышает 25 мм — условие опирания не выполняется: (bполки − tполки) должна быть не менее ${flangeThreshold} мм.</div></div>`;
+  if(!picked.fitOK){
+    resultBlockHtml += `<div class="card"><div class="warn-box">Коллизия уголков — полки пары столкнутся друг с другом в толще стены: 2×(bполки − tполки) должна быть не более ${twall} мм.</div></div>`;
   }
 
   html += resultBlockHtml;
@@ -989,7 +1063,7 @@ $$b_{полки} - t_{полки} \\ge t_{стены}-25 = ${twall}-25 = ${flang
 
   // --- Раздел "Исходные данные" ---
   const profileLabel = reportAngle
-    ? `L ${reportAngle.dispLabel}${reportAngle.isCustom ? '' : (reportAngle.dispLabel.split(' x ').length===3 ? ' (ГОСТ 8510-86)' : ' (ГОСТ 8509-93)')}`
+    ? `2L ${reportAngle.dispLabel}${reportAngle.isCustom ? '' : (reportAngle.dispLabel.split(' x ').length===3 ? ' (ГОСТ 8510-86)' : ' (ГОСТ 8509-93)')}`
     : '—';
   const gostLabel = reportAngle && !reportAngle.isCustom
     ? (reportAngle.dispLabel.split(' x ').length===3 ? 'ГОСТ 8510-86' : 'ГОСТ 8509-93')
@@ -1000,12 +1074,14 @@ $$b_{полки} - t_{полки} \\ge t_{стены}-25 = ${twall}-25 = ${flang
   const fkFormulaNote = document.getElementById('fkDirect').checked ? '' : (document.getElementById('mortarTypeSelect').value==='thin'
     ? `Формула fk (EN 1996-1-1 §3.6.1.2, формула 3.3, раствор тонкого слоя): fk = K·fb^α = ${document.getElementById('Kfactor').value}·fb^${document.getElementById('alphaExp').value} = ${fk} МПа`
     : `Формула fk (EN 1996-1-1 §3.6.1.2, формула 3.2, раствор общего назначения): fk = K·fb^α·fm^β = ${document.getElementById('Kfactor').value}·fb^${document.getElementById('alphaExp').value}·fm^${document.getElementById('betaExp').value} = ${fk} МПа`);
+  const battenNote = `Планки: шаг — по аналогии с λ1=a/iv≤40 для составных стержней на планках (EN 1993-1-1 §6.4.3(4) / SP 16.13330 п.7.2.7); сечение — конструктивный минимум: раскрепляющее усилие (~2,5% от условного усилия в поясе) на 1-2 порядка меньше несущей способности такой планки во всём диапазоне калькулятора, поэтому отдельно не подбиралось.`;
 
   const inputRows = [
     ['Нормы', 'EN 1993-1-1 (СП РК EN 1993-1-1:2005/2011) — сталь; EN 1996-1-1 (СП РК EN 1996-1-1:2005/2011) — кладка'],
     ['Сталь', steelLabel],
     ['Профиль', profileLabel],
-    ['Количество уголков', '1 шт.'],
+    ['Количество уголков', '2 шт. (симметричная пара по обеим граням стены, полки навстречу друг другу, стянуты планками)'],
+    ['Соединительные планки пары', `шаг a ≤ ${battenStep_mm} мм, сечение ${battenThk_mm}×${battenWidth_mm} мм`],
     ['Пролёт в свету, Lпр', `${Lpr} мм`],
     ['Опирание, Lbear', `${Lbear} мм${Lbear>LbearMin?' (увеличено относительно табличного минимума '+LbearMin+' мм — по проверке смятия кладки)':''}`],
     ['Расчётный пролёт', `Lрасч = Lпр + 2·Lbear = ${Lpr} + 2·${Lbear} = ${Lcalc_mm.toFixed(0)} мм = ${Lcalc.toFixed(2)} м`],
@@ -1013,7 +1089,7 @@ $$b_{полки} - t_{полки} \\ge t_{стены}-25 = ${twall}-25 = ${flang
     ['Способ определения нагрузки', loadMode==='triangular' ? 'от собственного веса треугольного клина кладки (арочный распор, перекрытие на перегородку не опирается)' : 'задана вручную (равномерная)'],
     ['Кладка (для проверки смятия)', masonryValue],
   ];
-  const inputNotes = [fkFormulaNote].filter(Boolean);
+  const inputNotes = [battenNote, fkFormulaNote].filter(Boolean);
   const inputSummaryHtml = `<table class="summary-table" style="font-size:13px;">
     <tr><th>Параметр</th><th>Значение</th></tr>
     ${inputRows.map(([k,v])=>`<tr><td><b>${k}</b></td><td>${v}</td></tr>`).join('')}
@@ -1029,30 +1105,30 @@ $$b_{полки} - t_{полки} \\ge t_{стены}-25 = ${twall}-25 = ${flang
   if(reportAngle){
     const r = reportAngle;
     checkSectionHtml =
-`<p><b>Площадь сечения:</b></p>
-$$A = ${r.A.toFixed(2)}\\text{ см}^2$$
-<p><b>Момент сопротивления</b> (ось v-v, минимальный):</p>
-$$W_{min} = ${r.Wmin.toFixed(2)}\\text{ см}^3$$
-<p><b>Момент инерции</b> (ось v-v, минимальный):</p>
-$$I_{min} = ${r.Iv.toFixed(2)}\\text{ см}^4$$
-<p><b>Несущая способность по изгибу</b> (EN 1993-1-1 §6.2.5):</p>
+`<p><b>Площадь сечения одного уголка / пары (2 шт.):</b></p>
+$$A_1 = ${r.A1.toFixed(2)}\\text{ см}^2 \\quad\\Rightarrow\\quad A = 2A_1 = ${r.A.toFixed(2)}\\text{ см}^2$$
+<p><b>Момент сопротивления</b> (ось v-v, минимальный, одного уголка / пары):</p>
+$$W_{min,1} = ${r.Wmin1.toFixed(2)}\\text{ см}^3 \\quad\\Rightarrow\\quad W_{min} = 2W_{min,1} = ${r.Wmin.toFixed(2)}\\text{ см}^3$$
+<p><b>Момент инерции</b> (ось v-v, минимальный, одного уголка / пары):</p>
+$$I_{v,1} = ${r.Iv1.toFixed(2)}\\text{ см}^4 \\quad\\Rightarrow\\quad I_v = 2I_{v,1} = ${r.Iv.toFixed(2)}\\text{ см}^4$$
+<p><b>Несущая способность по изгибу</b> (EN 1993-1-1 §6.2.5, по суммарному W<sub>min</sub> пары):</p>
 $$M_{c,Rd} = \\frac{W_{min}\\cdot f_y}{\\gamma_{M0}} = \\frac{${r.Wmin.toFixed(2)}\\times ${fy}}{1000\\times 1{,}0} = ${r.M_Rd.toFixed(3)}\\text{ кН}{\\cdot}\\text{м}$$
 <p><b>Напряжение от изгиба:</b></p>
 $$\\sigma_{Ed} = \\frac{1000\\cdot M_{Ed}}{W_{min}} = \\frac{1000\\times ${M_Ed.toFixed(3)}}{${r.Wmin.toFixed(2)}} = ${r.sigma_Ed.toFixed(1)}\\text{ МПа}$$
 <p><b>Коэффициент использования</b> (изгиб):</p>
 $$\\eta = \\frac{M_{Ed}}{M_{c,Rd}} = \\frac{${M_Ed.toFixed(3)}}{${r.M_Rd.toFixed(3)}} = ${r.util_bend.toFixed(3)} \\ \\rightarrow\\ \\mathbf{${(r.util_bend*100).toFixed(1)}\\%}$$
-<p><b>Несущая способность по сдвигу</b> (EN 1993-1-1 §6.2.6):</p>
+<p><b>Несущая способность по сдвигу</b> (EN 1993-1-1 §6.2.6, суммарно по двум полкам):</p>
 $$V_{c,Rd} = ${r.V_Rd.toFixed(2)}\\text{ кН} \\quad \\text{использование} = ${(r.util_shear*100).toFixed(1)}\\%$$
-<p><b>Проверка прогиба</b> (EN 1993-1-1 §7.2.1, предел L/${document.getElementById('deflLimit').value} принят проектом):</p>
+<p><b>Проверка прогиба</b> (EN 1993-1-1 §7.2.1, предел L/${document.getElementById('deflLimit').value} принят проектом, по суммарному I<sub>v</sub> пары):</p>
 $$\\delta_{Ed} = ${r.delta.toFixed(2)}\\text{ мм} \\le \\delta_{lim} = ${r.delta_limit.toFixed(2)}\\text{ мм} \\ \\rightarrow\\ \\text{использование } ${(r.util_defl*100).toFixed(1)}\\%$$
-<p><b>Проверка смятия кладки под опорой</b> (EN 1996-1-1 §6.1.3(3)):</p>
+<p><b>Проверка смятия кладки под опорой</b> (EN 1996-1-1 §6.1.3(3), площадь смятия не зависит от числа уголков — пара перекрывает ту же толщину стены, что и один уголок в одиночной схеме):</p>
 $$N_{Ed} = V_{Ed} = ${V_Ed.toFixed(3)}\\text{ кН} \\le N_{Rd} = A_b\\cdot f_d = ${r.N_Rd.toFixed(2)}\\text{ кН} \\ \\rightarrow\\ \\text{использование } ${(r.util_masonry*100).toFixed(1)}\\%$$
-<p><b>Опирание кирпича на полку</b> (свес ≤ 25 мм): ${r.flangeOK ? 'выполняется' : 'НЕ выполняется'}</p>`;
+<p><b>Проверка на коллизию уголков</b> (2×(bполки − tполки) ≤ tстены): ${r.fitOK ? 'проходит' : 'НЕ проходит'}</p>`;
 
     const maxUtil = Math.max(r.util_bend, r.util_shear, r.util_defl, r.util_masonry);
     const reserve = maxUtil>0 ? (1/maxUtil).toFixed(1) : '—';
     conclusionHtml =
-`<p>Стальная перемычка из одного уголка <b>${profileLabel}</b> из стали <b>${steelLabel}</b> при пролёте в свету ${Lpr} мм и глубине опирания ${Lbear} мм ${r.passAll ? '<b>удовлетворяет</b>' : '<b>НЕ удовлетворяет</b>'} требованиям EN 1993-1-1 и EN 1996-1-1 по:</p>
+`<p>Стальная перемычка из пары уголков <b>${profileLabel}</b> из стали <b>${steelLabel}</b> при пролёте в свету ${Lpr} мм и глубине опирания ${Lbear} мм ${r.passAll ? '<b>удовлетворяет</b>' : '<b>НЕ удовлетворяет</b>'} требованиям EN 1993-1-1 и EN 1996-1-1 по:</p>
 <ul>
 <li>прочности (изгиб, сдвиг);</li>
 <li>жёсткости (прогиб);</li>
@@ -1069,7 +1145,7 @@ $$N_{Ed} = V_{Ed} = ${V_Ed.toFixed(3)}\\text{ кН} \\le N_{Rd} = A_b\\cdot f_d 
     var summaryTableHtml = `<table class="summary-table">
       <tr><th>Проверка</th><th>Использование</th></tr>
       ${summaryRows.map(([name,u])=>`<tr><td>${name}</td><td class="${u<=1?'v-ok':'v-fail'}">${(u*100).toFixed(0)}% ${u<=1?'🟢':'🔴'}</td></tr>`).join('')}
-      <tr><td>Опирание кирпича на полку</td><td class="${r.flangeOK?'v-ok':'v-fail'}">${r.flangeOK?'ПРОХОДИТ 🟢':'НЕ ПРОХОДИТ 🔴'}</td></tr>
+      <tr><td>Коллизия уголков</td><td class="${r.fitOK?'v-ok':'v-fail'}">${r.fitOK?'ПРОХОДИТ 🟢':'НЕ ПРОХОДИТ 🔴'}</td></tr>
     </table>`;
     var verdictHtml = r.passAll
       ? `<div class="verdict-banner verdict-ok">✓ Конструкция удовлетворяет требованиям EN&nbsp;1993-1-1 и EN&nbsp;1996-1-1</div>`
@@ -1079,11 +1155,11 @@ $$N_{Ed} = V_{Ed} = ${V_Ed.toFixed(3)}\\text{ кН} \\le N_{Rd} = A_b\\cdot f_d 
     var verdictHtml = `<div class="verdict-banner verdict-fail">✗ Сечение не подобрано — проверка не выполнена</div>`;
   }
 
-  const angleKindLabel = isUnequalAngle ? 'НЕРАВНОПОЛОЧНОГО' : 'РАВНОПОЛОЧНОГО';
+  const angleKindLabel = isUnequalAngle ? 'НЕРАВНОПОЛОЧНЫХ' : 'РАВНОПОЛОЧНЫХ';
 
   lastReportHTML = `
     <div class="print-header">
-      <h1>РАСЧЁТ СТАЛЬНОЙ ПЕРЕМЫЧКИ ИЗ ${angleKindLabel} УГОЛКА</h1>
+      <h1>РАСЧЁТ СТАЛЬНОЙ ПЕРЕМЫЧКИ ИЗ ПАРЫ ${angleKindLabel} УГОЛКОВ</h1>
       <div class="print-subtitle">По EN 1993-1-1 и EN 1996-1-1</div>
       <div class="print-date">составлено ${new Date().toLocaleDateString('ru-RU')}</div>
     </div>
@@ -1141,26 +1217,27 @@ function renderResult(r, Lcalc_mm){
   const dispParts = r.dispLabel.split(' x ');
   const isUnequalDisp = dispParts.length === 3;
   const gostRef = r.isCustom ? '' : (isUnequalDisp ? 'ГОСТ 8510-86' : 'ГОСТ 8509-93');
-  const typeLabel = r.isCustom ? 'Заданное сечение' : (isUnequalDisp ? 'Неравнополочный уголок' : 'Равнополочный уголок');
+  const typeLabel = r.isCustom ? 'Заданное сечение' : (isUnequalDisp ? 'Пара неравнополочных уголков' : 'Пара равнополочных уголков');
   return `<div class="card">
     <div class="results-header">
       <h2 style="margin:0;">Результаты расчёта</h2>
       <button class="print-btn" onclick="printReport()">🖨️ Печать</button>
     </div>
     <div class="result-card">
-      <div class="result-title">L ${r.dispLabel}${gostRef?' '+gostRef:''}, L=${Lcalc_mm.toFixed(0)}мм, m=${totalMass.toFixed(2)}кг</div>
-      <div class="result-sub">${typeLabel} · ${r.mass.toFixed(2)} кг/м</div>
+      <div class="result-title">2L ${r.dispLabel}${gostRef?' '+gostRef:''}, L=${Lcalc_mm.toFixed(0)}мм, m=${totalMass.toFixed(2)}кг</div>
+      <div class="result-sub">${typeLabel} (2 шт.) · ${r.mass.toFixed(2)} кг/м суммарно</div>
       <div class="checks">
         ${gaugeRow('Изгиб — EN 1993-1-1 §6.2.5', r.util_bend)}
         ${gaugeRow('Сдвиг — EN 1993-1-1 §6.2.6', r.util_shear)}
         ${gaugeRow(`Прогиб — EN 1993-1-1 §7.2.1 (предел L/${document.getElementById('deflLimit').value} принят проектом)`, r.util_defl)}
         ${gaugeRow('Смятие кладки — EN 1996-1-1 §6.1.3(3)', r.util_masonry)}
-        <div class="check-row" style="display:flex;justify-content:space-between;align-items:center;">Опирание кирпича на полку (свес ≤ 25 мм, конструктивное требование)<span class="badge ${r.flangeOK?'ok':'fail'}">${r.flangeOK?'ОК':'НЕ ПРОХОДИТ'}</span></div>
+        <div class="check-row" style="display:flex;justify-content:space-between;align-items:center;gap:10px;">Проверка на коллизию уголков (не сталкиваются ли полки пары в толще стены)<span class="badge ${r.fitOK?'ok':'fail'}">${r.fitOK?'ПРОХОДИТ':'НЕ ПРОХОДИТ'}</span></div>
       </div>
     </div>
   </div>`;
 }
 
+loadFormState();
 calc();
 </script>
 <div id="helpModal" onclick="if(event.target===this) this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:20px;">
@@ -1171,18 +1248,25 @@ calc();
     </div>
 
     <div class="steps" style="font-family:inherit;font-size:13px;line-height:1.7;">
+      <b style="color:var(--accent2);">Конструктивная схема</b><br>
+      • Два одинаковых уголка расположены по обеим граням стены/перегородки — один у наружной, второй у внутренней грани<br>
+      • Горизонтальные полки направлены навстречу друг другу (от своей грани к центру) и вместе перекрывают толщину стены — кирпич опирается на обе полки<br>
+      • Уголки стянуты соединительными планками/прихватками по длине и работают совместно как единое сечение (суммарные W<sub>min</sub> и I<sub>v</sub> = 2× одного уголка)<br><br>
+
       <b style="color:var(--accent2);">Геометрия проёма и опирания</b><br>
       • Ширина проёма в свету L<sub>пр</sub>: 300…4320 мм<br>
-      • Толщина стены/перегородки: 65…142 мм (кирпич/камень) или 100…142 мм (газоблок) — верхний предел задан опиранием на L 125 x 8, максимальный профиль в сортаменте<br>
+      • Толщина стены/перегородки: 65…510 мм (кирпич/камень) или 100…510 мм (газоблок)<br>
       • Глубина опирания: табличный минимум 100/150/200 мм (по ширине проёма), автоматически увеличивается при недостаточной несущей способности кладки под опорой<br><br>
 
       <b style="color:var(--accent2);">Профиль перемычки</b><br>
-      • Только <b>одиночный</b> равнополочный уголок, ГОСТ 8509-93, диапазон L 50 x 5…L 125 x 12<br>
+      • Пара одинаковых равнополочных уголков, ГОСТ 8509-93, диапазон 2×(L 50 x 5…L 250 x 35) — либо пара неравнополочных, ГОСТ 8510-86, диапазон 2×(L 56×36×4…L 200×125×16)<br>
       • Сталь S235 / S275 / S355<br>
-      • Парные уголки, швеллеры и другие профили — не рассчитываются<br><br>
+      • Уголки разного размера в одной паре, а также одиночный уголок, швеллеры и другие профили — не рассчитываются (для одиночного уголка — отдельный калькулятор)<br>
+      • Проверка на коллизию уголков: полки пары (навстречу друг другу от разных граней стены) не должны сталкиваться друг с другом в толще стены — 2×(bполки − tполки) ≤ tстены<br><br>
 
       <b style="color:var(--accent2);">Нагрузка</b><br>
       • Учитывается только собственный вес кладки (треугольная эпюра, арочный распор) — <b>или</b> нагрузка, заданная вручную равномерной<br>
+      • Полная нагрузка от кладки/задана вручную воспринимается парой уголков совместно, не делится по числу уголков — так как площадь треугольного клина зависит только от геометрии проёма и стены<br>
       • Нагрузка от перекрытия, стяжки, отделки и т.п. — не учитывается автоматически (можно задать вручную через режим «равномерная нагрузка», уже включив в неё всё нужное)<br>
       • Высота треугольного клина кладки ограничена L<sub>пр</sub>/2 (упрощённая модель арочного распора)<br><br>
 
@@ -1196,11 +1280,12 @@ calc();
       • Коэффициент формы кирпича δ (EN 772-1) — марка камня принимается уже как нормализованная прочность, без поправки на реальные пропорции конкретного кирпича<br>
       • Группа камня (1/2/3/4) определяется по названию в списке, а не по фактической пустотности и размеру пустот — при нестандартной перфорации сверяйте по факту применяемого материала<br>
       • Повышающий коэффициент β при смятии кладки под опорой (EN 1996 §6.1.3(2), для группы 1) — не применяется, расчёт всегда идёт по консервативному варианту §6.1.3(3), без учёта эффективной длины распределения нагрузки<br>
-      • Двухосный (косой) изгиб уголка — учтён консервативно через W<sub>min</sub> (ось v-v), без точного разложения по осям u-u/v-v<br>
+      • Совместная работа пары уголков принята идеальной (простое суммирование W<sub>min</sub> и I<sub>v</sub>) — фактическая жёсткость соединительных планок, их шаг и деформативность связей не моделируются<br>
+      • Двухосный (косой) изгиб уголка — учтён консервативно через W<sub>min</sub> (ось v-v) каждого уголка, без точного разложения по осям u-u/v-v<br>
       • Сейсмические, ударные и особые (аварийные) воздействия — не учитываются<br>
       • Предельный прогиб — не задан Еврокодом жёстко (EN 1993-1-1 §7.2.1 отсылает к проекту), выбирается пользователем<br><br>
 
-      <b style="color:var(--muted);">Если условия объекта выходят за эти рамки — расчёт носит ориентировочный характер, требуется проверка вручную или по другому профилю (парный уголок, швеллер и т.п.).</b>
+      <b style="color:var(--muted);">Если условия объекта выходят за эти рамки — расчёт носит ориентировочный характер, требуется проверка вручную или по другому профилю (одиночный уголок, швеллер и т.п.).</b>
     </div>
   </div>
 </div>
