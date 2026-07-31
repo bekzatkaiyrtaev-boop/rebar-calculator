@@ -655,7 +655,37 @@ function showTab(id) {
   event.target.classList.add('active');
 }
 
+// === Сохранение введённых данных между визитами (localStorage) ===
+const FORM_STORAGE_KEY = 'esk-zashitny-sloy-v1';
+const FORM_FIELD_IDS = ['diameter','sclass','xclass','cdev'];
+function saveFormState(){
+  try{
+    const state = {};
+    FORM_FIELD_IDS.forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) state[id] = el.value;
+    });
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+function loadFormState(){
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if(!raw) return;
+    const state = JSON.parse(raw);
+    FORM_FIELD_IDS.forEach(id=>{
+      if(!(id in state)) return;
+      const el = document.getElementById(id);
+      if(el) el.value = state[id];
+    });
+  }catch(e){}
+}
+FORM_FIELD_IDS.forEach(id=>{
+  document.getElementById(id).addEventListener('change', saveFormState);
+});
+
 // ── Первый расчёт при загрузке ──
+loadFormState();
 calc();
 </script>
 

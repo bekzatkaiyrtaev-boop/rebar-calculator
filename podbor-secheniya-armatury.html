@@ -258,6 +258,33 @@ table.ref thead th {
   let asRowIdCounter = 1;
   let asGroupIdCounter = 1;
 
+  // === Сохранение введённых строк между визитами (localStorage) ===
+  // Состояние живёт в замыканиях addAsRow(), общего объекта нет — при сохранении читаем
+  // текущие значения прямо из DOM (инпуты/селекты и так полностью отражают состояние строк).
+  const AS_STORAGE_KEY = 'esk-podbor-secheniya-armatury-v1';
+  function saveAsRowsState() {
+    try {
+      const data = Array.from(asRowsBody.querySelectorAll('tr')).map((tr) => ({
+        required: tr.querySelector('.row-required').value,
+        groups: Array.from(tr.querySelectorAll('.group-item')).map((g) => ({
+          count: g.querySelector('.group-count').value,
+          diameter: Number(g.querySelector('.group-diameter').value),
+        })),
+      }));
+      localStorage.setItem(AS_STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {}
+  }
+  function loadAsRowsState() {
+    try {
+      const raw = localStorage.getItem(AS_STORAGE_KEY);
+      if (!raw) return false;
+      const saved = JSON.parse(raw);
+      if (!Array.isArray(saved) || saved.length === 0) return false;
+      saved.forEach((r) => addAsRow({ required: r.required, groups: r.groups }));
+      return true;
+    } catch (e) { return false; }
+  }
+
   // Подбирает минимальный диаметр, при котором count стержней перекрывают requiredCm2.
   function pickDiameter(requiredCm2, count) {
     if (count <= 0) return SORTAMENT[0][0];
@@ -269,12 +296,18 @@ table.ref thead th {
   function addAsRow(initial) {
     const id = asRowIdCounter++;
     const required = initial && initial.required !== undefined ? initial.required : 10;
-    const firstCount = initial && initial.count !== undefined ? initial.count : 5;
-    const firstDiameter = initial && initial.diameter !== undefined ? initial.diameter : pickDiameter(required, firstCount);
+    let groupsInit;
+    if (initial && Array.isArray(initial.groups) && initial.groups.length > 0) {
+      groupsInit = initial.groups.map((g) => ({ id: asGroupIdCounter++, count: g.count, diameter: g.diameter }));
+    } else {
+      const firstCount = initial && initial.count !== undefined ? initial.count : 5;
+      const firstDiameter = initial && initial.diameter !== undefined ? initial.diameter : pickDiameter(required, firstCount);
+      groupsInit = [{ id: asGroupIdCounter++, count: firstCount, diameter: firstDiameter }];
+    }
 
     const row = {
       id,
-      groups: [{ id: asGroupIdCounter++, count: firstCount, diameter: firstDiameter }],
+      groups: groupsInit,
     };
 
     const tr = document.createElement('tr');
@@ -376,6 +409,7 @@ table.ref thead th {
       elActual.textContent = totalCm2.toFixed(2);
       elActual.style.color = color;
       elActual.style.fontWeight = '700';
+      saveAsRowsState();
     }
 
     elRequired.addEventListener('input', () => {
@@ -394,7 +428,7 @@ table.ref thead th {
       render();
     });
 
-    tr.querySelector('.row-remove').addEventListener('click', () => tr.remove());
+    tr.querySelector('.row-remove').addEventListener('click', () => { tr.remove(); saveAsRowsState(); });
 
     renderGroups();
     render();
@@ -402,7 +436,7 @@ table.ref thead th {
 
   document.getElementById('as-add-row').addEventListener('click', () => addAsRow());
 
-  addAsRow();
+  if (!loadAsRowsState()) addAsRow();
 
 })();
 </script>

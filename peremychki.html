@@ -513,13 +513,53 @@ td.cell-empty {
     if (!cell) return;
     const row = cell.closest('tr');
     showDetails(row.dataset.vypusk, cell.dataset.width);
+    saveFormState();
   });
+
+  // === Сохранение введённых данных между визитами (localStorage) ===
+  const FORM_STORAGE_KEY = 'esk-peremychki-v1';
+  const FORM_FIELD_IDS = ['opening-width', 'load-value', 'brick-type'];
+  function saveFormState() {
+    try {
+      const state = {};
+      FORM_FIELD_IDS.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) state[id] = el.value;
+      });
+      const selectedCell = matrixBody.querySelector('td.cell-selected');
+      if (selectedCell) {
+        state.selVypusk = selectedCell.closest('tr').dataset.vypusk;
+        state.selWidth = selectedCell.dataset.width;
+      }
+      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {}
+  }
+  function loadFormState() {
+    try {
+      const raw = localStorage.getItem(FORM_STORAGE_KEY);
+      if (!raw) return null;
+      const state = JSON.parse(raw);
+      FORM_FIELD_IDS.forEach((id) => {
+        if (!(id in state)) return;
+        const el = document.getElementById(id);
+        if (el) el.value = state[id];
+      });
+      return state.selVypusk && state.selWidth ? { vypusk: state.selVypusk, width: state.selWidth } : null;
+    } catch (e) { return null; }
+  }
 
   async function init() {
     buildRows();
+    const savedSelection = loadFormState();
     try {
       await loadPeremychkiData();
       recalc();
+      if (savedSelection) {
+        const cell = matrixBody.querySelector(
+          `tr[data-vypusk="${savedSelection.vypusk}"] td[data-width="${savedSelection.width}"]`
+        );
+        if (cell && cell.classList.contains('cell-hit')) showDetails(savedSelection.vypusk, savedSelection.width);
+      }
     } catch (err) {
       formError.textContent = 'Не удалось загрузить данные серии 1.038.1-1. Проверьте соединение или обратитесь к администратору справочника.';
       formError.hidden = false;
@@ -527,9 +567,9 @@ td.cell-empty {
     }
   }
 
-  openingInput.addEventListener('input', recalc);
-  loadInput.addEventListener('input', recalc);
-  brickTypeSelect.addEventListener('change', recalc);
+  openingInput.addEventListener('input', () => { recalc(); saveFormState(); });
+  loadInput.addEventListener('input', () => { recalc(); saveFormState(); });
+  brickTypeSelect.addEventListener('change', () => { recalc(); saveFormState(); });
 
   init();
 

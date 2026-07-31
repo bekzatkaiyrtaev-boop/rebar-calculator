@@ -368,7 +368,26 @@ table.ref tbody tr:nth-child(even) { background: var(--bg-elevated-2); }
       .join('');
 
     densityNote.textContent = `Значения массы приведены с учётом изготовления блоков из ${density}.`;
+    saveFbsState();
   }
+
+  // === Сохранение выбранной вкладки и фильтров между визитами (localStorage) ===
+  const FBS_STORAGE_KEY = 'esk-fbs-13579-2018-v1';
+  function saveFbsState() {
+    try {
+      localStorage.setItem(FBS_STORAGE_KEY, JSON.stringify({
+        tab: currentTab, length: filterLength.value, width: filterWidth.value, height: filterHeight.value
+      }));
+    } catch (e) {}
+  }
+  // Снимок делаем ДО первого render() — иначе он же перезапишет localStorage дефолтом
+  // раньше, чем мы успеем восстановить исходные значения (см. plity-rebristye.html).
+  const FBS_SAVED_STATE = (function () {
+    try {
+      const raw = localStorage.getItem(FBS_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  })();
 
   document.querySelectorAll('.tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -383,7 +402,16 @@ table.ref tbody tr:nth-child(even) { background: var(--bg-elevated-2); }
   });
 
   populateFilters();
-  render('t');
+  if (FBS_SAVED_STATE) {
+    filterLength.value = FBS_SAVED_STATE.length || '';
+    filterWidth.value = FBS_SAVED_STATE.width || '';
+    filterHeight.value = FBS_SAVED_STATE.height || '';
+    const tab = FBS_SAVED_STATE.tab || 't';
+    document.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+    render(tab);
+  } else {
+    render('t');
+  }
 
 })();
 </script>

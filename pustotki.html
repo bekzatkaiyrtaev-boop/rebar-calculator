@@ -642,10 +642,48 @@ function initPustotki(SERIES_FULLNAME) {
     container.innerHTML = svg;
   }
 
+  // === Сохранение выбранных вариантов между визитами (localStorage) ===
+  var PUSTOTKI_STORAGE_KEY = 'esk-pustotki-v1';
+  function savePustotkiState() {
+    try {
+      var tbody = document.getElementById('tableBodyHollow');
+      var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+      var selections = rows.map(function (tr) {
+        return Array.prototype.slice.call(tr.querySelectorAll('select')).map(function (s) { return s.value; });
+      });
+      var state = { selections: selections };
+      if (selectedRow) state.selectedIndex = rows.indexOf(selectedRow);
+      localStorage.setItem(PUSTOTKI_STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {}
+  }
+  function loadPustotkiState() {
+    try {
+      var raw = localStorage.getItem(PUSTOTKI_STORAGE_KEY);
+      if (!raw) return;
+      var state = JSON.parse(raw);
+      var tbody = document.getElementById('tableBodyHollow');
+      var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+      (state.selections || []).forEach(function (vals, i) {
+        var tr = rows[i];
+        if (!tr) return;
+        var selects = tr.querySelectorAll('select');
+        vals.forEach(function (v, j) {
+          var sel = selects[j];
+          if (sel && sel.value !== v) { sel.value = v; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+        });
+      });
+      if (typeof state.selectedIndex === 'number' && rows[state.selectedIndex]) {
+        var tr = rows[state.selectedIndex];
+        showDetailsFromRow(tr, tr.children[0].textContent);
+      }
+    } catch (e) {}
+  }
+
   function hideDetails() {
     if (selectedRow) selectedRow.classList.remove('row-selected');
     selectedRow = null;
     document.getElementById('detailPanel').classList.remove('visible');
+    savePustotkiState();
   }
 
   function showDetailsFromRow(tr, seriesName) {
@@ -672,6 +710,7 @@ function initPustotki(SERIES_FULLNAME) {
     document.getElementById('dtNote').textContent = note || '\u2014';
 
     document.getElementById('detailPanel').classList.add('visible');
+    savePustotkiState();
   }
 
   function toItem(row) {
@@ -950,7 +989,10 @@ if (IZ_SERIES.indexOf(seriesName) !== -1) {
       var seriesName = tr.children[0].textContent;
       showDetailsFromRow(tr, seriesName);
     }
+    savePustotkiState();
   });
+
+  loadPustotkiState();
 }
 
 loadPustotkiData();

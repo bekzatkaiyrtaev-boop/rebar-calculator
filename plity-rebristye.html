@@ -681,6 +681,36 @@ function render() {
 
     tableBody.appendChild(tr);
   });
+  saveRebrState();
+}
+
+// === Сохранение выбранных фильтров между визитами (localStorage) ===
+var REBR_STORAGE_KEY = 'esk-plity-rebristye-v1';
+function saveRebrState() {
+  try {
+    localStorage.setItem(REBR_STORAGE_KEY, JSON.stringify({
+      series: currentSeries, type: typeSelect.value, category: categorySelect.value, seismic: seismicSelect.value
+    }));
+  } catch (e) {}
+}
+function loadRebrState() {
+  try {
+    var raw = localStorage.getItem(REBR_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+// Снимок сохранённого состояния делаем СРАЗУ, до первого render() — иначе он же
+// (вызванный при обычной загрузке данных) перезапишет localStorage дефолтом раньше,
+// чем мы успеем восстановить исходные значения.
+var REBR_SAVED_STATE = loadRebrState();
+function applyRebrState() {
+  var state = REBR_SAVED_STATE;
+  if (!state) return;
+  if (state.series && state.series !== currentSeries) selectSeries(state.series);
+  if (state.type !== undefined) typeSelect.value = state.type;
+  if (state.category !== undefined) categorySelect.value = state.category;
+  if (state.seismic !== undefined) seismicSelect.value = state.seismic;
+  render();
 }
 
 function selectSeries(key) {
@@ -755,7 +785,7 @@ async function loadRebrData() {
   }
 }
 
-loadRebrData();
+loadRebrData().then(applyRebrState);
 </script>
 
 <script src="site-structure.js"></script>

@@ -1140,6 +1140,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!input.diameter || !input.gammaC || !input.cd) return;
     const result = acCalculate(input);
     render(result);
+    saveAcState();
   }
 
   document.querySelectorAll(".ac-wrap input, .ac-wrap select").forEach(el => {
@@ -1147,8 +1148,47 @@ document.addEventListener("DOMContentLoaded", () => {
     el.addEventListener("change", recalc);
   });
 
-  updateSigmaMode();
-  recalc();
+  // === Сохранение введённых данных между визитами (localStorage) ===
+  const AC_STORAGE_KEY = "esk-ankerovka-nahlest-v1";
+  const AC_FIELD_IDS = ["ac-concrete","ac-gammaC","ac-alphaCt","ac-rebar-class","ac-sigma-mode",
+    "ac-gammaS","ac-sigma-manual","ac-cd","ac-element-type","ac-sigma-ast","ac-pressure","ac-percent-spliced"];
+  function saveAcState() {
+    try {
+      const condEl = document.querySelector('input[name="ac-condition"]:checked');
+      const state = { acState: { ...acState }, condition: condEl ? condEl.value : "tension" };
+      AC_FIELD_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) state[id] = el.value;
+      });
+      localStorage.setItem(AC_STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {}
+  }
+  function loadAcState() {
+    try {
+      const raw = localStorage.getItem(AC_STORAGE_KEY);
+      if (raw) {
+        const state = JSON.parse(raw);
+        AC_FIELD_IDS.forEach(id => {
+          if (!(id in state)) return;
+          const el = document.getElementById(id);
+          if (el) el.value = state[id];
+        });
+        if (state.condition) {
+          const radio = document.querySelector(`input[name="ac-condition"][value="${state.condition}"]`);
+          if (radio) radio.checked = true;
+        }
+        if (state.acState) {
+          Object.assign(acState, state.acState);
+          document.getElementById("ac-diameter-display").textContent = acState.diameter + " мм";
+          document.getElementById("ac-eta1-display").textContent = acState.eta1.toFixed(1).replace(".", ",");
+          document.getElementById("ac-alpha4-display").textContent = acState.alpha4.toFixed(1).replace(".", ",");
+        }
+      }
+    } catch (e) {}
+    updateSigmaMode(); // подтягивает видимость строк и вызывает recalc()
+  }
+
+  loadAcState();
 });
 
 </script>
