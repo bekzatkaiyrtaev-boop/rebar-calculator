@@ -516,7 +516,7 @@ function render(cityName) {
   document.getElementById('snow_roof_kpa').textContent    = v(c.snow_r_kpa);
   document.getElementById('snow_g_dist').textContent      = v(c.snow_g_zone);
   document.getElementById('snow_g_kpa').textContent       = v(c.snow_g_kpa);
-  document.getElementById('moisture_zone').textContent    = v(c.moisture_zone);
+  document.getElementById('moisture_zone').textContent    = v(c.humidity_zone || c['dry/normal/wet'] || c['зона_влажности'] || c.moisture_zone);
   document.getElementById('seismic_2475').textContent     = v(c.seis_2475);
   document.getElementById('seismic_22475').textContent    = v(c.seis_22475);
   document.getElementById('frost_zone').textContent       = v(c.frost_zone);
