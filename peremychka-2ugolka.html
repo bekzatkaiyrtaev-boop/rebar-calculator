@@ -39,7 +39,7 @@
     padding:18px;
     margin-bottom:16px;
   }
-  .card h2{font-size:14px;margin:0 0 14px;color:var(--accent);text-transform:uppercase;letter-spacing:.03em;}
+  .card h2{font-size:14px;font-weight:700;margin:0 0 14px;color:#fff;}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   @media(max-width:640px){.grid{grid-template-columns:1fr;}}
   .scheme-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-bottom:14px;}
@@ -50,15 +50,19 @@
   label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px;}
   input[type=number],select{
     width:100%;
-    background:var(--panel2);
-    border:1px solid var(--border);
-    color:var(--text);
+    background:transparent;
+    border:1px solid transparent;
+    color:var(--accent2);
+    font-weight:600;
     padding:9px 10px;
     border-radius:7px;
     font-size:14px;
+    transition:background .15s,border-color .15s;
   }
-  input[type=number]:focus,select:focus{outline:none;border-color:var(--accent);}
-  input[readonly]{opacity:.65;cursor:not-allowed;}
+  input[type=number]:hover,select:hover{background:var(--panel2);border-color:var(--border);}
+  input[type=number]:focus,select:focus{outline:none;background:var(--panel2);border-color:var(--accent);}
+  input[readonly]{opacity:.6;cursor:not-allowed;color:var(--text);font-weight:400;}
+  input[readonly]:hover{background:transparent;border-color:transparent;}
   input.input-invalid{border-color:var(--bad)!important;background:rgba(224,97,111,.08);}
   input.input-invalid:focus{outline:none;box-shadow:0 0 0 2px rgba(224,97,111,.25);}
   .validation-msg{color:var(--bad);font-size:12px;margin-top:8px;padding:8px 10px;background:rgba(224,97,111,.08);border:1px solid rgba(224,97,111,.35);border-radius:6px;}
@@ -66,6 +70,18 @@
   .hint{font-size:11px;color:var(--muted);margin-top:3px;}
   .row-check{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
   .row-check input{width:auto;}
+  /* ── Табличная форма «подпись слева / значение справа» ── */
+  table.input-table{width:100%;border-collapse:collapse;font-size:13px;}
+  table.input-table td{padding:8px 0;border-bottom:1px solid var(--border);vertical-align:middle;}
+  table.input-table tr:last-child td{border-bottom:none;}
+  table.input-table td.it-label{width:230px;padding-right:14px;color:var(--muted);font-size:12.5px;}
+  table.input-table td.it-value{position:relative;}
+  table.input-table .row-check{margin:0;}
+  @media(max-width:640px){
+    table.input-table,table.input-table tbody,table.input-table tr,table.input-table td{display:block;width:auto;}
+    table.input-table td.it-label{padding:0 0 4px;border-bottom:none;}
+    table.input-table tr{padding-bottom:8px;}
+  }
   .row-check label{margin:0;color:var(--text);font-size:13px;}
   details{margin-top:6px;}
   summary{cursor:pointer;color:var(--accent);font-size:12.5px;user-select:none;list-style:none;}
@@ -74,6 +90,8 @@
   summary::-webkit-details-marker{display:none;}
   .details-arrow{display:inline-block;margin-right:8px;font-size:10px;color:var(--accent) !important;transition:transform .15s ease;}
   details[open] > summary .details-arrow{transform:rotate(90deg);}
+  summary.summary-divider{background:var(--panel2);border-left:3px solid var(--accent);padding:10px 18px;margin:4px -18px;transition:background .15s;}
+  summary.summary-divider:hover{background:var(--border);}
   button{
     background:var(--accent);
     color:#0b1016;
@@ -90,10 +108,7 @@
   .steps{
     font-family:var(--sans);
     font-size:13px;
-    background:var(--panel2);
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:14px 16px;
+    padding:10px 0 0;
     color:#c7d0dd;
     line-height:1.6;
   }
@@ -161,6 +176,7 @@
     .summary-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px;}
     .summary-table th{text-align:left;padding:10px 14px;background:#eee;color:#111;border-bottom:2px solid #999;font-size:13px;text-transform:uppercase;letter-spacing:.02em;}
     .summary-table td{padding:10px 14px;border-bottom:1px solid #ddd;color:#111;}
+    .summary-table tr:nth-child(even) td{background:#f5f6f8;}
     .summary-table td.v-ok{color:#1a7a4c;font-weight:700;text-align:right;}
     .summary-table td.v-fail{color:#c0392b;font-weight:700;text-align:right;}
     .verdict-banner{margin-top:20px;padding:22px;border-radius:10px;text-align:center;font-size:18px;font-weight:700;}
@@ -199,213 +215,210 @@
     <h1 style="text-align:center;">Перемычка из пары уголков</h1>
     <button id="helpBtn" onclick="document.getElementById('helpModal').style.display='flex'" style="position:absolute;top:0;right:0;width:auto;margin:0;padding:6px 12px;font-size:12.5px;background:var(--panel2);color:var(--text);border:1px solid var(--border);">📖 Справка</button>
   </div>
-  <div class="sub" style="text-align:center;margin-top:-14px;">Два одинаковых уголка по обеим граням стены, горизонтальные полки навстречу друг другу — стянуты планками, работают совместно</div>
 
   <div class="card" id="inputsCard">
     <h2>Исходные данные</h2>
     <div class="scheme-layout">
       <div class="scheme-inputs">
-        <div class="grid">
-          <div class="field">
-            <label>Ширина проёма в свету, L<sub>пр</sub> (мм)</label>
-            <input type="number" id="Lpr" value="1000" min="300" max="4320" step="10">
-          </div>
-          <div class="field">
-            <label>Толщина стены/перегородки, t (мм)</label>
-            <input type="number" id="twall" value="250" min="65" max="510" step="10">
-            <div class="hint" id="twallHint" style="display:none;"></div>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Способ определения нагрузки</label>
-          <select id="loadMode">
-            <option value="triangular">Треугольная — от веса кладки (автоматически, с учётом арочного распора)</option>
-            <option value="manual">Равномерная — задать расчётную нагрузку вручную</option>
-          </select>
-        </div>
-
-        <div id="autoLoadBlock">
-          <div class="row-check">
-            <input type="checkbox" id="hUnlim" checked>
-            <label for="hUnlim">Высота кладки не ограничена (до перекрытия) — берём консервативно h = L<sub>пр</sub>/2</label>
-          </div>
-          <div class="field" id="hField" style="display:none;">
-            <label>Высота кладки над перемычкой, H (мм)</label>
-            <input type="number" id="Hwall" value="1000" min="100" step="10">
-          </div>
-        </div>
-
-        <div id="manualLoadBlock" style="display:none;">
-          <div class="field">
-            <label>Расчётная равномерно-распределённая нагрузка, q<sub>d</sub> (тс/м)</label>
-            <input type="number" id="qdManual" value="0.3" min="0" step="0.05">
-            <div class="hint">Вводится уже расчётное (факторизованное) значение в тонна-силах на метр — коэффициент γG применять не нужно. Переводится в кН/м автоматически (×9,81).</div>
-          </div>
-        </div>
+        <table class="input-table">
+          <tr>
+            <td class="it-label">Ширина проёма в свету, L<sub>пр</sub> (мм)</td>
+            <td class="it-value"><input type="number" id="Lpr" value="1000" min="300" max="4320" step="10"></td>
+          </tr>
+          <tr>
+            <td class="it-label">Толщина стены/перегородки, t (мм)</td>
+            <td class="it-value">
+              <input type="number" id="twall" value="250" min="65" max="510" step="10">
+              <div class="hint" id="twallHint" style="display:none;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td class="it-label">Способ определения нагрузки</td>
+            <td class="it-value">
+              <select id="loadMode">
+                <option value="triangular">Треугольная от веса кладки (автоматически)</option>
+                <option value="triangular-limited">С ограничением высоты (автоматически)</option>
+                <option value="manual">Равномерно-распределённая (пользовательская)</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="hField" style="display:none;">
+            <td class="it-label">Высота кладки над перемычкой, H (мм)</td>
+            <td class="it-value"><input type="number" id="Hwall" value="1000" min="100" step="10"></td>
+          </tr>
+          <tbody id="manualLoadBlock" style="display:none;">
+            <tr>
+              <td class="it-label">Расчётная нагрузка, q<sub>d</sub> (тс/м)</td>
+              <td class="it-value"><input type="number" id="qdManual" value="0.3" min="0" step="0.05"></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <div class="scheme-image" id="schemeImage"></div>
     </div>
 
     <details id="lintelDetails">
-      <summary style="display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:600;color:var(--text);">
+      <summary class="summary-divider" style="display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:600;color:var(--text);">
         <span><span class="details-arrow">▶</span>Материал перемычки</span>
         <span id="lintelSummary" style="font-size:12.5px;font-weight:400;color:var(--muted);"></span>
       </summary>
 
-      <div class="field" style="margin-top:10px;">
-        <label>Сталь</label>
-        <select id="steel">
-          <option value="235">S235 / С245 (f_y = 235 МПа)</option>
-          <option value="275">S275 / С255 (f_y = 275 МПа)</option>
-          <option value="355">S355 / С345 (f_y = 355 МПа)</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Предельный прогиб</label>
-        <select id="deflLimit">
-          <option value="200">L / 200</option>
-          <option value="250">L / 250</option>
-          <option value="300">L / 300</option>
-          <option value="350">L / 350</option>
-        </select>
-        <div class="hint">EN 1993-1-1 §7.2.1 отсылает к EN 1990 Прил. A1.4 — числовой предел не задан, значение принимается проектом. L/200 — типичное допущение для перемычек в кладке.</div>
-      </div>
-
-      <div id="ownSectionBlock">
-        <div class="field">
-          <label>Тип уголка (оба уголка пары — одинаковые)</label>
-          <select id="angleType">
-            <option value="equal">Уголок равнополочный, ГОСТ 8509-93</option>
-            <option value="unequal-h">Уголок неравнополочный, ГОСТ 8510-86 (горизонтально)</option>
-            <option value="unequal-v">Уголок неравнополочный, ГОСТ 8510-86 (вертикально)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Уголок из сортамента</label>
-          <select id="ownAngleSelect"></select>
-          <div class="hint">Выбор применяется сразу к обоим уголкам пары (симметричное сечение).</div>
-        </div>
-        <div class="field">
-          <label>Соединительные планки пары</label>
-          <div class="hint" id="battenInfo" style="color:var(--text);"></div>
-        </div>
-      </div>
+      <table class="input-table">
+        <tr>
+          <td class="it-label">Тип уголка</td>
+          <td class="it-value">
+            <select id="angleType">
+              <option value="equal">Уголок равнополочный, ГОСТ 8509-93</option>
+              <option value="unequal-h">Уголок неравнополочный, ГОСТ 8510-86 (горизонтально)</option>
+              <option value="unequal-v">Уголок неравнополочный, ГОСТ 8510-86 (вертикально)</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="it-label">Уголок из сортамента</td>
+          <td class="it-value"><select id="ownAngleSelect"></select></td>
+        </tr>
+        <tr>
+          <td class="it-label">Соединительные планки пары</td>
+          <td class="it-value"><div id="battenInfo" style="color:#fff;font-size:14px;font-weight:600;"></div></td>
+        </tr>
+        <tr>
+          <td class="it-label">Сталь</td>
+          <td class="it-value">
+            <select id="steel">
+              <option value="235">S235 / С245 (f_y = 235 МПа)</option>
+              <option value="275">S275 / С255 (f_y = 275 МПа)</option>
+              <option value="355">S355 / С345 (f_y = 355 МПа)</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="it-label">Предельный прогиб</td>
+          <td class="it-value">
+            <select id="deflLimit">
+              <option value="200">L / 200</option>
+              <option value="250">L / 250</option>
+              <option value="300">L / 300</option>
+              <option value="350">L / 350</option>
+            </select>
+          </td>
+        </tr>
+      </table>
     </details>
 
     <details id="materialDetails">
-      <summary style="display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:600;color:var(--text);">
+      <summary class="summary-divider" style="display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:600;color:var(--text);">
         <span><span class="details-arrow">▶</span>Материал кладки</span>
         <span id="materialSummary" style="font-size:12.5px;font-weight:400;color:var(--muted);"></span>
       </summary>
 
-      <div class="row-check" style="margin-top:10px;">
-        <input type="checkbox" id="fkDirect">
-        <label for="fkDirect">Ввести f<sub>k</sub> напрямую (минуя расчёт по маркам камня/раствора)</label>
-      </div>
-
-      <div id="fkByGradeBlock">
-        <div class="field" style="margin-top:6px;">
-          <label>Вид кирпича/камня</label>
-          <select id="unitType">
-            <option value="0.40,0.65,0.30,general,1800" selected>Кирпич керамический полнотелый (Группа 1)</option>
-            <option value="0.45,0.70,0.30,general,1400">Кирпич керамический пустотелый (Группа 2)</option>
-            <option value="0.55,0.70,0.23,general,1800">Кирпич силикатный полнотелый (Группа 1)</option>
-            <option value="0.45,0.70,0.30,general,1500">Кирпич силикатный пустотелый (Группа 2)</option>
-            <option value="0.70,0.70,0,thin,600">Газоблок D600 (ячеистый бетон, тонкий шов)</option>
-            <option value="0.70,0.70,0,thin,700">Газоблок D700 (ячеистый бетон, тонкий шов)</option>
-            <option value="0.45,0.70,0.30,general,1200">Ракушечник / блоки СКЦ, природный камень</option>
-            <option value="custom">Свои показатели…</option>
-          </select>
-        </div>
-        <div class="grid" style="margin-top:10px;">
-          <div class="field">
-            <label>Марка камня, f<sub>b</sub></label>
-            <select id="brickGrade">
-              <option value="5">М50</option>
-              <option value="7.5">М75</option>
-              <option value="10" selected>М100</option>
-              <option value="12.5">М125</option>
-              <option value="15">М150</option>
-              <option value="17.5">М175</option>
-              <option value="20">М200</option>
-              <option value="custom">Своё значение…</option>
-            </select>
-          </div>
-          <div class="field" id="fbCustomField" style="display:none;">
-            <label>f<sub>b</sub>, МПа</label>
-            <input type="number" id="fbCustom" value="10" min="1" step="0.5">
-          </div>
-          <div class="field" id="mortarGradeBlock">
-            <label>Марка раствора, f<sub>m</sub></label>
-            <select id="mortarGrade">
-              <option value="1">М10</option>
-              <option value="2.5">М25</option>
-              <option value="5" selected>М50</option>
-              <option value="7.5">М75</option>
-              <option value="10">М100</option>
-              <option value="15">М150</option>
-              <option value="custom">Своё значение…</option>
-            </select>
-          </div>
-          <div class="field" id="fmCustomField" style="display:none;">
-            <label>f<sub>m</sub>, МПа</label>
-            <input type="number" id="fmCustom" value="5" min="0.5" step="0.5">
-          </div>
-          <div class="field">
-            <label>Толщина штукатурного слоя, мм</label>
-            <input type="number" id="plasterThickness" value="0" min="0" max="60" step="5">
-          </div>
-          <div class="field">
-            <label>Плотность штукатурки, кг/м³</label>
-            <input type="number" id="plasterDensity" value="1800" min="500" max="2200" step="50">
-            <div class="hint">Учитывается только в весе кладки (доп. нагрузка), на f<sub>k</sub> и смятие не влияет. 1800 кг/м³ — типовое значение для цементно-песчаной штукатурки, откорректируйте под фактический состав.</div>
-          </div>
-        </div>
-
-
-        <div id="unitTypeCustomFields" style="display:none;">
-          <div class="grid" style="margin-top:10px;">
-            <div class="field">
-              <label>Тип раствора</label>
+      <table class="input-table">
+        <tr>
+          <td class="it-label">Прочность кладки</td>
+          <td class="it-value">
+            <div class="row-check" style="margin:0;">
+              <input type="checkbox" id="fkDirect">
+              <label for="fkDirect">Ввести f<sub>k</sub> напрямую (минуя расчёт по маркам камня/раствора)</label>
+            </div>
+          </td>
+        </tr>
+        <tbody id="fkByGradeBlock">
+          <tr>
+            <td class="it-label">Вид кирпича/камня</td>
+            <td class="it-value">
+              <select id="unitType">
+                <option value="0.40,0.65,0.30,general,1800" selected>Кирпич керамический полнотелый (Группа 1)</option>
+                <option value="0.45,0.70,0.30,general,1400">Кирпич керамический пустотелый (Группа 2)</option>
+                <option value="0.55,0.70,0.23,general,1800">Кирпич силикатный полнотелый (Группа 1)</option>
+                <option value="0.45,0.70,0.30,general,1500">Кирпич силикатный пустотелый (Группа 2)</option>
+                <option value="0.70,0.70,0,thin,600">Газоблок D600 (ячеистый бетон, тонкий шов)</option>
+                <option value="0.70,0.70,0,thin,700">Газоблок D700 (ячеистый бетон, тонкий шов)</option>
+                <option value="0.45,0.70,0.30,general,1200">Ракушечник / блоки СКЦ, природный камень</option>
+                <option value="custom">Свои показатели…</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="it-label">Марка камня, f<sub>b</sub></td>
+            <td class="it-value">
+              <select id="brickGrade">
+                <option value="5">М50</option>
+                <option value="7.5">М75</option>
+                <option value="10" selected>М100</option>
+                <option value="12.5">М125</option>
+                <option value="15">М150</option>
+                <option value="17.5">М175</option>
+                <option value="20">М200</option>
+                <option value="custom">Своё значение…</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="fbCustomField" style="display:none;">
+            <td class="it-label">f<sub>b</sub>, МПа</td>
+            <td class="it-value"><input type="number" id="fbCustom" value="10" min="1" step="0.5"></td>
+          </tr>
+          <tr id="mortarGradeBlock">
+            <td class="it-label">Марка раствора, f<sub>m</sub></td>
+            <td class="it-value">
+              <select id="mortarGrade">
+                <option value="1">М10</option>
+                <option value="2.5">М25</option>
+                <option value="5" selected>М50</option>
+                <option value="7.5">М75</option>
+                <option value="10">М100</option>
+                <option value="15">М150</option>
+                <option value="custom">Своё значение…</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="fmCustomField" style="display:none;">
+            <td class="it-label">f<sub>m</sub>, МПа</td>
+            <td class="it-value"><input type="number" id="fmCustom" value="5" min="0.5" step="0.5"></td>
+          </tr>
+          <tr>
+            <td class="it-label">Толщина штукатурного слоя, мм</td>
+            <td class="it-value"><input type="number" id="plasterThickness" value="0" min="0" max="60" step="5"></td>
+          </tr>
+          <tr>
+            <td class="it-label">Плотность штукатурки, кг/м³</td>
+            <td class="it-value"><input type="number" id="plasterDensity" value="1800" min="500" max="2200" step="50"></td>
+          </tr>
+        </tbody>
+        <tbody id="unitTypeCustomFields" style="display:none;">
+          <tr>
+            <td class="it-label">Тип раствора</td>
+            <td class="it-value">
               <select id="mortarTypeSelect">
                 <option value="general">Общего назначения</option>
                 <option value="thin">Тонкого слоя / клей</option>
               </select>
-            </div>
-            <div class="field">
-              <label>K (Табл. НП.2.4)</label>
-              <input type="number" id="Kfactor" value="0.45" min="0.1" max="0.8" step="0.01">
-            </div>
-            <div class="field">
-              <label>α (показатель степени f<sub>b</sub>)</label>
-              <input type="number" id="alphaExp" value="0.70" min="0.1" max="1" step="0.01">
-            </div>
-            <div class="field">
-              <label>β (показатель степени f<sub>m</sub>)</label>
-              <input type="number" id="betaExp" value="0.30" min="0.05" max="0.5" step="0.01">
-            </div>
-            <div class="field">
-              <label>Плотность, кг/м³ (для нагрузки)</label>
-              <input type="number" id="rhoCustomInMaterial" value="1800" min="100" step="10">
-            </div>
-          </div>
-        </div>
-        <div id="fkFormulaHint" style="display:none;"></div>
-      </div>
-
-      <div class="grid" style="margin-top:10px;">
-        <div class="field" id="fkDirectField" style="display:none;">
-          <label>Расчётная прочность кладки на сжатие, f<sub>k</sub> (МПа)</label>
-          <input type="number" id="fk" value="4.28" min="0.3" step="0.1">
-        </div>
-        <div class="field" style="display:none;">
-          <label>Коэффициент безопасности γ<sub>M</sub> (кладка)</label>
-          <input type="number" id="gammaM_masonry" value="2.5" min="1" step="0.1">
-        </div>
-      </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="it-label">K (Табл. НП.2.4)</td>
+            <td class="it-value"><input type="number" id="Kfactor" value="0.45" min="0.1" max="0.8" step="0.01"></td>
+          </tr>
+          <tr>
+            <td class="it-label">α (показатель степени f<sub>b</sub>)</td>
+            <td class="it-value"><input type="number" id="alphaExp" value="0.70" min="0.1" max="1" step="0.01"></td>
+          </tr>
+          <tr>
+            <td class="it-label">β (показатель степени f<sub>m</sub>)</td>
+            <td class="it-value"><input type="number" id="betaExp" value="0.30" min="0.05" max="0.5" step="0.01"></td>
+          </tr>
+          <tr>
+            <td class="it-label">Плотность, кг/м³ (для нагрузки)</td>
+            <td class="it-value"><input type="number" id="rhoCustomInMaterial" value="1800" min="100" step="10"></td>
+          </tr>
+        </tbody>
+        <tr id="fkDirectField" style="display:none;">
+          <td class="it-label">Расчётная прочность кладки на сжатие, f<sub>k</sub> (МПа)</td>
+          <td class="it-value"><input type="number" id="fk" value="4.28" min="0.3" step="0.1"></td>
+        </tr>
+      </table>
+      <input type="number" id="gammaM_masonry" value="2.5" min="1" step="0.1" style="display:none;">
+      <div id="fkFormulaHint" style="display:none;"></div>
     </details>
 
 
@@ -468,7 +481,7 @@ document.getElementById('inputsCard').addEventListener('change', calc);
 // === Сохранение введённых данных между визитами (localStorage) ===
 const FORM_STORAGE_KEY = 'esk-peremychka-2ugolka-v1';
 const FORM_FIELD_IDS = [
-  'loadMode','hUnlim','fkDirect','unitType','mortarTypeSelect','angleType','steel','deflLimit',
+  'loadMode','fkDirect','unitType','mortarTypeSelect','angleType','steel','deflLimit',
   'Lpr','twall','Hwall','qdManual','plasterThickness','plasterDensity',
   'brickGrade','fbCustom','mortarGrade','fmCustom','Kfactor','alphaExp','betaExp','rhoCustomInMaterial',
   'gammaM_masonry','fk','ownAngleSelect'
@@ -513,7 +526,7 @@ function updateWallThicknessConstraints(){
   let wallMin = 65; // по умолчанию (ручная нагрузка — материал не выбирается)
   let hint = `Диапазон ${wallMin}…${WALL_MAX} мм.`;
 
-  if(loadMode === 'triangular'){
+  if(loadMode !== 'manual'){
     const unitVal = document.getElementById('unitType').value;
     const mtype = unitVal === 'custom'
       ? document.getElementById('mortarTypeSelect').value
@@ -543,6 +556,14 @@ document.getElementById('loadMode').addEventListener('change', updateWallThickne
 updateWallThicknessConstraints();
 
 // Тип кладочного элемента → K, α, β, тип раствора (EN 1996-1-1, Табл. НП.2.4)
+// Видимость блока "свои показатели" — зависит и от вида кирпича/камня (custom), и от того,
+// не выбран ли ввод fk напрямую (тогда весь блок марок камня/раствора скрыт родительским tbody)
+function updateUnitTypeCustomVisibility(){
+  const isCustom = document.getElementById('unitType').value === 'custom';
+  const direct = document.getElementById('fkDirect').checked;
+  document.getElementById('unitTypeCustomFields').style.display = (isCustom && !direct) ? '' : 'none';
+}
+
 function applyUnitTypeSelection(){
   const val = document.getElementById('unitType').value;
   const Kinput = document.getElementById('Kfactor');
@@ -551,7 +572,7 @@ function applyUnitTypeSelection(){
   const rhoInput = document.getElementById('rhoCustomInMaterial');
   const mortarTypeSel = document.getElementById('mortarTypeSelect');
   const isCustom = val === 'custom';
-  document.getElementById('unitTypeCustomFields').style.display = isCustom ? 'block' : 'none';
+  updateUnitTypeCustomVisibility();
   if(isCustom){
     Kinput.readOnly = false;
     aInput.readOnly = false;
@@ -579,10 +600,10 @@ document.getElementById('mortarTypeSelect').addEventListener('change', updateMor
 
 function updateMortarVisibility(){
   const isThin = document.getElementById('mortarTypeSelect').value === 'thin';
-  document.getElementById('mortarGradeBlock').style.display = isThin ? 'none' : 'block';
+  document.getElementById('mortarGradeBlock').style.display = isThin ? 'none' : '';
   if(isThin) document.getElementById('fmCustomField').style.display = 'none';
   const bField = document.getElementById('betaExp');
-  bField.closest('.field').style.display = isThin ? 'none' : 'block';
+  bField.closest('tr').style.display = isThin ? 'none' : '';
 }
 
 // Прочность кладки fk: по маркам камня/раствора (EN 1996-1-1 §3.6.1.2, формула 3.2) либо напрямую
@@ -614,8 +635,9 @@ function updateMaterialSummary(){
 function updateFk(){
   const direct = document.getElementById('fkDirect').checked;
   const fkInput = document.getElementById('fk');
-  document.getElementById('fkByGradeBlock').style.display = direct ? 'none' : 'block';
-  document.getElementById('fkDirectField').style.display = direct ? 'block' : 'none';
+  document.getElementById('fkByGradeBlock').style.display = direct ? 'none' : '';
+  document.getElementById('fkDirectField').style.display = direct ? '' : 'none';
+  updateUnitTypeCustomVisibility();
 
   if(direct){
     fkInput.readOnly = false;
@@ -627,8 +649,8 @@ function updateFk(){
   const isThin = document.getElementById('mortarTypeSelect').value === 'thin';
   const brickSel = document.getElementById('brickGrade').value;
   const mortarSel = document.getElementById('mortarGrade').value;
-  document.getElementById('fbCustomField').style.display = brickSel==='custom' ? 'block' : 'none';
-  document.getElementById('fmCustomField').style.display = (!isThin && mortarSel==='custom') ? 'block' : 'none';
+  document.getElementById('fbCustomField').style.display = brickSel==='custom' ? '' : 'none';
+  document.getElementById('fmCustomField').style.display = (!isThin && mortarSel==='custom') ? '' : 'none';
 
   const fb = brickSel==='custom' ? parseFloat(document.getElementById('fbCustom').value) : parseFloat(brickSel);
   const fmVal = mortarSel==='custom' ? parseFloat(document.getElementById('fmCustom').value) : parseFloat(mortarSel);
@@ -668,13 +690,10 @@ document.getElementById('Lpr').addEventListener('change', e=>{
   e.target.value = v;
 });
 
-document.getElementById('hUnlim').addEventListener('change', e=>{
-  document.getElementById('hField').style.display = e.target.checked ? 'none' : 'block';
-});
 document.getElementById('loadMode').addEventListener('change', e=>{
-  const isManual = e.target.value === 'manual';
-  document.getElementById('autoLoadBlock').style.display = isManual ? 'none' : 'block';
-  document.getElementById('manualLoadBlock').style.display = isManual ? 'block' : 'none';
+  const mode = e.target.value;
+  document.getElementById('hField').style.display = (mode === 'triangular-limited') ? '' : 'none';
+  document.getElementById('manualLoadBlock').style.display = (mode === 'manual') ? '' : 'none';
 });
 
 // Заполняем выпадающий список сортамента (равнополочные / неравнополочные)
@@ -688,7 +707,7 @@ function fillAngleSelect(){
       const [B,b,t,A,Iv,Wmin,mass] = a;
       const opt = document.createElement('option');
       opt.value = i;
-      opt.textContent = `L ${B} x ${b} x ${t}`;
+      opt.textContent = `2L ${B} x ${b} x ${t}`;
       sel.appendChild(opt);
     });
   } else {
@@ -696,7 +715,7 @@ function fillAngleSelect(){
       const [b,t,A,Iv,Wmin,mass] = a;
       const opt = document.createElement('option');
       opt.value = i;
-      opt.textContent = `L ${b} x ${t}`;
+      opt.textContent = `2L ${b} x ${t}`;
       sel.appendChild(opt);
     });
   }
@@ -745,8 +764,8 @@ function validateInputs(){
 
   const relevantIds = ['Lpr','twall'];
   const loadMode = document.getElementById('loadMode').value;
-  if(loadMode === 'triangular'){
-    if(!document.getElementById('hUnlim').checked) relevantIds.push('Hwall');
+  if(loadMode !== 'manual'){
+    if(loadMode === 'triangular-limited') relevantIds.push('Hwall');
     if(document.getElementById('unitType').value === 'custom') relevantIds.push('rhoCustomInMaterial');
     relevantIds.push('plasterThickness','plasterDensity');
   } else {
@@ -785,7 +804,7 @@ function calc(){
 
   const Lpr = parseFloat(document.getElementById('Lpr').value);      // мм
   const twall = parseFloat(document.getElementById('twall').value);  // мм
-  const loadMode = document.getElementById('loadMode').value;        // 'triangular' | 'manual'
+  const loadMode = document.getElementById('loadMode').value;        // 'triangular' | 'triangular-limited' | 'manual'
   const fy = parseFloat(document.getElementById('steel').value); // МПа
   const fk = parseFloat(document.getElementById('fk').value);
   const gammaM_m = parseFloat(document.getElementById('gammaM_masonry').value);
@@ -796,10 +815,9 @@ function calc(){
   const LbearMin = bearingByClearSpan(Lpr); // мм
 
   // предчитываем параметры нагрузки (не зависят от Lbear)
-  let hUnlim, Hwall, rho, qd_t, qd, plasterThickness_mm;
-  if(loadMode === 'triangular'){
-    hUnlim = document.getElementById('hUnlim').checked;
-    Hwall = hUnlim ? Infinity : parseFloat(document.getElementById('Hwall').value); // мм
+  let Hwall, rho, qd_t, qd, plasterThickness_mm;
+  if(loadMode !== 'manual'){
+    Hwall = (loadMode === 'triangular-limited') ? parseFloat(document.getElementById('Hwall').value) : Infinity; // мм
     const unitVal = document.getElementById('unitType').value;
     rho = unitVal === 'custom'
       ? parseFloat(document.getElementById('rhoCustomInMaterial').value)
@@ -817,7 +835,7 @@ function calc(){
     const Lcalc = Lcalc_mm/1000;
     let M_Ed, V_Ed, qPeak, h_calc_mm=null, loadSteps;
 
-    if(loadMode === 'triangular'){
+    if(loadMode !== 'manual'){
       const h_calc_mm_local = Math.min(Hwall, Lpr/2);
       h_calc_mm = h_calc_mm_local;
       const h_calc = h_calc_mm_local/1000;
@@ -923,7 +941,7 @@ $$V_{Ed} = \\frac{q_d\\cdot L_{расч}}{2} = ${V_Ed.toFixed(3)}\\text{ кН}$$
     const I_mm4 = Iv2*1e4; // см4 -> мм4
     const L_mm = Lcalc_mm;
     const q_Nmm = qPeak; // кН/м численно равно Н/мм (1 кН/м = 1 Н/мм)
-    const delta = (loadMode==='triangular')
+    const delta = (loadMode!=='manual')
       ? q_Nmm*Math.pow(L_mm,4)/(120*E*I_mm4)          // треугольная эпюра, пик в центре
       : 5*q_Nmm*Math.pow(L_mm,4)/(384*E*I_mm4);        // равномерная нагрузка
     const deflLimitDenom = parseFloat(document.getElementById('deflLimit').value);
@@ -989,7 +1007,7 @@ $$V_{Ed} = \\frac{q_d\\cdot L_{расч}}{2} = ${V_Ed.toFixed(3)}\\text{ кН}$$
       }
       const r = evaluateAngle(b,t,A,Iv,Wmin,mass,undefined,legLarge,legSmall);
       opt.style.color = r.passAll ? '#5ed6a4' : '#e0616f';
-      opt.textContent = `${r.passAll?'✓':'✗'} L ${labelDims}`;
+      opt.textContent = `${r.passAll?'✓':'✗'} 2L ${labelDims}`;
     });
   }
   updateAngleSelectColors();
@@ -1039,9 +1057,9 @@ $$2\\,(b_{полки} - t_{полки}) \\le t_{стены} = ${twall}\\text{ м
   const battenThk_mm = PLATE_THK_STEPS.find(v=>v>=Math.max(6,picked.t)) || PLATE_THK_STEPS[PLATE_THK_STEPS.length-1];
   const battenWidth_mm = 80;
   document.getElementById('battenInfo').textContent =
-    `Шаг a ≤ ${battenStep_mm} мм (не менее 2 планок на пролёт — у опор и в середине) · сечение ${battenThk_mm}×${battenWidth_mm} мм (конструктивный минимум)`;
+    `${battenWidth_mm}×${battenThk_mm} мм, шаг a ≤ ${battenStep_mm} мм`;
 
-  let html = `<div class="card"><details><summary style="font-size:13px;font-weight:600;"><span class="details-arrow">▶</span>Промежуточные шаги</summary><div class="steps" style="margin-top:10px;">${steps}</div></details></div>`;
+  let html = `<div class="card"><details><summary style="font-size:15px;font-weight:600;color:var(--text);"><span class="details-arrow">▶</span>Промежуточные шаги</summary><div class="steps" style="margin-top:10px;">${steps}</div></details></div>`;
 
   if(bearingWarning){
     html += `<div class="card"><div class="warn-box">${bearingWarning}</div></div>`;
@@ -1086,7 +1104,7 @@ $$2\\,(b_{полки} - t_{полки}) \\le t_{стены} = ${twall}\\text{ м
     ['Опирание, Lbear', `${Lbear} мм${Lbear>LbearMin?' (увеличено относительно табличного минимума '+LbearMin+' мм — по проверке смятия кладки)':''}`],
     ['Расчётный пролёт', `Lрасч = Lпр + 2·Lbear = ${Lpr} + 2·${Lbear} = ${Lcalc_mm.toFixed(0)} мм = ${Lcalc.toFixed(2)} м`],
     ['Толщина перегородки, t', `${twall} мм`],
-    ['Способ определения нагрузки', loadMode==='triangular' ? 'от собственного веса треугольного клина кладки (арочный распор, перекрытие на перегородку не опирается)' : 'задана вручную (равномерная)'],
+    ['Способ определения нагрузки', loadMode==='manual' ? 'задана вручную (равномерная)' : `от собственного веса треугольного клина кладки (арочный распор, перекрытие на перегородку не опирается)${loadMode==='triangular-limited' ? `, высота кладки ограничена H = ${Hwall} мм` : ''}`],
     ['Кладка (для проверки смятия)', masonryValue],
   ];
   const inputNotes = [battenNote, fkFormulaNote].filter(Boolean);
@@ -1243,7 +1261,7 @@ calc();
 <div id="helpModal" onclick="if(event.target===this) this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:20px;">
   <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;max-width:680px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h2 style="margin:0;font-size:17px;color:var(--accent);">Область применения калькулятора</h2>
+      <h2 style="margin:0;font-size:14px;font-weight:700;color:#fff;">Область применения калькулятора</h2>
       <button onclick="document.getElementById('helpModal').style.display='none'" style="width:auto;margin:0;padding:6px 12px;background:var(--panel2);color:var(--text);border:1px solid var(--border);font-size:13px;">✕ Закрыть</button>
     </div>
 
@@ -1273,7 +1291,8 @@ calc();
       <b style="color:var(--accent2);">Материал кладки</b><br>
       • Марка камня: М50…М200; марка раствора: М10…М150<br>
       • Виды: кирпич керамический/силикатный (полнотелый и пустотелый), газоблок D600/D700, ракушечник — либо свои показатели K, α, β<br>
-      • Формула прочности кладки f<sub>k</sub> — по EN 1996-1-1 §3.6.1.2, коэффициенты K/α/β для группы 1 — из Национального приложения РК (точные), для группы 2 и ракушечника — по базовой таблице EN с обобщёнными показателями степени (ориентировочно)<br><br>
+      • Формула прочности кладки f<sub>k</sub> — по EN 1996-1-1 §3.6.1.2, коэффициенты K/α/β для группы 1 — из Национального приложения РК (точные), для группы 2 и ракушечника — по базовой таблице EN с обобщёнными показателями степени (ориентировочно)<br>
+      • Плотность штукатурки учитывается только в весе кладки (доп. нагрузка) — на f<sub>k</sub> и смятие не влияет; 1800 кг/м³ — типовое значение для цементно-песчаной штукатурки, откорректируйте под фактический состав<br><br>
 
       <b style="color:var(--bad);">Что НЕ учитывается (ограничения модели)</b><br>
       • Условия применимости формулы f<sub>k</sub> (§3.6.1.2(2)): f<sub>b</sub> ≤ 75 МПа (общий раствор) / ≤ 50 МПа (тонкий слой); f<sub>m</sub> ≤ 20 МПа или ≤ 2f<sub>b</sub>; толщина стены равна ширине/длине камня (без продольного шва вдоль стены); коэфф. вариации прочности камня ≤ 25% — калькулятор эти границы не проверяет автоматически<br>
