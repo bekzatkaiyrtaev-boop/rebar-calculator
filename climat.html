@@ -65,6 +65,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 }
 .card-header .title{font-size:13px;font-weight:700;color:#fff;}
 .card-header .ref{font-family:var(--mono);font-size:10.5px;color:var(--accent);background:transparent;border:none;padding:0;opacity:.85;}
+summary.card-header{cursor:pointer;list-style:none;user-select:none;}
+summary.card-header::-webkit-details-marker{display:none;}
+.details-arrow{display:inline-block;margin-right:8px;font-size:10px;color:var(--accent);transition:transform .15s ease;}
+details[open] > summary.card-header .details-arrow{transform:rotate(90deg);}
 
 /* ── Таблица параметров ── */
 table.params{width:100%;border-collapse:collapse;font-size:12px;}
@@ -205,87 +209,91 @@ footer{max-width:1100px;margin:24px auto 0;padding:16px 20px;
 
 <!-- Холодный период -->
 <div class="card">
-  <div class="card-header">
-    <span class="title">Холодный период года</span>
-    <span class="ref">СП РК 2.04-01-2017 · Табл. 3.1</span>
-  </div>
-  <div class="grid2">
-    <div class="col">
-      <div class="section-label">Температура воздуха, °С</div>
-      <table class="params">
-        <tr><td class="label">Абсолютная минимальная</td><td class="val highlight-red" id="t_abs_min">—</td><td class="unit">°С</td></tr>
-        <tr><td class="label">Наиб. холодных суток (0,98)</td><td class="val" id="t_cold_day_98">—</td><td class="unit">°С</td></tr>
-        <tr><td class="label">Наиб. холодных суток (0,92)</td><td class="val" id="t_cold_day_92">—</td><td class="unit">°С</td></tr>
-        <tr><td class="label">Наиб. холодной пятидневки (0,98)</td><td class="val accent" id="t_cold_5d_98">—</td><td class="unit">°С</td></tr>
-        <tr><td class="label">Наиб. холодной пятидневки (0,92)</td><td class="val" id="t_cold_5d_92">—</td><td class="unit">°С</td></tr>
-        <tr><td class="label">Температура обесп. 0,94</td><td class="val" id="t_heat_94">—</td><td class="unit">°С</td></tr>
-      </table>
+  <details>
+    <summary class="card-header">
+      <span class="title"><span class="details-arrow">▶</span>Холодный период года</span>
+      <span class="ref">СП РК 2.04-01-2017 · Табл. 3.1</span>
+    </summary>
+    <div class="grid2">
+      <div class="col">
+        <div class="section-label">Температура воздуха, °С</div>
+        <table class="params">
+          <tr><td class="label">Абсолютная минимальная</td><td class="val highlight-red" id="t_abs_min">—</td><td class="unit">°С</td></tr>
+          <tr><td class="label">Наиб. холодных суток (0,98)</td><td class="val" id="t_cold_day_98">—</td><td class="unit">°С</td></tr>
+          <tr><td class="label">Наиб. холодных суток (0,92)</td><td class="val" id="t_cold_day_92">—</td><td class="unit">°С</td></tr>
+          <tr><td class="label">Наиб. холодной пятидневки (0,98)</td><td class="val accent" id="t_cold_5d_98">—</td><td class="unit">°С</td></tr>
+          <tr><td class="label">Наиб. холодной пятидневки (0,92)</td><td class="val" id="t_cold_5d_92">—</td><td class="unit">°С</td></tr>
+          <tr><td class="label">Температура обесп. 0,94</td><td class="val" id="t_heat_94">—</td><td class="unit">°С</td></tr>
+        </table>
+      </div>
+      <div class="col">
+        <div class="section-label">Отопительный период</div>
+        <table class="params">
+          <tr><td class="label">Продолжительность (≤ 0°С)</td><td class="val" id="dur_0">—</td><td class="unit">сут.</td></tr>
+          <tr><td class="label">Средняя температура (≤ 0°С)</td><td class="val" id="t_0">—</td><td class="unit">°С</td></tr>
+          <tr><td class="label">Продолжительность (≤ 8°С)</td><td class="val accent" id="dur_8">—</td><td class="unit">сут.</td></tr>
+          <tr><td class="label">Средняя температура (≤ 8°С)</td><td class="val accent" id="t_8">—</td><td class="unit">°С</td></tr>
+          <tr><td class="label">Начало отопительного периода</td><td class="val" id="heat_start">—</td><td class="unit"></td></tr>
+          <tr><td class="label">Конец отопительного периода</td><td class="val" id="heat_end">—</td><td class="unit"></td></tr>
+        </table>
+      </div>
     </div>
-    <div class="col">
-      <div class="section-label">Отопительный период</div>
-      <table class="params">
-        <tr><td class="label">Продолжительность (≤ 0°С)</td><td class="val" id="dur_0">—</td><td class="unit">сут.</td></tr>
-        <tr><td class="label">Средняя температура (≤ 0°С)</td><td class="val" id="t_0">—</td><td class="unit">°С</td></tr>
-        <tr><td class="label">Продолжительность (≤ 8°С)</td><td class="val accent" id="dur_8">—</td><td class="unit">сут.</td></tr>
-        <tr><td class="label">Средняя температура (≤ 8°С)</td><td class="val accent" id="t_8">—</td><td class="unit">°С</td></tr>
-        <tr><td class="label">Начало отопительного периода</td><td class="val" id="heat_start">—</td><td class="unit"></td></tr>
-        <tr><td class="label">Конец отопительного периода</td><td class="val" id="heat_end">—</td><td class="unit"></td></tr>
-      </table>
+    <div class="grid2">
+      <div class="col">
+        <div class="section-label">Влажность и осадки</div>
+        <table class="params">
+          <tr><td class="label">Дней с оттепелью (дек–фев)</td><td class="val" id="thaw_days">—</td><td class="unit">дни</td></tr>
+          <tr><td class="label">Влажность в 15ч (январь)</td><td class="val" id="rh_jan">—</td><td class="unit">%</td></tr>
+          <tr><td class="label">Влажность за отоп. период</td><td class="val" id="rh_heat">—</td><td class="unit">%</td></tr>
+          <tr><td class="label">Осадки ноябрь–март</td><td class="val" id="precip_cold">—</td><td class="unit">мм</td></tr>
+          <tr><td class="label">Давление (январь)</td><td class="val" id="press_jan">—</td><td class="unit">гПа</td></tr>
+        </table>
+      </div>
+      <div class="col">
+        <div class="section-label">Ветер (холодный период)</div>
+        <table class="params">
+          <tr><td class="label">Направление (дек–фев)</td><td class="val" id="wind_dir_cold">—</td><td class="unit"></td></tr>
+          <tr><td class="label">Ср. скорость за отоп. период</td><td class="val" id="wind_v_heat">—</td><td class="unit">м/с</td></tr>
+          <tr><td class="label">Макс. скорость по румбам (янв)</td><td class="val" id="wind_v_jan_max">—</td><td class="unit">м/с</td></tr>
+          <tr><td class="label">Дней со скор. ≥10 м/с при t&lt;0</td><td class="val" id="wind_days">—</td><td class="unit">дни</td></tr>
+        </table>
+      </div>
     </div>
-  </div>
-  <div class="grid2">
-    <div class="col">
-      <div class="section-label">Влажность и осадки</div>
-      <table class="params">
-        <tr><td class="label">Дней с оттепелью (дек–фев)</td><td class="val" id="thaw_days">—</td><td class="unit">дни</td></tr>
-        <tr><td class="label">Влажность в 15ч (январь)</td><td class="val" id="rh_jan">—</td><td class="unit">%</td></tr>
-        <tr><td class="label">Влажность за отоп. период</td><td class="val" id="rh_heat">—</td><td class="unit">%</td></tr>
-        <tr><td class="label">Осадки ноябрь–март</td><td class="val" id="precip_cold">—</td><td class="unit">мм</td></tr>
-        <tr><td class="label">Давление (январь)</td><td class="val" id="press_jan">—</td><td class="unit">гПа</td></tr>
-      </table>
-    </div>
-    <div class="col">
-      <div class="section-label">Ветер (холодный период)</div>
-      <table class="params">
-        <tr><td class="label">Направление (дек–фев)</td><td class="val" id="wind_dir_cold">—</td><td class="unit"></td></tr>
-        <tr><td class="label">Ср. скорость за отоп. период</td><td class="val" id="wind_v_heat">—</td><td class="unit">м/с</td></tr>
-        <tr><td class="label">Макс. скорость по румбам (янв)</td><td class="val" id="wind_v_jan_max">—</td><td class="unit">м/с</td></tr>
-        <tr><td class="label">Дней со скор. ≥10 м/с при t&lt;0</td><td class="val" id="wind_days">—</td><td class="unit">дни</td></tr>
-      </table>
-    </div>
-  </div>
+  </details>
 </div>
 
 <!-- Тёплый период -->
 <div class="card">
-  <div class="card-header">
-    <span class="title">Тёплый период года</span>
-    <span class="ref">СП РК 2.04-01-2017 · Табл. 3.2</span>
-  </div>
-  <div class="grid2">
-    <div class="col">
-      <div class="section-label">Температура воздуха, °С</div>
-      <table class="params">
-        <tr><td class="label">Абсолютная максимальная</td><td class="val highlight-red" id="t_abs_max">—</td><td class="unit">°С</td></tr>
-        <tr><td class="label">Средняя макс. (июль)</td><td class="val" id="t_jul_max">—</td><td class="unit">°С</td></tr>
-        <tr><td class="label">Обеспеченность 0,95</td><td class="val" id="t_w95">—</td><td class="unit">°С</td></tr>
-        <tr><td class="label">Обеспеченность 0,98</td><td class="val accent" id="t_w98">—</td><td class="unit">°С</td></tr>
-        <tr><td class="label">Высота над ур. моря</td><td class="val" id="altitude">—</td><td class="unit">м</td></tr>
-        <tr><td class="label">Давление (июль)</td><td class="val" id="press_jul">—</td><td class="unit">гПа</td></tr>
-      </table>
+  <details>
+    <summary class="card-header">
+      <span class="title"><span class="details-arrow">▶</span>Тёплый период года</span>
+      <span class="ref">СП РК 2.04-01-2017 · Табл. 3.2</span>
+    </summary>
+    <div class="grid2">
+      <div class="col">
+        <div class="section-label">Температура воздуха, °С</div>
+        <table class="params">
+          <tr><td class="label">Абсолютная максимальная</td><td class="val highlight-red" id="t_abs_max">—</td><td class="unit">°С</td></tr>
+          <tr><td class="label">Средняя макс. (июль)</td><td class="val" id="t_jul_max">—</td><td class="unit">°С</td></tr>
+          <tr><td class="label">Обеспеченность 0,95</td><td class="val" id="t_w95">—</td><td class="unit">°С</td></tr>
+          <tr><td class="label">Обеспеченность 0,98</td><td class="val accent" id="t_w98">—</td><td class="unit">°С</td></tr>
+          <tr><td class="label">Высота над ур. моря</td><td class="val" id="altitude">—</td><td class="unit">м</td></tr>
+          <tr><td class="label">Давление (июль)</td><td class="val" id="press_jul">—</td><td class="unit">гПа</td></tr>
+        </table>
+      </div>
+      <div class="col">
+        <div class="section-label">Влажность, осадки и ветер</div>
+        <table class="params">
+          <tr><td class="label">Влажность в 15ч (июль)</td><td class="val" id="rh_jul">—</td><td class="unit">%</td></tr>
+          <tr><td class="label">Осадки апрель–октябрь</td><td class="val" id="precip_warm">—</td><td class="unit">мм</td></tr>
+          <tr><td class="label">Макс. суточные осадки (ср.)</td><td class="val" id="precip_daily_avg">—</td><td class="unit">мм</td></tr>
+          <tr><td class="label">Макс. суточные осадки (наиб.)</td><td class="val" id="precip_daily_max">—</td><td class="unit">мм</td></tr>
+          <tr><td class="label">Направление ветра (июнь–авг)</td><td class="val" id="wind_dir_warm">—</td><td class="unit"></td></tr>
+          <tr><td class="label">Мин. скорость ветра (июль)</td><td class="val" id="wind_v_jul">—</td><td class="unit">м/с</td></tr>
+        </table>
+      </div>
     </div>
-    <div class="col">
-      <div class="section-label">Влажность, осадки и ветер</div>
-      <table class="params">
-        <tr><td class="label">Влажность в 15ч (июль)</td><td class="val" id="rh_jul">—</td><td class="unit">%</td></tr>
-        <tr><td class="label">Осадки апрель–октябрь</td><td class="val" id="precip_warm">—</td><td class="unit">мм</td></tr>
-        <tr><td class="label">Макс. суточные осадки (ср.)</td><td class="val" id="precip_daily_avg">—</td><td class="unit">мм</td></tr>
-        <tr><td class="label">Макс. суточные осадки (наиб.)</td><td class="val" id="precip_daily_max">—</td><td class="unit">мм</td></tr>
-        <tr><td class="label">Направление ветра (июнь–авг)</td><td class="val" id="wind_dir_warm">—</td><td class="unit"></td></tr>
-        <tr><td class="label">Мин. скорость ветра (июль)</td><td class="val" id="wind_v_jul">—</td><td class="unit">м/с</td></tr>
-      </table>
-    </div>
-  </div>
+  </details>
 </div>
 
 
@@ -307,43 +315,45 @@ footer{max-width:1100px;margin:24px auto 0;padding:16px 20px;
 
 <!-- Примечания -->
 <div class="card" style="margin-top:0;">
-  <div class="card-header">
-    <span class="title">Примечания</span>
-  </div>
-  <div style="padding:14px 16px;font-size:12px;line-height:1.8;color:var(--muted);">
-    <p style="margin-bottom:10px;">
-      <span style="color:var(--warn);font-weight:700;">* Звёздочка</span> — населённый пункт находится вблизи границы двух зон.
-      Принят <strong style="color:var(--text);">наихудший (более высокий) показатель</strong> для проектирования.
-      Рекомендуется уточнение по карте нормативного документа.
-    </p>
-    <p style="margin-bottom:10px;">
-      <span style="color:var(--warn);font-weight:700;">Ерейментау, Зайсан</span> — ветровой район XI.
-      Данные уточняются в <strong style="color:var(--text);">Казгидромете</strong> согласно СП РК 2.04-01-2017.
-    </p>
-    <p style="margin-bottom:10px;">
-      <span style="color:var(--warn);font-weight:700;">Катон-Карагай, Риддер</span> — горные районы.
-      Снеговые и ветровые нагрузки уточняются по картам детального зонирования
-      и данным <strong style="color:var(--text);">Казгидромета</strong>.
-    </p>
-    <p style="margin-bottom:10px;">
-      <span style="color:var(--warn);font-weight:700;">Алматы</span> — сейсмика уточняется по
-      <strong style="color:var(--text);">СП РК 2.03-31-2020</strong>
-      «Застройка территории города Алматы с учётом сейсмического микрозонирования».
-    </p>
-    <p style="margin-bottom:10px;">
-      Области, отмеченные в сейсмическом нормативе знаком ²
-      (Алматинская, Жамбылская, Жетысуская, Абайская, Восточно-Казахстанская) —
-      уточнять по картам <strong style="color:var(--text);">ДСЗ</strong>
-      (детальное сейсмическое зонирование), разработанным ТОО «НЦСНИ».
-    </p>
-    <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
-    <p style="margin-bottom:6px;color:var(--muted);font-size:11px;">
-      <strong style="color:var(--text);">Источники:</strong>
-    </p>
-    <p style="margin-bottom:4px;">— СП РК 2.04-01-2017 «Строительная климатология» (ред. 13.05.2025) — Таблицы 3.1, 3.2; Прил. А (рис. А.1–А.5)</p>
-    <p style="margin-bottom:4px;">— НТП РК 01-01-3.1 (4.1)-2017 «Нагрузки и воздействия» — Прил. В, карты снеговых нагрузок</p>
-    <p style="margin-bottom:4px;">— СП РК 2.03-30-2017 «Строительство в сейсмических районах» (ред. 12.08.2025) — Прил. Д, Прил. Е</p>
-  </div>
+  <details>
+    <summary class="card-header">
+      <span class="title"><span class="details-arrow">▶</span>Примечания</span>
+    </summary>
+    <div style="padding:14px 16px;font-size:12px;line-height:1.8;color:var(--muted);">
+      <p style="margin-bottom:10px;">
+        <span style="color:var(--warn);font-weight:700;">* Звёздочка</span> — населённый пункт находится вблизи границы двух зон.
+        Принят <strong style="color:var(--text);">наихудший (более высокий) показатель</strong> для проектирования.
+        Рекомендуется уточнение по карте нормативного документа.
+      </p>
+      <p style="margin-bottom:10px;">
+        <span style="color:var(--warn);font-weight:700;">Ерейментау, Зайсан</span> — ветровой район XI.
+        Данные уточняются в <strong style="color:var(--text);">Казгидромете</strong> согласно СП РК 2.04-01-2017.
+      </p>
+      <p style="margin-bottom:10px;">
+        <span style="color:var(--warn);font-weight:700;">Катон-Карагай, Риддер</span> — горные районы.
+        Снеговые и ветровые нагрузки уточняются по картам детального зонирования
+        и данным <strong style="color:var(--text);">Казгидромета</strong>.
+      </p>
+      <p style="margin-bottom:10px;">
+        <span style="color:var(--warn);font-weight:700;">Алматы</span> — сейсмика уточняется по
+        <strong style="color:var(--text);">СП РК 2.03-31-2020</strong>
+        «Застройка территории города Алматы с учётом сейсмического микрозонирования».
+      </p>
+      <p style="margin-bottom:10px;">
+        Области, отмеченные в сейсмическом нормативе знаком ²
+        (Алматинская, Жамбылская, Жетысуская, Абайская, Восточно-Казахстанская) —
+        уточнять по картам <strong style="color:var(--text);">ДСЗ</strong>
+        (детальное сейсмическое зонирование), разработанным ТОО «НЦСНИ».
+      </p>
+      <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
+      <p style="margin-bottom:6px;color:var(--muted);font-size:11px;">
+        <strong style="color:var(--text);">Источники:</strong>
+      </p>
+      <p style="margin-bottom:4px;">— СП РК 2.04-01-2017 «Строительная климатология» (ред. 13.05.2025) — Таблицы 3.1, 3.2; Прил. А (рис. А.1–А.5)</p>
+      <p style="margin-bottom:4px;">— НТП РК 01-01-3.1 (4.1)-2017 «Нагрузки и воздействия» — Прил. В, карты снеговых нагрузок</p>
+      <p style="margin-bottom:4px;">— СП РК 2.03-30-2017 «Строительство в сейсмических районах» (ред. 12.08.2025) — Прил. Д, Прил. Е</p>
+    </div>
+  </details>
 </div>
 
 </div>
@@ -551,17 +561,21 @@ function renderWindRose(c) {
   const content = document.getElementById('windRoseContent');
   const srcEl   = document.getElementById('windRoseSrc');
 
-  const cold = [c.wind_cold_n, c.wind_cold_ne, c.wind_cold_e, c.wind_cold_se,
+  const coldRaw = [c.wind_cold_n, c.wind_cold_ne, c.wind_cold_e, c.wind_cold_se,
                 c.wind_cold_s, c.wind_cold_sw, c.wind_cold_w, c.wind_cold_nw];
   const coldCalm = c.wind_cold_calm;
-  const warm = [c.wind_warm_n, c.wind_warm_ne, c.wind_warm_e, c.wind_warm_se,
+  const warmRaw = [c.wind_warm_n, c.wind_warm_ne, c.wind_warm_e, c.wind_warm_se,
                 c.wind_warm_s, c.wind_warm_sw, c.wind_warm_w, c.wind_warm_nw];
   const warmCalm = c.wind_warm_calm;
   const src  = c.wind_rose_src;
 
-  if (!cold[0]) {
+  if (!coldRaw[0]) {
     card.style.display = 'none'; return;
   }
+  // Значения из таблицы приходят строками — приводим к числам, иначе Math.max(...)
+  // вернёт число, а indexOf(число) не найдёт его в массиве строк (даст -1 → undefined)
+  const cold = coldRaw.map(v => Number(v) || 0);
+  const warm = warmRaw.map(v => Number(v) || 0);
   card.style.display = 'block';
   content.style.display = 'flex';
   noData.style.display  = 'none';
