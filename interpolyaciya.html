@@ -274,6 +274,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
 
     restoreTabState(btn.dataset.tab);
+    saveFormState();
   });
 });
 
@@ -308,7 +309,7 @@ function calcLinear() {
 }
 
 document.querySelectorAll('#tab-linear input').forEach(inp => {
-  inp.addEventListener('input', calcLinear);
+  inp.addEventListener('input', () => { calcLinear(); saveFormState(); });
 });
 
 // ---- билинейная (двумерная) интерполяция ----
@@ -353,10 +354,41 @@ function calcBilinear() {
 }
 
 document.querySelectorAll('#tab-bilinear input').forEach(inp => {
-  inp.addEventListener('input', calcBilinear);
+  inp.addEventListener('input', () => { calcBilinear(); saveFormState(); });
 });
 
+// === Сохранение введённых данных между визитами (localStorage) ===
+const FORM_STORAGE_KEY = 'esk-interpolyaciya-v1';
+const LIN_IDS = ['lin-x1','lin-y1','lin-x2','lin-y2','lin-x'];
+const BL_IDS = ['bl-x1','bl-x2','bl-y1','bl-z11','bl-z21','bl-y2','bl-z12','bl-z22','bl-xt','bl-yt'];
+function saveFormState(){
+  try{
+    const state = {
+      activeTab: document.querySelector('.tab-btn.active').dataset.tab,
+      linear: {},
+      bilinear: {}
+    };
+    LIN_IDS.forEach(id => { const el = document.getElementById(id); if (el) state.linear[id] = el.value; });
+    BL_IDS.forEach(id => { const el = document.getElementById(id); if (el) state.bilinear[id] = el.value; });
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+function loadFormState(){
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    if (state.linear) Object.keys(state.linear).forEach(id => { const el = document.getElementById(id); if (el) el.value = state.linear[id]; });
+    if (state.bilinear) Object.keys(state.bilinear).forEach(id => { const el = document.getElementById(id); if (el) el.value = state.bilinear[id]; });
+    if (state.activeTab === 'bilinear') {
+      const btn = document.querySelector('.tab-btn[data-tab="bilinear"]');
+      if (btn) btn.click();
+    }
+  }catch(e){}
+}
+
 // ---- первичный расчёт при загрузке ----
+loadFormState();
 calcLinear();
 calcBilinear();
 </script>

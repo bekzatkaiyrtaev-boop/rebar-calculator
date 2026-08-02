@@ -197,6 +197,7 @@ function selectTerm(entry){
   document.getElementById('resultSrc').textContent = entry.src;
   resultCard.classList.add('visible');
   placeholderNote.style.display = 'none';
+  try{ localStorage.setItem('esk-terminologiya-v1', entry.term); }catch(e){}
 }
 
 function setActive(i){
@@ -239,6 +240,15 @@ input.addEventListener('blur', () => {
 input.addEventListener('focus', () => {
   if (input.value.trim()) renderDropdown(input.value);
 });
+
+// === Восстановление последнего просмотренного термина между визитами ===
+try{
+  const savedTerm = localStorage.getItem('esk-terminologiya-v1');
+  if (savedTerm){
+    const entry = TERMS.find(t => t.term === savedTerm);
+    if (entry) selectTerm(entry);
+  }
+}catch(e){}
 </script>
 
 <script src="site-structure.js"></script>

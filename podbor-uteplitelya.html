@@ -581,6 +581,7 @@ function renderLayers(){
   });
   calculate();
   renderVisualization();
+  saveFormState();
 }
 
 function updateLayer(id, field, value){
@@ -591,6 +592,7 @@ function updateLayer(id, field, value){
   if ((field === 'material' || field === 'lambda') && l.materialRef) l.materialRef = null; // ручной ввод отвязывает от справочника
   calculate();
   renderVisualization();
+  saveFormState();
 }
 
 /* ══════════════════════════════════════════════════════
@@ -738,7 +740,7 @@ function getOperatingConditions(humidityMode, zone){
 /* ══════════════════════════════════════════════════════
    ГЛАВНЫЙ РАСЧЁТ
    ══════════════════════════════════════════════════════ */
-function onInputsChanged(){ calculate(); }
+function onInputsChanged(){ calculate(); saveFormState(); }
 
 function calculate(){
   const tInt = parseFloat(document.getElementById('tInt').value) || 0;
@@ -1285,6 +1287,7 @@ function selectCity(name){
   currentCity = CITIES.find(c => c.name === name);
   if (!currentCity) return;
   calculate();
+  saveFormState();
 }
 
 let cityDropdownOpen = false;
@@ -1567,10 +1570,46 @@ function openHelpModal(){
   renderMath(document.getElementById('helpModal'));
 }
 
+/* ══════════════════════════════════════════════════════
+   СОХРАНЕНИЕ ВВЕДЁННЫХ ДАННЫХ МЕЖДУ ВИЗИТАМИ (localStorage)
+   Переиспользует ту же форму данных и applyImportedData(),
+   что и ручной экспорт/импорт в .json файл выше.
+   ══════════════════════════════════════════════════════ */
+const FORM_STORAGE_KEY = 'esk-podbor-uteplitelya-v1';
+let appReady = false; /* пока false — saveFormState() не пишет поверх ещё не восстановленных данных */
+function saveFormState(){
+  if (!appReady) return;
+  try{
+    const data = {
+      objName: document.getElementById('objName').value.trim(),
+      city: currentCity ? currentCity.name : '',
+      buildingCategory: document.getElementById('buildingCategory').value,
+      constructionType: document.getElementById('constructionType').value,
+      tInt: document.getElementById('tInt').value,
+      phiInt: document.getElementById('phiInt').value,
+      ventGap: document.getElementById('ventGap').checked,
+      layers: layers.map(l => ({
+        material: l.material,
+        lambda: l.lambda,
+        thickness: l.thickness,
+        isInsulation: l.isInsulation,
+        materialName: l.materialRef ? l.materialRef.name : null
+      }))
+    };
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(data));
+  }catch(e){}
+}
+document.getElementById('objName').addEventListener('input', saveFormState);
+
 /* ── Запуск ── */
 renderLayers();
-loadCities();
-loadMaterials();
+Promise.all([loadCities(), loadMaterials()]).then(()=>{
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if (raw) applyImportedData(JSON.parse(raw));
+  }catch(e){}
+  appReady = true;
+});
 </script>
 
 <div id="helpModal" onclick="if(event.target===this) this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:20px;">

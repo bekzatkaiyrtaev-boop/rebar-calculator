@@ -895,13 +895,48 @@ table.ref td.fail { color: var(--text-secondary); }
     display.textContent = `${prefix} ${sizeLength}×${sizeWidth}×${sizeHeight}/${sizeFormat.replace(' ', '')}/${strength}/${density}/${frost}/ГОСТ 530-2012`;
 
     updateSketch(isStone, isGorizont);
+    saveFormState();
   }
 
   [elVid, elCategory, elSolid, elPg, elSh, elVoidShape, elSize, elStrength, elDensity, elFrost].forEach((el) => {
     el.addEventListener('change', updateDisplay);
   });
 
+  // === Сохранение введённых данных между визитами (localStorage) ===
+  const FORM_STORAGE_KEY = 'esk-kirpich-530-2012-v1';
+  const FORM_FIELD_IDS = ['m-vid', 'm-category', 'm-solid', 'm-pg', 'm-sh', 'm-void-shape', 'm-size', 'm-strength', 'm-density', 'm-frost'];
+  let formReady = false; /* пока false — saveFormState() не пишет поверх ещё не восстановленных данных */
+  function saveFormState(){
+    if(!formReady) return;
+    try{
+      const state = {};
+      FORM_FIELD_IDS.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        state[id] = (el.type === 'checkbox') ? el.checked : el.value;
+      });
+      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
+    }catch(e){}
+  }
+  function loadFormState(){
+    try{
+      const raw = localStorage.getItem(FORM_STORAGE_KEY);
+      if(!raw) return;
+      const state = JSON.parse(raw);
+      FORM_FIELD_IDS.forEach(id=>{
+        if(!(id in state)) return;
+        const el = document.getElementById(id);
+        if(!el) return;
+        if(el.type === 'checkbox') el.checked = state[id];
+        else el.value = state[id];
+        el.dispatchEvent(new Event('change', {bubbles:true}));
+      });
+    }catch(e){}
+  }
+
   updateDisplay();
+  loadFormState();
+  formReady = true;
 
 })();
 </script>

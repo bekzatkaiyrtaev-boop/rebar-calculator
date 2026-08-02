@@ -384,6 +384,7 @@ function selectScheme(id){
   document.getElementById('lengthField').style.display = scheme.needsLength ? 'block' : 'none';
   buildPointsTable();
   calc();
+  if(typeof saveFormState === 'function') saveFormState();
 }
 
 function buildPointsTable(){
@@ -458,6 +459,7 @@ function selectMethod(m){
   document.querySelectorAll('.method-tab').forEach(b => b.classList.toggle('active', b.dataset.m === m));
   document.getElementById('method-classic').style.display = (m === 'classic') ? 'block' : 'none';
   document.getElementById('method-en').style.display = (m === 'en') ? 'block' : 'none';
+  if(typeof saveFormState === 'function') saveFormState();
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -548,7 +550,49 @@ function calcClassic(){
     `<br>Категория длины: ${catLabel} (L=${(L/1000).toFixed(2)} м, H=${actualH_m.toFixed(2)} м)`;
 }
 
+// === Сохранение введённых данных между визитами (localStorage) ===
+const FORM_STORAGE_KEY = 'esk-peregorodka-v1';
+const FORM_FIELD_IDS = ['cT','cMortar','cH','cL','inT','inH','inL'];
+function saveFormState(){
+  try{
+    const state = {};
+    FORM_FIELD_IDS.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      state[id] = (el.type === 'checkbox') ? el.checked : el.value;
+    });
+    state._method = document.querySelector('.method-tab.active')?.dataset.m || 'classic';
+    state._scheme = currentScheme;
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+function loadFormState(){
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if(!raw) return;
+    const state = JSON.parse(raw);
+    FORM_FIELD_IDS.forEach(id=>{
+      if(!(id in state)) return;
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(el.type === 'checkbox') el.checked = state[id];
+      else el.value = state[id];
+    });
+    if(state._scheme) selectScheme(state._scheme);
+    if(state._method) selectMethod(state._method);
+    calc();
+    calcClassic();
+  }catch(e){}
+}
+FORM_FIELD_IDS.forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener('input', saveFormState);
+  el.addEventListener('change', saveFormState);
+});
+
 calcClassic();
+loadFormState();
 </script>
 
 <script src="site-structure.js"></script>

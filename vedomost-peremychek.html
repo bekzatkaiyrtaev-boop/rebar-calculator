@@ -657,6 +657,7 @@ tfoot.explication-total td {
       openingEl.textContent = row.openingWidth ?? '—';
       renderMaterials(row, materialsCell);
       if (row.collapsed) updateSummaryView();
+      saveFormState();
     });
 
     const wallEl = mainTr.querySelector('.in-wall-total');
@@ -667,6 +668,7 @@ tfoot.explication-total td {
       wallEl.textContent = row.wallThickness ?? '—';
       renderMaterials(row, materialsCell);
       if (row.collapsed) updateSummaryView();
+      saveFormState();
     });
 
     const qtyEl = mainTr.querySelector('.in-qty');
@@ -941,6 +943,7 @@ tfoot.explication-total td {
   function addRow() {
     const row = createRow();
     renderRow(row);
+    saveFormState();
   }
 
   // --- Групповая экспликация ---
@@ -998,6 +1001,7 @@ tfoot.explication-total td {
   }
 
   function renderExplication() {
+    saveFormState();
     const list = computeExplicationList();
 
     if (list.length === 0) {
@@ -1162,10 +1166,34 @@ tfoot.explication-total td {
     e.target.value = '';
   });
 
+  // === Сохранение введённых данных между визитами (localStorage) ===
+  // Переиспользует ту же форму данных (ROWS), что и импорт/экспорт в Excel выше.
+  const FORM_STORAGE_KEY = 'esk-vedomost-peremychek-v1';
+  function saveFormState(){
+    try{ localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(ROWS)); }catch(e){}
+  }
+  function loadFormState(){
+    try{
+      const raw = localStorage.getItem(FORM_STORAGE_KEY);
+      if(!raw) return false;
+      const saved = JSON.parse(raw);
+      if(!Array.isArray(saved) || !saved.length) return false;
+      vedomostBody.innerHTML = '';
+      ROWS = saved.map((row) => ({
+        ...row,
+        id: rowIdCounter++,
+        items: (row.items || []).map((item) => ({ ...item, id: itemIdCounter++ })),
+      }));
+      ROWS.forEach((row) => renderRow(row));
+      return true;
+    }catch(e){ return false; }
+  }
+
   async function init() {
     try {
       await loadPeremychkiData();
-      addRow();
+      const restored = loadFormState();
+      if (!restored) addRow();
       renderExplication();
     } catch (err) {
       loadError.hidden = false;

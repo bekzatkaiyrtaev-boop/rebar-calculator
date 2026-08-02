@@ -575,6 +575,7 @@ function selectCategory(key){
   buildRefTable();
   hintText.textContent = CATEGORIES[key].hint;
   convert();
+  saveFormState();
 }
 
 function buildUnitSelectors(){
@@ -681,12 +682,43 @@ swapBtn.addEventListener("click", () => {
   fromSel.selectedIndex = toSel.selectedIndex;
   toSel.selectedIndex = tmp;
   convert();
+  saveFormState();
 });
 
-[inputVal, fromSel, toSel].forEach(el => el.addEventListener("input", convert));
+[inputVal, fromSel, toSel].forEach(el => el.addEventListener("input", () => { convert(); saveFormState(); }));
+
+// === Сохранение введённых данных между визитами (localStorage) ===
+const FORM_STORAGE_KEY = 'esk-konverter-v1';
+function saveFormState(){
+  try{
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify({
+      category: currentCategory,
+      from: fromSel.value,
+      to: toSel.value,
+      value: inputVal.value
+    }));
+  }catch(e){}
+}
+function loadSavedState(){
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
 
 // инициализация
+const savedState = loadSavedState();
+if (savedState && savedState.category && CATEGORIES[savedState.category]){
+  currentCategory = savedState.category;
+}
 selectCategory(currentCategory);
+if (savedState){
+  const units = Object.keys(CATEGORIES[currentCategory].units);
+  if (savedState.from && units.includes(savedState.from)) fromSel.value = savedState.from;
+  if (savedState.to && units.includes(savedState.to)) toSel.value = savedState.to;
+  if (savedState.value !== undefined && savedState.value !== '') inputVal.value = savedState.value;
+  convert();
+}
 </script>
 
 <script src="site-structure.js"></script>

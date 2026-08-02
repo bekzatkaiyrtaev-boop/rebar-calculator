@@ -370,6 +370,19 @@ const BACKEND = 'https://rebar-backend-henna.vercel.app/api/sheet-data';
 let CITIES = [];
 window._currentCity = null;
 
+// === Сохранение выбранного города между визитами (localStorage) ===
+const FORM_STORAGE_KEY = 'esk-climat-v1';
+function saveFormState(){
+  try{ localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify({ city: cityInput.value })); }catch(e){}
+}
+function loadSavedCity(){
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if(!raw) return null;
+    return JSON.parse(raw).city || null;
+  }catch(e){ return null; }
+}
+
 /* ── Утилита ── */
 function v(val) {
   if (val === null || val === undefined || val === '') return '—';
@@ -390,8 +403,10 @@ async function loadCities() {
     CITIES = (json.records || []).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
     input.disabled = false;
     input.placeholder = 'Введите название или выберите из списка...';
+    const savedCityName = loadSavedCity();
+    const savedCity = savedCityName && CITIES.find(c => c.name === savedCityName);
     const astana = CITIES.find(c => c.name === 'Астана');
-    selectCity(astana ? 'Астана' : CITIES[0]?.name);
+    selectCity(savedCity ? savedCity.name : (astana ? 'Астана' : CITIES[0]?.name));
   } catch (e) {
     input.placeholder = 'Ошибка загрузки — обновите страницу';
     console.error('Ошибка загрузки климатических данных:', e);
@@ -456,6 +471,7 @@ function selectCity(name) {
   cityInput.value = name;
   closeDropdown();
   render(name);
+  saveFormState();
 }
 
 cityInput.addEventListener('input',  () => showDropdown(cityInput.value));

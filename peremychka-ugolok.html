@@ -1180,6 +1180,44 @@ function renderResult(r, Lcalc_mm){
   </div>`;
 }
 
+// === Сохранение введённых данных между визитами (localStorage) ===
+const FORM_STORAGE_KEY = 'esk-peremychka-ugolok-v1';
+const FORM_FIELD_IDS = [
+  'loadMode','fkDirect','unitType','mortarTypeSelect','angleType','steel','deflLimit',
+  'Lpr','twall','Hwall','qdManual','plasterThickness','plasterDensity',
+  'brickGrade','fbCustom','mortarGrade','fmCustom','Kfactor','alphaExp','betaExp','rhoCustomInMaterial',
+  'gammaM_masonry','fk','ownAngleSelect'
+];
+function saveFormState(){
+  try{
+    const state = {};
+    FORM_FIELD_IDS.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      state[id] = (el.type === 'checkbox') ? el.checked : el.value;
+    });
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+function loadFormState(){
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if(!raw) return;
+    const state = JSON.parse(raw);
+    FORM_FIELD_IDS.forEach(id=>{
+      if(!(id in state)) return;
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(el.type === 'checkbox') el.checked = state[id];
+      else el.value = state[id];
+      el.dispatchEvent(new Event('change', {bubbles:true}));
+    });
+  }catch(e){}
+}
+document.getElementById('inputsCard').addEventListener('input', saveFormState);
+document.getElementById('inputsCard').addEventListener('change', saveFormState);
+
+loadFormState();
 calc();
 </script>
 <div id="helpModal" onclick="if(event.target===this) this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:20px;">
