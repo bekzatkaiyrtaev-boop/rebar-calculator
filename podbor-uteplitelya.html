@@ -128,7 +128,12 @@ table.layers input[readonly]:hover{background:transparent;border-color:transpare
 .thick-recommend{font-size:10px;color:var(--warn);margin-top:3px;}
 
 /* ── Визуализация ── */
-.viz-wrap{display:flex;justify-content:center;padding:20px;background:var(--surface);overflow-x:auto;}
+.viz-wrap{display:flex;flex-direction:column;align-items:center;padding:20px;background:var(--surface);overflow-x:auto;}
+.viz-summary{width:100%;max-width:680px;padding:12px 16px 0;font-size:13px;line-height:1.7;border-top:1px solid var(--border);margin-top:8px;}
+.viz-summary b{color:#fff;}
+.viz-summary .viz-note{color:var(--muted);}
+.viz-summary .viz-fail{color:var(--red);margin-top:4px;display:block;}
+.viz-summary .viz-ok{color:var(--green);margin-top:4px;display:block;}
 
 /* ── Результаты ── */
 .result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);}
@@ -203,6 +208,13 @@ details[open] > summary.card-header .details-arrow{transform:rotate(90deg);}
   #printArea table{color:#111;}
   #printArea th,#printArea td{border-bottom:1px solid #ccc;}
   #printArea svg text{fill:#111 !important;}
+  #printArea .viz-band{fill:#e7e9f2 !important;}
+  #printArea .viz-band-ins{fill:#fbe4e1 !important;}
+  #printArea .viz-summary{color:#111;border-top:1px solid #ccc;}
+  #printArea .viz-summary b{color:#000 !important;}
+  #printArea .viz-summary .viz-note{color:#555 !important;}
+  #printArea .viz-summary .viz-fail{color:#c0392b !important;}
+  #printArea .viz-summary .viz-ok{color:#1a7a4c !important;}
 }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -580,7 +592,6 @@ function renderLayers(){
     body.appendChild(tr);
   });
   calculate();
-  renderVisualization();
   saveFormState();
 }
 
@@ -591,7 +602,6 @@ function updateLayer(id, field, value){
   l[field] = (field === 'material') ? value : parseFloat(value) || 0;
   if ((field === 'material' || field === 'lambda') && l.materialRef) l.materialRef = null; // ручной ввод отвязывает от справочника
   calculate();
-  renderVisualization();
   saveFormState();
 }
 
@@ -1004,9 +1014,14 @@ function calculate(){
     tExt: currentCity ? currentCity.t_cold_5d_92 : null, sumROther, thicknessUser: insLayer.thickness || 0,
     thicknessMin, RFact, ok, category, constrKey });
 
-  buildReport({ tInt, phiInt, humidityMode, opCond, zone, ventGap, tExt, RNorm, RFact, insLayer, ok });
+  /* renderVisualization() — ДО buildReport(): отчёт переиспользует #vizWrap.innerHTML,
+     поэтому диаграмма должна быть перерисована для текущего цикла расчёта заранее,
+     иначе в отчёт попадёт схема с предыдущими (устаревшими) значениями R/ok. */
+  renderVisualization((tExt != null && !isNaN(tExt))
+    ? { tInt, tExt, Rsi, Rse, RFact, insLayer, RNorm, thicknessMin, ok }
+    : undefined);
 
-  renderVisualization();
+  buildReport({ tInt, phiInt, humidityMode, opCond, zone, ventGap, tExt, RNorm, RFact, insLayer, ok });
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1048,6 +1063,7 @@ function buildReport(d){
     <tr><th style="width:32px;">№</th><th>Материал</th><th style="width:120px;">λ, Вт/(м·°C)</th><th style="width:120px;">Толщина, м</th></tr>
     ${layersReportRows}
   </table>`;
+  const vizReportHtml = document.getElementById('vizWrap').innerHTML;
 
   const formulaReportHtml = document.getElementById('formulaBlock').innerHTML;
   const rfactReportHtml = document.getElementById('rfactFormulaBlock').innerHTML;
@@ -1083,6 +1099,10 @@ function buildReport(d){
     <div class="print-section">
       <h2>Состав конструкции (снаружи → внутри)</h2>
       ${layersTableHtml}
+    </div>
+    <div class="print-section" style="text-align:center;">
+      <h2 style="text-align:left;">Схема конструкции</h2>
+      ${vizReportHtml}
     </div>
     <div class="print-section">
       <h2>Нормируемое сопротивление теплопередаче</h2>
@@ -1145,102 +1165,152 @@ function updateUsedParamsTable(d){
 /* ══════════════════════════════════════════════════════
    ВИЗУАЛИЗАЦИЯ — изометрическая схема слоёв
    ══════════════════════════════════════════════════════ */
-function renderVisualization(){
+function renderVisualization(tempData){
   const wrap = document.getElementById('vizWrap');
   const n = layers.length;
-  const boxW = 380, depth = 60;
-  const targetBoxH = Math.max(200, n * 34); /* целевая суммарная высота диаграммы */
-  const bevel = 9; /* высота скоса верхней грани — заметно меньше минимальной высоты слоя, чтобы не перекрывать тонкие слои целиком */
-  const minLayerH = 28; /* минимум — чтобы помещалась одна строка "материал, δ = ..." */
+  if (!n){ wrap.innerHTML = ''; return; }
 
-  /* Высота каждого слоя пропорциональна его реальной толщине; если толщины ещё не заданы — делим поровну */
+  /* Плоский разрез "пирога": размер каждой полосы пропорционален реальной толщине слоя.
+     Стены — горизонтальный разрез (снаружи слева); перекрытия/покрытия — вертикальный
+     (снаружи сверху, как в реальном сечении кровли/перекрытия). */
+  const constrKey = document.getElementById('constructionType').value;
+  const vertical = constrKey !== 'wall';
+
   const thicknesses = layers.map(l => l.thickness || 0);
   const thicknessSum = thicknesses.reduce((a,b) => a+b, 0);
-  let layerHeights;
-  if (thicknessSum > 0){
-    layerHeights = thicknesses.map(th => Math.max(minLayerH, (th/thicknessSum) * targetBoxH));
-  } else {
-    layerHeights = layers.map(() => targetBoxH / n);
+
+  const W = vertical ? 420 : 680, H = vertical ? 460 : 340;
+  /* отступы вдоль оси толщины конструкции ("снаружи" край / "внутри" край) */
+  const padA1 = vertical ? 34 : 60, padA2 = vertical ? 40 : 60;
+  /* отступы поперёк (там, где шкала температуры и подписи) */
+  const padB1 = vertical ? 60 : 30, padB2 = vertical ? 20 : 46;
+
+  const alongTotal = vertical ? H : W, acrossTotal = vertical ? W : H;
+  const plotAlong = alongTotal - padA1 - padA2, plotAcross = acrossTotal - padB1 - padB2;
+
+  /* along=0 — грань "снаружи", along=plotAlong — грань "внутри"; across — поперечная ось
+     (полосы занимают её целиком, а линия температуры использует её как свою шкалу) */
+  function toXY(along, across){
+    return vertical ? { x: padB1 + across, y: padA1 + along } : { x: padA1 + along, y: padB1 + across };
   }
-  const boxH = layerHeights.reduce((a,b) => a+b, 0);
 
-  const svgH = boxH + 130;
-  const svgW = 660;
-  let svg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">`;
-  const ox = 160, oy = 50;
-  const maxNameChars = Math.floor((boxW - 24) / 5.8); /* ограничение подписи по ширине передней грани, шрифт 10px */
+  const widths = thicknessSum > 0
+    ? thicknesses.map(th => (th/thicknessSum) * plotAlong)
+    : layers.map(() => plotAlong / n);
+  const xBounds = [0];
+  let cum = 0;
+  widths.forEach(w => { cum += w; xBounds.push(cum); });
 
-  /* Границы слоёв (накопительная толщина, м) — для шкалы слева */
-  const boundaries = [0];
-  let cumTh = 0;
-  thicknesses.forEach(th => { cumTh += th; boundaries.push(cumTh); });
-
-  /* Позиции и цвета слоёв считаем заранее — рисуем в 3 прохода (грани, потом скосы, потом текст),
-     чтобы верхний (внешний) слой гарантированно перекрывал нижний (внутренний) на стыке */
-  const layerY = [];
-  let yCursor = oy;
-  layers.forEach((l, i) => { layerY.push(yCursor); yCursor += layerHeights[i]; });
   const colorOf = (l, i) => l.isInsulation ? '#8a271f' : (i % 2 === 0 ? '#3a3f5c' : '#2e3347');
 
-  /* 1) передние грани всех слоёв */
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Inter,sans-serif">`;
+
+  /* 1) полосы слоёв */
   layers.forEach((l, i) => {
-    svg += `<rect x="${ox}" y="${layerY[i]}" width="${boxW}" height="${layerHeights[i]}" fill="${colorOf(l,i)}" stroke="#0f1117" stroke-width="1"/>`;
+    const a0 = xBounds[i], w = widths[i];
+    const p = toXY(a0, 0);
+    const rw = vertical ? plotAcross : w, rh = vertical ? w : plotAcross;
+    const name = (l.material && l.material.trim()) ? l.material : ('слой ' + (i+1));
+    svg += `<rect class="${l.isInsulation ? 'viz-band-ins' : 'viz-band'}" x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" width="${rw.toFixed(1)}" height="${rh.toFixed(1)}" fill="${colorOf(l,i)}" stroke="#0f1117" stroke-width="1"><title>${escapeXml(name)}, δ = ${(l.thickness||0).toFixed(3)} м${l.isInsulation?' (утеплитель)':''}</title></rect>`;
   });
 
-  /* 2) торец справа — окрашен по слоям так же, как фасад, с лёгким затемнением для эффекта тени */
+  /* 2) подписи — название и толщина внутри полосы; если полоса узкая, только толщина */
   layers.forEach((l, i) => {
-    const y = layerY[i], h = layerHeights[i];
-    const color = colorOf(l, i);
-    const pts = `${ox+boxW},${y} ${ox+boxW+depth*0.5},${y-bevel} ${ox+boxW+depth*0.5},${y-bevel+h} ${ox+boxW},${y+h}`;
-    svg += `<polygon points="${pts}" fill="${color}" stroke="#0f1117" stroke-width="1"/>`;
-    svg += `<polygon points="${pts}" fill="#000000" opacity="0.28"/>`; /* затемнение торца для объёма */
+    const a0 = xBounds[i], w = widths[i];
+    const c = toXY(a0 + w/2, plotAcross/2);
+    const name = (l.material && l.material.trim()) ? l.material : ('слой ' + (i+1));
+    const thickText = (l.thickness||0).toFixed(3) + ' м';
+    const textColor = l.isInsulation ? '#fff' : '#c8cce0';
+    const fitsTwoLines = vertical ? (w >= 28) : (w >= 55);
+    if (fitsTwoLines){
+      const maxChars = vertical ? Math.max(6, Math.floor((plotAcross-16)/5.6)) : Math.max(4, Math.floor((w-8)/5.6));
+      svg += `<text x="${c.x.toFixed(1)}" y="${(c.y-6).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="600" fill="${textColor}">${escapeXml(truncateText(name, maxChars))}</text>`;
+      svg += `<text x="${c.x.toFixed(1)}" y="${(c.y+10).toFixed(1)}" text-anchor="middle" font-size="10" fill="${textColor}" opacity="0.85">${thickText}</text>`;
+    } else if (vertical){
+      svg += `<text x="${c.x.toFixed(1)}" y="${(c.y+3).toFixed(1)}" text-anchor="middle" font-size="9" fill="${textColor}">${thickText}</text>`;
+    } else {
+      svg += `<text x="${c.x.toFixed(1)}" y="${c.y.toFixed(1)}" text-anchor="middle" font-size="9" fill="${textColor}" transform="rotate(-90 ${c.x.toFixed(1)} ${c.y.toFixed(1)})">${thickText}</text>`;
+    }
   });
 
-  /* 3) крышка сверху — только у самого внешнего (первого) слоя: это единственная физически видимая сверху поверхность */
-  {
-    const y = layerY[0];
-    const color = colorOf(layers[0], 0);
-    svg += `<polygon points="${ox},${y} ${ox+depth*0.5},${y-bevel} ${ox+boxW+depth*0.5},${y-bevel} ${ox+boxW},${y}" fill="${color}" stroke="#0f1117" stroke-width="1"/>`;
+  /* 3) края "снаружи"/"внутри" */
+  if (vertical){
+    const top = toXY(0, plotAcross/2), bot = toXY(plotAlong, plotAcross/2);
+    svg += `<text x="${top.x.toFixed(1)}" y="${(padA1-10).toFixed(1)}" text-anchor="middle" font-size="13" font-weight="600" fill="#8b90b3">снаружи</text>`;
+    svg += `<text x="${bot.x.toFixed(1)}" y="${(padA1+plotAlong+18).toFixed(1)}" text-anchor="middle" font-size="13" font-weight="600" fill="#8b90b3">внутри</text>`;
+  } else {
+    const pStart = toXY(0, plotAcross), pEnd = toXY(plotAlong, plotAcross);
+    svg += `<line x1="${pStart.x.toFixed(1)}" y1="${pStart.y.toFixed(1)}" x2="${pEnd.x.toFixed(1)}" y2="${pEnd.y.toFixed(1)}" stroke="#3a3f5c" stroke-width="1"/>`;
+    xBounds.forEach(b => {
+      const p = toXY(b, plotAcross);
+      svg += `<line x1="${p.x.toFixed(1)}" y1="${p.y.toFixed(1)}" x2="${p.x.toFixed(1)}" y2="${(p.y+5).toFixed(1)}" stroke="#6b7099" stroke-width="1"/>`;
+    });
+    svg += `<text x="${pStart.x.toFixed(1)}" y="${H-8}" text-anchor="start" font-size="13" font-weight="600" fill="#8b90b3">снаружи</text>`;
+    svg += `<text x="${pEnd.x.toFixed(1)}" y="${H-8}" text-anchor="end" font-size="13" font-weight="600" fill="#8b90b3">внутри</text>`;
   }
 
-  /* 4) подписи — поверх всего, в одну строку */
-  layers.forEach((l, i) => {
-    const h = layerHeights[i];
-    const midY = layerY[i] + h/2;
-    const rawName = l.material && l.material.trim() ? l.material : '—';
-    const thickText = l.thickness ? l.thickness.toFixed(3)+' м' : '—';
-    const fullLabel = truncateText(`${rawName}, δ = ${thickText}`, maxNameChars);
-    const textColor = l.isInsulation ? '#fff' : '#c8cce0';
-    svg += `<text x="${ox+12}" y="${midY+4}" font-size="10" font-weight="600" fill="${textColor}" font-family="Inter,sans-serif">${escapeXml(fullLabel)}</text>`;
-  });
+  /* 4) линия температуры поверх среза — точки излома строго на границах слоёв */
+  if (tempData){
+    const { tInt, tExt, Rsi, Rse, RFact, insLayer } = tempData;
+    const marginAlong = Math.max(plotAlong*0.05, 16);
+    const points = [{ a:-marginAlong, t:tExt }];
+    let Rcum = Rse;
+    points.push({ a:0, t: tExt + (Rcum/RFact)*(tInt-tExt) });
+    layers.forEach((l,i) => {
+      const th = (l.id === insLayer.id) ? insLayer.thickness : l.thickness;
+      const Ri = l.lambda ? (th||0)/l.lambda : 0;
+      Rcum += Ri;
+      points.push({ a: xBounds[i+1], t: tExt + (Rcum/RFact)*(tInt-tExt) });
+    });
+    points.push({ a: plotAlong+marginAlong, t: tInt });
 
+    const tMin = Math.min(tExt, ...points.map(p=>p.t)) - 4;
+    const tMax = Math.max(tInt, ...points.map(p=>p.t)) + 4;
+    const acrossOfTemp = t => (1 - (t-tMin)/(tMax-tMin)) * plotAcross;
+    const xyOf = p => toXY(p.a, acrossOfTemp(p.t));
 
-  /* Шкала толщины слева — засечки и накопительная толщина на каждой границе слоя */
-  const scaleX = ox - 60;
-  svg += `<line x1="${scaleX}" y1="${oy}" x2="${scaleX}" y2="${oy+boxH}" stroke="#3a3f5c" stroke-width="1"/>`;
-  let by = oy;
-  boundaries.forEach((cum, i) => {
-    const y = by;
-    svg += `<line x1="${scaleX-4}" y1="${y}" x2="${scaleX+4}" y2="${y}" stroke="#6b7099" stroke-width="1"/>`;
-    svg += `<line x1="${scaleX+4}" y1="${y}" x2="${ox}" y2="${y}" stroke="#3a3f5c" stroke-width="1" stroke-dasharray="2,3"/>`;
-    svg += `<text x="${scaleX-8}" y="${y+3}" text-anchor="end" font-size="9" fill="#8b90b3" font-family="Inter,sans-serif">${cum.toFixed(3)}</text>`;
-    if (i < layerHeights.length) by += layerHeights[i];
-  });
-  svg += `<text x="${scaleX}" y="${oy-14}" text-anchor="middle" font-size="9" fill="#6b7099" font-family="Inter,sans-serif">толщина, м</text>`;
+    /* шкала температуры — только в горизонтальном режиме (слева, засечки+подписи) */
+    if (!vertical){
+      const stepY = 10;
+      for (let t = Math.ceil(tMin/stepY)*stepY; t <= tMax; t += stepY){
+        const p = toXY(0, acrossOfTemp(t));
+        svg += `<line x1="${(p.x-5).toFixed(1)}" y1="${p.y.toFixed(1)}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="#6b7099" stroke-width="1"/>`;
+        svg += `<text x="${(p.x-9).toFixed(1)}" y="${(p.y+3).toFixed(1)}" text-anchor="end" font-size="9" fill="#8b90b3">${t}°C</text>`;
+      }
+    }
 
-  /* стрелки теплового потока: снизу тепло (красные), сверху холод (синие) */
-  svg += `<line x1="${ox+20}" y1="${oy+boxH+25}" x2="${ox+20}" y2="${oy+boxH+5}" stroke="#ef4444" stroke-width="2" marker-end="url(#arrowRed)"/>`;
-  svg += `<line x1="${ox+boxW-20}" y1="${oy+boxH+25}" x2="${ox+boxW-20}" y2="${oy+boxH+5}" stroke="#ef4444" stroke-width="2" marker-end="url(#arrowRed)"/>`;
-  svg += `<line x1="${ox+boxW/2}" y1="${oy-40}" x2="${ox+boxW/2}" y2="${oy-15}" stroke="#4f8ef7" stroke-width="2" marker-end="url(#arrowBlue)"/>`;
-  svg += `<text x="${ox+boxW/2}" y="${oy-46}" text-anchor="middle" font-size="10" fill="#4f8ef7" font-family="Inter,sans-serif">холод</text>`;
-  svg += `<text x="${ox+boxW/2}" y="${oy+boxH+40}" text-anchor="middle" font-size="10" fill="#ef4444" font-family="Inter,sans-serif">тепло</text>`;
+    const poly = points.map(p => { const xy = xyOf(p); return `${xy.x.toFixed(1)},${xy.y.toFixed(1)}`; }).join(' ');
+    svg += `<polyline points="${poly}" fill="none" stroke="#f4b942" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    /* подписи температур у соседних точек, если они близко друг к другу, разводим в шахматном порядке */
+    let lastPos = -Infinity, toggle = 0;
+    points.forEach(p => {
+      const xy = xyOf(p);
+      const alongPx = vertical ? xy.y : xy.x;
+      if (alongPx - lastPos < 34){ toggle = 1 - toggle; } else { toggle = 0; }
+      lastPos = alongPx;
+      const dy = -9 - toggle*15;
+      svg += `<circle cx="${xy.x.toFixed(1)}" cy="${xy.y.toFixed(1)}" r="3.5" fill="#f4b942" stroke="#0f1117" stroke-width="1"/>`;
+      svg += `<text x="${xy.x.toFixed(1)}" y="${(xy.y+dy).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">${p.t.toFixed(1)}°</text>`;
+    });
+    const pOut = xyOf(points[0]), pIn = xyOf(points[points.length-1]);
+    svg += `<text x="${(pOut.x + (vertical?16:0)).toFixed(1)}" y="${(vertical? pOut.y+3 : padB1-12).toFixed(1)}" text-anchor="${vertical?'start':'middle'}" font-size="9" fill="#f4b942">t нар.</text>`;
+    svg += `<text x="${(pIn.x - (vertical?16:0)).toFixed(1)}" y="${(vertical? pIn.y+3 : padB1-12).toFixed(1)}" text-anchor="${vertical?'end':'middle'}" font-size="9" fill="#f4b942">t вн.</text>`;
+  }
 
-  svg += `<defs>
-    <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ef4444"/></marker>
-    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#4f8ef7"/></marker>
-  </defs>`;
   svg += `</svg>`;
-  wrap.innerHTML = svg;
+
+  /* 5) итог по R — под графиком */
+  let summaryHtml = '';
+  if (tempData){
+    const { RFact, RNorm, thicknessMin, ok } = tempData;
+    summaryHtml = `<div class="viz-summary">
+      <b>R = Σ(δ/λ) + R<sub>si</sub> + R<sub>se</sub> = ${RFact.toFixed(3)} м²·°C/Вт</b>
+      ${RNorm != null ? `<span class="viz-note"> · требуется R<sub>норм</sub> ≥ ${RNorm.toFixed(3)} м²·°C/Вт</span>` : ''}
+      ${!ok && thicknessMin != null ? `<div class="viz-fail">Недостаточно — нужна толщина утеплителя не менее ${thicknessMin.toFixed(3)} м, чтобы выйти на R<sub>норм</sub>.</div>` : ''}
+      ${ok ? `<div class="viz-ok">Условие R факт. ≥ R норм. выполнено.</div>` : ''}
+    </div>`;
+  }
+  wrap.innerHTML = svg + summaryHtml;
 }
 
 function truncateText(str, maxLen){
