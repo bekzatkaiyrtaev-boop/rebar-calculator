@@ -169,6 +169,11 @@ footer{max-width:1100px;margin:24px auto 0;padding:16px 20px;
     </button>
   </div>
   <div class="design-grid">
+    <div class="design-cell highlight-red">
+      <div class="dc-label">Расчётная температура наружного воздуха (0,92)</div>
+      <div class="dc-val"><span id="design_temp">—</span>°С</div>
+      <div class="dc-sub">t хол. пятидневки, обеспеч. 0,92</div>
+    </div>
     <div class="design-cell">
       <div class="dc-label">Климатический район</div>
       <div class="dc-val" id="climat_district">—</div>
@@ -534,6 +539,7 @@ function render(cityName) {
   document.getElementById('wind_v_jul').textContent     = v(c.wind_v_jul_min);
 
   /* ── Расчётные параметры ── */
+  document.getElementById('design_temp').textContent      = v(c.t_cold_5d_92);
   document.getElementById('climat_district').textContent  = v(c.climat_district);
   document.getElementById('wind_zone').textContent        = v(c.wind_zone);
   document.getElementById('wind_kpa').textContent         = v(c.wind_kpa);
