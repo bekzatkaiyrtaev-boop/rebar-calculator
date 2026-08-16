@@ -232,12 +232,7 @@ details[open] > summary.card-header .details-arrow{transform:rotate(90deg);}
 <div class="page-title">Подбор толщины утеплителя</div>
 <div class="page-subtitle">Расчёт по СН РК 2.04-07-2022 и СП РК 2.04-107-2022 «Тепловая защита зданий»</div>
 
-<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;">
-  <button class="export-btn" onclick="exportDataFile()">💾 Сохранить данные расчёта</button>
-  <button class="export-btn" style="background:var(--surface2);color:var(--accent);border:1px solid var(--border);" onclick="document.getElementById('importFileInput').click()">📂 Загрузить данные расчёта</button>
-  <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importDataFile(this)">
-  <button class="export-btn" style="background:var(--surface2);color:var(--accent);border:1px solid var(--border);" onclick="openHelpModal()">📖 Справка</button>
-</div>
+<input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importDataFile(this)">
 
 <!-- ═══════════════ ИСХОДНЫЕ ДАННЫЕ ═══════════════ -->
 <div class="card">
@@ -387,7 +382,12 @@ details[open] > summary.card-header .details-arrow{transform:rotate(90deg);}
 <div class="card">
   <div class="card-header">
     <span class="title">Вывод</span>
-    <button class="export-btn print-btn" onclick="printReport()">🖨️ Печать</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="export-btn" onclick="exportDataFile()">💾 Сохранить</button>
+      <button class="export-btn" style="background:var(--surface2);color:var(--accent);border:1px solid var(--border);" onclick="document.getElementById('importFileInput').click()">📂 Загрузить</button>
+      <button class="export-btn" style="background:var(--surface2);color:var(--accent);border:1px solid var(--border);" onclick="openHelpModal()">📖 Справка</button>
+      <button class="export-btn print-btn" onclick="printReport()">🖨️ Расчётная записка</button>
+    </div>
   </div>
   <div class="result-grid">
     <div class="result-cell"><div class="rc-label">R норм., м²·°C/Вт</div><div class="rc-val" id="resRNorm">—</div></div>
@@ -1719,7 +1719,7 @@ Promise.all([loadCities(), loadMaterials()]).then(()=>{
       Точка росы t<sub>р</sub> определяется по формуле Магнуса из t<sub>int</sub>/φ<sub>int</sub>. Температура внутренней поверхности τ<sub>si</sub> при расчётных зимних условиях сравнивается с t<sub>р</sub> — конденсата на поверхности быть не должно (п. 6.3.1 СП РК). Дополнительно строится профиль температуры по толщине конструкции — он показывает температуру на каждой границе слоёв, чтобы увидеть риск конденсации не только на поверхности, но и внутри толщи (например, в утеплителе, если пароизоляция расположена неверно).<br><br>
 
       <b>7. Сохранение и печать</b><br>
-      Кнопка «Сохранить данные расчёта» выгружает введённые значения в файл .json — его можно позже загрузить обратно для правки и пересчёта. Кнопка «Печать» в блоке «Вывод» формирует отчёт со всеми формулами, таблицами и итоговым заключением.<br><br>
+      Кнопка «Сохранить данные расчёта» выгружает введённые значения в файл .json — его можно позже загрузить обратно для правки и пересчёта. Кнопка «Расчётная записка» в блоке «Вывод» формирует отчёт со всеми формулами, таблицами и итоговым заключением.<br><br>
 
       <b style="color:var(--red);">Ограничения</b><br>
       • Справочники материалов и климатики — общие для сайта; если нужного материала или города нет в списке, впишите параметры вручную.<br>
