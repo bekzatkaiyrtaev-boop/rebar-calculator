@@ -47,12 +47,14 @@ body {
 .page h1 {
   font-size: 1.2rem;
   margin-bottom: 2px;
+  text-align: center;
 }
 
 .page-subtitle {
   color: var(--text-muted);
   margin-bottom: 14px;
   font-size: 0.8rem;
+  text-align: center;
 }
 
 .card {
@@ -77,6 +79,9 @@ body {
   margin-bottom: 8px;
 }
 .results-header h2 { margin: 0; }
+
+.result-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+.result-sub { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 14px; }
 
 .hint {
   font-size: 0.75rem;
@@ -121,6 +126,71 @@ input[readonly] {
   color: var(--text);
   background: var(--bg-elevated);
   cursor: not-allowed;
+}
+
+/* ── Табличная форма «подпись слева / значение справа» ── */
+table.input-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+table.input-table td { padding: 8px 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
+table.input-table tr:last-child td { border-bottom: none; }
+table.input-table td.it-label { width: 230px; padding-right: 14px; color: var(--text-muted); font-size: 0.8rem; }
+table.input-table td.it-value { position: relative; }
+
+table.input-table input, table.input-table select {
+  width: 100%;
+  max-width: none;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--success-text);
+  font-weight: 600;
+  padding: 5px 6px;
+  transition: background .15s, border-color .15s;
+}
+
+table.input-table input[readonly] {
+  color: var(--text);
+  font-weight: 400;
+  background: var(--bg-elevated);
+  cursor: not-allowed;
+}
+
+table.input-table input[type="checkbox"] {
+  width: auto;
+  padding: 0;
+  background: none;
+  border: none;
+}
+table.input-table input[readonly]:hover { background: var(--bg-elevated); border-color: transparent; }
+
+table.input-table input:hover, table.input-table select:hover { background: var(--bg-elevated); border-color: var(--border); }
+table.input-table input:focus, table.input-table select:focus { outline: none; background: var(--bg-elevated); border-color: var(--accent); }
+
+/* Несколько пар «подпись/значение» в одной строке (ряды хомутов, Колонна, Фундамент, Нагрузки) */
+table.input-table.row-pack { width: auto; table-layout: auto; margin: 2px 0; }
+table.input-table.row-pack td.it-label { width: auto; white-space: nowrap; padding-right: 6px; }
+table.input-table.row-pack td.it-value { width: 80px; padding-right: 28px; }
+table.input-table.row-pack td.it-value:last-child { padding-right: 0; }
+/* Класс бетона (C25/30 и т.п.) не помещается в стандартную узкую ячейку
+   80px, рассчитанную на короткие числа — расширяем только этот select. */
+table.input-table.row-pack select { width: auto; min-width: 100px; }
+
+table.input-table td.it-label .it-sub { display: block; font-size: 0.7rem; opacity: .75; margin-top: 2px; }
+
+.row-check { display: flex; align-items: center; gap: 8px; }
+.row-check input[type="checkbox"] { width: auto; }
+.row-check label { margin: 0; color: var(--text); font-size: 0.8rem; }
+table.input-table .row-check { margin: 0; }
+
+/* Колонна / Подколонник / Фундамент / Нагрузки — без разделительных линий, сворачиваемые */
+.col2-data table.input-table td { border-bottom: none; }
+
+.col2-data .subgroup h2 { display: flex; align-items: center; gap: 6px; }
+.col2-data .subgroup h2 .pedestal-checkbox { width: 15px; height: 15px; }
+
+@media (max-width: 560px) {
+  table.input-table, table.input-table tbody, table.input-table tr, table.input-table td { display: block; width: auto; }
+  table.input-table td.it-label { padding: 0 0 4px; border-bottom: none; }
+  table.input-table tr { padding-bottom: 8px; }
 }
 
 .grid-2 {
@@ -226,6 +296,8 @@ input[readonly] {
   width: 58px;
   padding: 4px 5px;
   font-size: 0.82rem;
+  color: var(--success-text);
+  font-weight: 600;
 }
 
 .mesh-field select.mesh-fyk {
@@ -321,11 +393,6 @@ input[readonly] {
   line-height: 1.3;
 }
 
-.result-card {
-  background: var(--success-bg);
-  border-color: rgba(74, 222, 128, 0.25);
-}
-
 .summary-table {
   width: 100%;
   border-collapse: collapse;
@@ -350,10 +417,10 @@ input[readonly] {
   font-weight: 600;
 }
 
-.summary-table .util-ok { color: var(--success-text); }
-.summary-table .util-warn { color: var(--warning-text); }
-.summary-table .util-bad { color: #f87171; }
-.summary-table .util-neutral { color: var(--accent); }
+.util-ok { color: var(--success-text); }
+.util-warn { color: var(--warning-text); }
+.util-bad { color: #f87171; }
+.util-neutral { color: var(--accent); }
 
 .summary-table tr.toggle-row { cursor: pointer; }
 .summary-table tr.toggle-row:hover td { background: var(--bg-elevated); }
@@ -363,6 +430,26 @@ input[readonly] {
   color: var(--text-muted);
   margin-right: 4px;
 }
+
+/* Итоговая сводка проверок — шкалы использования и бейджи прошёл/не прошёл */
+.checks { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.check-row { font-size: 0.85rem; color: var(--text); }
+.check-row .note { color: var(--text-muted); font-size: 0.78rem; }
+.check-row.toggle-row { cursor: pointer; }
+.check-row .toggle-arrow {
+  display: inline-block;
+  font-size: 0.7em;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+.gauge-row { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+.gauge-pct { font-size: 0.9rem; font-weight: 700; min-width: 44px; text-align: right; }
+.bar-wrap { flex: 1; background: var(--bg); border-radius: 20px; height: 12px; overflow: hidden; }
+.bar { height: 100%; border-radius: 20px; transition: width .2s ease; }
+.badge-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.badge { font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
+.badge.ok { background: var(--success-bg); color: var(--success-text); }
+.badge.fail { background: rgba(248, 113, 113, .15); color: #f87171; }
 
 .recommendations {
   margin-top: 14px;
@@ -627,7 +714,28 @@ summary {
 
 .u1-diagram-img {
   max-width: 100%;
-  width: 420px;
+  width: 294px;
+}
+
+.perimeter-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.perimeter-data { min-width: 0; }
+.perimeter-data table.input-table { table-layout: fixed; }
+.perimeter-data table.input-table td.it-label { width: 130px; }
+
+.perimeter-image { min-width: 0; }
+/* Схемы для внутренней/крайней/угловой колонны имеют разное соотношение
+   сторон — высота ограничена одним значением, чтобы картинка не доминировала
+   над карточкой независимо от её пропорций, ширина подстраивается сама. */
+.perimeter-image .u1-diagram-img { width: auto; max-width: 100%; max-height: 190px; }
+
+@media (max-width: 760px) {
+  .perimeter-layout { grid-template-columns: 1fr; }
 }
 
 .col3-layout {
@@ -695,14 +803,23 @@ summary {
 
 .report-preview:empty { display: none; }
 
-.report-doc h2 { font-size: 1.1rem; margin: 0 0 4px; }
+.report-doc h2 { font-size: 1.1rem; margin: 0 0 4px; text-align: center; }
 .report-doc h3 { font-size: 0.95rem; margin: 16px 0 6px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-.report-doc .report-meta { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 12px; }
+.report-doc .report-meta { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 12px; text-align: center; }
 .report-doc table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; }
 .report-doc td { padding: 3px 8px 3px 0; vertical-align: top; }
 .report-doc td.report-label { color: var(--text-muted); white-space: nowrap; }
 .report-doc th { text-align: left; padding: 3px 8px 3px 0; color: var(--text-muted); border-bottom: 1px solid var(--border); }
-.report-doc .report-formula { color: var(--accent); font-style: italic; margin: 4px 0; }
+.report-doc table.kv-table td:last-child, .report-doc table.kv-table th:last-child { text-align: right; }
+.report-doc table.kv-table td { border-bottom: 1px solid var(--border); padding: 5px 8px 5px 0; }
+.report-doc .report-formula { color: var(--accent); margin: 4px 0; }
+.report-doc .report-formula .katex { color: var(--accent); font-size: 1.05em; }
+.report-doc .formula-label { color: var(--text-muted); font-size: 0.82rem; margin: 10px 0 2px; }
+.report-doc .formula-label:first-of-type { margin-top: 6px; }
+.check-ok { color: var(--success-text); font-weight: 700; }
+.check-bad { color: #f87171; font-weight: 700; }
+ul.constructive-list { list-style: none; padding: 0; margin: 6px 0 0; }
+ul.constructive-list li { padding: 3px 0; }
 .report-doc .report-verdict {
   margin-top: 10px;
   padding: 10px;
@@ -729,6 +846,13 @@ summary {
   width: 100%;
 }
 
+/* Схемы контрольного периметра для крайней и угловой колонны почти квадратные
+   (в отличие от вытянутой схемы для внутренней) — при том же max-width они
+   выходят заметно выше остальных рисунков записки, поэтому сужены отдельно. */
+.report-doc .report-fig img.u1-fig-small {
+  max-width: 200px;
+}
+
 .report-doc .report-fig-caption {
   font-size: 0.78rem;
   color: var(--text-muted);
@@ -744,6 +868,15 @@ summary {
   font-style: italic;
 }
 
+.report-doc .report-footer {
+  margin-top: 24px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
 .print-only { display: none; }
 
 @media print {
@@ -752,14 +885,20 @@ summary {
   #printArea .report-doc { color: #000; font-size: 12pt; }
   #printArea .report-doc h3 { border-bottom: 1px solid #999; }
   #printArea .report-formula { color: #333; }
+  #printArea .report-formula .katex { color: #333; }
+  #printArea .formula-label { color: #666; }
   #printArea table { color: #000; }
   #printArea .report-fig-caption { color: #333; }
   #printArea .report-note { color: #555; border-top-color: #999; }
+  #printArea .report-footer { color: #777; border-top-color: #ccc; }
   #printArea .report-fig { break-inside: avoid; }
   #printArea .sketch-img { filter: invert(1); }
 }
 
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 </head>
 <body>
 
@@ -768,6 +907,8 @@ summary {
 <main class="page">
   <h1>Продавливание фундаментной плиты под колонной</h1>
   <p class="page-subtitle">Расчёт по EN 1992-1-1 (СП РК EN 1992-1-1) §6.4.1–6.4.5</p>
+
+  <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importDataFile(this)">
 
   <div class="tab-bar">
     <button type="button" class="tab-btn active" data-tab="int">Колонна средняя</button>
@@ -780,67 +921,59 @@ summary {
     <div class="col2-data">
       <div class="subgroup">
         <h2>Колонна</h2>
-        <div class="grid-2">
-          <label>c₁, мм (первая сторона)
-            <input type="number" id="int-c1" value="400" min="250">
-          </label>
-          <label>c₂, мм (вторая сторона)
-            <input type="number" id="int-c2" value="400" min="250">
-          </label>
-        </div>
+        <table class="input-table row-pack">
+          <tr>
+            <td class="it-label">c₁, мм</td><td class="it-value"><input type="number" id="int-c1" value="400" min="250"></td>
+            <td class="it-label">c₂, мм</td><td class="it-value"><input type="number" id="int-c2" value="400" min="250"></td>
+          </tr>
+        </table>
         <p id="int-aspectWarning" class="warning" hidden></p>
-        <label style="flex-direction:row;align-items:center;gap:8px">
-          <input type="checkbox" id="int-hasPedestal">
-          Есть подколонник (уширение колонны в основании)
-        </label>
+      </div>
+
+      <div class="subgroup">
+        <h2>Подколонник<input type="checkbox" id="int-hasPedestal" class="pedestal-checkbox"></h2>
         <div id="int-pedestalFields" style="display:none">
           <p class="hint">В плиту продавливает именно подколонник — его размеры используются вместо c₁/c₂ во всех расчётах ниже.</p>
-          <div class="grid-3">
-            <label>b₁, мм (по стороне c₁)
-              <input type="number" id="int-pedB1" value="600">
-            </label>
-            <label>b₂, мм (по стороне c₂)
-              <input type="number" id="int-pedB2" value="600">
-            </label>
-            <label>hₚ, мм (высота)
-              <input type="number" id="int-pedHp" value="400">
-            </label>
-          </div>
+          <table class="input-table row-pack">
+            <tr>
+              <td class="it-label">b₁, мм</td><td class="it-value"><input type="number" id="int-pedB1" value="600"></td>
+              <td class="it-label">b₂, мм</td><td class="it-value"><input type="number" id="int-pedB2" value="600"></td>
+              <td class="it-label">hₚ, мм</td><td class="it-value"><input type="number" id="int-pedHp" value="400"></td>
+            </tr>
+          </table>
           <p id="int-pedestalHeightWarning" class="warning" hidden></p>
         </div>
       </div>
 
       <div class="subgroup">
-        <h2>Нагрузки на обрез фундамента (ULS)</h2>
-        <div class="grid-3">
-          <label>N, тс
-            <input type="number" id="int-N" value="120">
-          </label>
-          <label>Mx, тс·м
-            <input type="number" id="int-Mx" value="0">
-          </label>
-          <label>My, тс·м
-            <input type="number" id="int-My" value="0">
-          </label>
-        </div>
+        <h2>Фундамент</h2>
+        <table class="input-table row-pack">
+          <tr>
+            <td class="it-label">Класс бетона</td>
+            <td class="it-value">
+              <select id="int-fck">
+                <option value="20">C20/25</option>
+                <option value="25" selected>C25/30</option>
+                <option value="30">C30/37</option>
+                <option value="35">C35/45</option>
+                <option value="40">C40/50</option>
+              </select>
+            </td>
+            <td class="it-label">Отпор грунта p, тс/м²</td>
+            <td class="it-value"><input type="number" id="int-soilPressure" value="15" step="0.5"></td>
+          </tr>
+        </table>
       </div>
 
       <div class="subgroup">
-        <h2>Фундамент</h2>
-        <div class="grid-2">
-          <label>Класс бетона
-            <select id="int-fck">
-              <option value="20">C20/25</option>
-              <option value="25" selected>C25/30</option>
-              <option value="30">C30/37</option>
-              <option value="35">C35/45</option>
-              <option value="40">C40/50</option>
-            </select>
-          </label>
-          <label>Отпор грунта p, тс/м²
-            <input type="number" id="int-soilPressure" value="15" step="0.5">
-          </label>
-        </div>
+        <h2>Нагрузки на обрез фундамента (ULS)</h2>
+        <table class="input-table row-pack">
+          <tr>
+            <td class="it-label">N, тс</td><td class="it-value"><input type="number" id="int-N" value="120"></td>
+            <td class="it-label">Mx, тс·м</td><td class="it-value"><input type="number" id="int-Mx" value="0"></td>
+            <td class="it-label">My, тс·м</td><td class="it-value"><input type="number" id="int-My" value="0"></td>
+          </tr>
+        </table>
       </div>
 
     </div>
@@ -853,24 +986,31 @@ summary {
 
   <details class="card reinf-section" id="int-perimeterSection" open>
     <summary class="summary-badge"><span>Контрольный периметр и метод расчёта</span><span class="perimeter-badge" id="int-perimeterBadge">u₁ = — · β = —</span></summary>
-    <div class="u1-diagram-wrap"><img src="prodavlivanie-fundament/prodavlivanie-kp-3.webp" alt="Схема контрольного периметра u1 вокруг колонны (по рис. 6.13 EN 1992-1-1)" class="sketch-img u1-diagram-img"></div>
-    <label>u₁ — контрольный периметр, мм (по умолчанию — авто; можно уменьшить вручную, например при отверстии рядом с колонной — значение должно быть меньше авто-расчётного)
-      <input type="number" id="int-u1Override" placeholder="авто">
-    </label>
-    <label>Метод расчёта β
-      <select id="int-betaMethod">
-        <option value="formula" selected>По формулам (6.39/6.43)</option>
-        <option value="figure">Приближённо, по рис. 6.21N</option>
-        <option value="manual">Задать вручную</option>
-      </select>
-    </label>
-    <div class="u1-diagram-wrap" id="int-betaFigureWrap" style="display:none">
-      <img src="prodavlivanie-fundament/prodavlivanie-kp-4.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img">
+    <div class="perimeter-layout">
+      <div class="perimeter-data">
+        <table class="input-table">
+          <tr><td class="it-label">u₁ — контрольный периметр, мм<span class="it-sub">(по умолчанию — авто; можно уменьшить вручную)</span></td><td class="it-value"><input type="number" id="int-u1Override" placeholder="авто"></td></tr>
+          <tr>
+            <td class="it-label">Метод расчёта β</td>
+            <td class="it-value">
+              <select id="int-betaMethod">
+                <option value="formula" selected>По формулам (6.39/6.43)</option>
+                <option value="figure">Приближённо, по рис. 6.21N</option>
+                <option value="manual">Задать вручную</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+        <div id="int-manualBetaWrap" style="display:none">
+          <table class="input-table">
+            <tr><td class="it-label">β (вручную)</td><td class="it-value"><input type="number" id="int-manualBeta" value="1.15" step="0.01"></td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="perimeter-image">
+        <div class="u1-diagram-wrap"><img src="prodavlivanie-fundament/prodavlivanie-kp-3.webp" alt="Схема контрольного периметра u1 вокруг колонны (по рис. 6.13 EN 1992-1-1)" class="sketch-img u1-diagram-img"></div>
+      </div>
     </div>
-    <label id="int-manualBetaWrap" style="display:none">β (вручную)
-      <input type="number" id="int-manualBeta" value="1.15" step="0.01">
-    </label>
-    <label id="int-betaFigureWrap" style="display:none"><div class="u1-diagram-wrap"><img src="prodavlivanie-fundament/prodavlivanie-kp-5.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img"></div></label>
     <div id="int-figureBetaDiagramWrap" class="u1-diagram-wrap" style="display:none"><img src="prodavlivanie-fundament/prodavlivanie-kp-6.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img"></div>
   </details>
 
@@ -884,9 +1024,9 @@ summary {
     <div id="int-meshRowsY"></div>
     <button type="button" id="int-addMeshYBtn" class="mesh-add-btn" title="Добавить сетку по Y">+</button>
 
-    <label>Рабочая высота d, мм <span class="hint" style="display:inline" title="Среднее (dx+dy)/2 по сеткам выше — считается автоматически, как в EN 1992-1-1">ⓘ</span>
-      <input type="number" id="int-d" value="450" readonly>
-    </label>
+    <table class="input-table">
+      <tr><td class="it-label">Рабочая высота d, мм</td><td class="it-value"><input type="number" id="int-d" value="450" readonly></td></tr>
+    </table>
   </details>
 
   <template id="int-meshRowTemplate">
@@ -915,32 +1055,45 @@ summary {
 
   <details class="card reinf-section" id="int-reinfSection" open>
     <summary>Поперечная арматура на продавливание<span id="int-reinfModeLabel" class="reinf-mode-label"></span></summary>
-    <label>Класс арматуры на продавливание (хомуты)
-      <select id="int-fywk">
-        <option value="400">A400 (fyk = 400 МПа)</option>
-        <option value="500" selected>A500 (fyk = 500 МПа)</option>
-      </select>
-    </label>
-    <label>Режим
-      <select id="int-reinfMode">
-        <option value="check">Проверить свою раскладку</option>
-        <option value="none" selected>Без поперечной арматуры</option>
-      </select>
-    </label>
+    <table class="input-table">
+      <tr>
+        <td class="it-label">Класс арматуры на продавливание (хомуты)</td>
+        <td class="it-value">
+          <select id="int-fywk">
+            <option value="400">A400 (fyk = 400 МПа)</option>
+            <option value="500" selected>A500 (fyk = 500 МПа)</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="it-label">Режим</td>
+        <td class="it-value">
+          <select id="int-reinfMode">
+            <option value="check">Проверить свою раскладку</option>
+            <option value="none" selected>Без поперечной арматуры</option>
+          </select>
+        </td>
+      </tr>
+    </table>
 
     <div id="int-reinfManualFields">
-      <label>Диаметр хомутов Ø, мм
-        <select id="int-manDia">
-          <option value="8">8</option>
-          <option value="10">10</option>
-          <option value="12">12</option>
-          <option value="14">14</option>
-          <option value="16">16</option>
-          <option value="18">18</option>
-          <option value="20">20</option>
-        </select>
-      </label>
-      
+      <table class="input-table">
+        <tr>
+          <td class="it-label">Диаметр хомутов Ø, мм</td>
+          <td class="it-value">
+            <select id="int-manDia">
+              <option value="8">8</option>
+              <option value="10">10</option>
+              <option value="12">12</option>
+              <option value="14">14</option>
+              <option value="16">16</option>
+              <option value="18">18</option>
+              <option value="20">20</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+
       <p class="hint">Для каждого ряда (периметра) — расстояние от грани колонны отдельно по X и Y, и число стержней отдельно по X и Y. В углах стержень всегда есть, остальные распределяются между углами на равных расстояниях. Прямоугольный контур ряда получается автоматически из этих расстояний.</p>
 
       <div class="reinf-diagram-wrap">
@@ -958,30 +1111,32 @@ summary {
     <div class="reinf-row">
       <div class="reinf-row-title"></div>
       <div class="row-gap-info"></div>
-      <div class="grid-2">
-        <label>Расстояние от грани по X, мм
-          <input type="number" class="row-offsetX" value="200" step="10">
-        </label>
-        <label>Расстояние от грани по Y, мм
-          <input type="number" class="row-offsetY" value="200" step="10">
-        </label>
-        <label>Число стержней по X (с углами)
-          <input type="number" class="row-countX" value="4" step="1" min="2">
-        </label>
-        <label>Число стержней по Y (с углами)
-          <input type="number" class="row-countY" value="4" step="1" min="2">
-        </label>
-      </div>
+      <table class="input-table row-pack">
+        <tr>
+          <td class="it-label">Расстояние от грани по X, мм</td>
+          <td class="it-value"><input type="number" class="row-offsetX" value="200" step="10"></td>
+          <td class="it-label">Число стержней по X (с углами)</td>
+          <td class="it-value"><input type="number" class="row-countX" value="4" step="1" min="2"></td>
+        </tr>
+        <tr>
+          <td class="it-label">Расстояние от грани по Y, мм</td>
+          <td class="it-value"><input type="number" class="row-offsetY" value="200" step="10"></td>
+          <td class="it-label">Число стержней по Y (с углами)</td>
+          <td class="it-value"><input type="number" class="row-countY" value="4" step="1" min="2"></td>
+        </tr>
+      </table>
       <button type="button" class="row-remove btn-secondary">Удалить ряд</button>
     </div>
   </template>
 
-  <button id="int-calcBtn" class="btn-primary">Рассчитать</button>
-
   <section id="int-results" class="card result-card" hidden>
     <div class="results-header">
-      <h2>Результаты</h2>
-      <button type="button" id="int-reportBtn" class="btn-secondary">Печать</button>
+      <h2 style="margin:0;">Результаты расчёта</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" onclick="exportDataFile()">💾 Сохранить</button>
+        <button type="button" class="btn-secondary" onclick="document.getElementById('importFileInput').click()">📂 Загрузить</button>
+        <button type="button" id="int-reportBtn" class="btn-secondary">🖨️ Расчётная записка</button>
+      </div>
     </div>
 
     <div class="live-detail-hidden">
@@ -1079,74 +1234,70 @@ summary {
     <div class="col2-data">
       <div class="subgroup">
         <h2>Колонна</h2>
-        <div class="grid-2">
-          <label>c₁, мм (⊥ свободному краю)
-            <input type="number" id="edge-c1" value="400" min="250">
-          </label>
-          <label>c₂, мм (∥ свободному краю)
-            <input type="number" id="edge-c2" value="400" min="250">
-          </label>
-        </div>
-
-        <label style="flex-direction:row;align-items:center;gap:8px">
-          <input type="checkbox" id="edge-hasPedestal">
-          Есть подколонник (уширение колонны в основании)
-        </label>
-        <div id="edge-pedestalFields" style="display:none">
-          <p class="hint">В плиту продавливает именно подколонник — его размеры используются вместо c₁/c₂ во всех расчётах ниже.</p>
-          <div class="grid-3">
-            <label>b₁, мм (по стороне c₁)
-              <input type="number" id="edge-pedB1" value="600">
-            </label>
-            <label>b₂, мм (по стороне c₂)
-              <input type="number" id="edge-pedB2" value="600">
-            </label>
-            <label>hₚ, мм (высота)
-              <input type="number" id="edge-pedHp" value="400">
-            </label>
-          </div>
-          <p id="edge-pedestalHeightWarning" class="warning" hidden></p>
-        </div>
-
-        <label style="flex-direction:row;align-items:center;gap:8px">
-          <input type="checkbox" id="edge-towardInterior" checked>
-          Эксцентриситет направлен внутрь плиты (обычный случай)
-        </label>
-
+        <table class="input-table row-pack">
+          <tr>
+            <td class="it-label">c₁, мм (⊥ свободному краю)</td><td class="it-value"><input type="number" id="edge-c1" value="400" min="250"></td>
+            <td class="it-label">c₂, мм (∥ свободному краю)</td><td class="it-value"><input type="number" id="edge-c2" value="400" min="250"></td>
+          </tr>
+        </table>
+        <table class="input-table">
+          <tr>
+            <td class="it-label">Эксцентриситет</td>
+            <td class="it-value">
+              <div class="row-check">
+                <input type="checkbox" id="edge-towardInterior" checked>
+                <label for="edge-towardInterior">Направлен внутрь плиты (обычный случай)</label>
+              </div>
+            </td>
+          </tr>
+        </table>
         <p id="edge-aspectWarning" class="warning" hidden></p>
       </div>
 
       <div class="subgroup">
-        <h2>Нагрузки на обрез фундамента (ULS)</h2>
-        <div class="grid-3">
-          <label>N, тс
-            <input type="number" id="edge-N" value="120">
-          </label>
-          <label>Mx, тс·м
-            <input type="number" id="edge-Mx" value="0">
-          </label>
-          <label>My, тс·м
-            <input type="number" id="edge-My" value="0">
-          </label>
+        <h2>Подколонник<input type="checkbox" id="edge-hasPedestal" class="pedestal-checkbox"></h2>
+        <div id="edge-pedestalFields" style="display:none">
+          <p class="hint">В плиту продавливает именно подколонник — его размеры используются вместо c₁/c₂ во всех расчётах ниже.</p>
+          <table class="input-table row-pack">
+            <tr>
+              <td class="it-label">b₁, мм</td><td class="it-value"><input type="number" id="edge-pedB1" value="600"></td>
+              <td class="it-label">b₂, мм</td><td class="it-value"><input type="number" id="edge-pedB2" value="600"></td>
+              <td class="it-label">hₚ, мм</td><td class="it-value"><input type="number" id="edge-pedHp" value="400"></td>
+            </tr>
+          </table>
+          <p id="edge-pedestalHeightWarning" class="warning" hidden></p>
         </div>
       </div>
 
       <div class="subgroup">
         <h2>Фундамент</h2>
-        <div class="grid-2">
-          <label>Класс бетона
-            <select id="edge-fck">
-              <option value="20">C20/25</option>
-              <option value="25" selected>C25/30</option>
-              <option value="30">C30/37</option>
-              <option value="35">C35/45</option>
-              <option value="40">C40/50</option>
-            </select>
-          </label>
-          <label>Отпор грунта p, тс/м²
-            <input type="number" id="edge-soilPressure" value="15" step="0.5">
-          </label>
-        </div>
+        <table class="input-table row-pack">
+          <tr>
+            <td class="it-label">Класс бетона</td>
+            <td class="it-value">
+              <select id="edge-fck">
+                <option value="20">C20/25</option>
+                <option value="25" selected>C25/30</option>
+                <option value="30">C30/37</option>
+                <option value="35">C35/45</option>
+                <option value="40">C40/50</option>
+              </select>
+            </td>
+            <td class="it-label">Отпор грунта p, тс/м²</td>
+            <td class="it-value"><input type="number" id="edge-soilPressure" value="15" step="0.5"></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="subgroup">
+        <h2>Нагрузки на обрез фундамента (ULS)</h2>
+        <table class="input-table row-pack">
+          <tr>
+            <td class="it-label">N, тс</td><td class="it-value"><input type="number" id="edge-N" value="120"></td>
+            <td class="it-label">Mx, тс·м</td><td class="it-value"><input type="number" id="edge-Mx" value="0"></td>
+            <td class="it-label">My, тс·м</td><td class="it-value"><input type="number" id="edge-My" value="0"></td>
+          </tr>
+        </table>
       </div>
     </div>
 
@@ -1158,24 +1309,31 @@ summary {
 
   <details class="card reinf-section" id="edge-perimeterSection" open>
     <summary class="summary-badge"><span>Контрольный периметр и метод расчёта</span><span class="perimeter-badge" id="edge-perimeterBadge">u₁ = — · β = —</span></summary>
-    <div class="u1-diagram-wrap"><img src="prodavlivanie-fundament/prodavlivanie-kp-7.webp" alt="Схема контрольного периметра u1 вокруг колонны (по рис. 6.13 EN 1992-1-1)" class="sketch-img u1-diagram-img"></div>
-    <label>u₁ — контрольный периметр, мм (по умолчанию — авто; можно уменьшить вручную, например при отверстии рядом с колонной — значение должно быть меньше авто-расчётного)
-      <input type="number" id="edge-u1Override" placeholder="авто">
-    </label>
-    <label>Метод расчёта β
-      <select id="edge-betaMethod">
-        <option value="formula" selected>По формулам (6.44/6.46)</option>
-        <option value="figure">Приближённо, по рис. 6.21N</option>
-        <option value="manual">Задать вручную</option>
-      </select>
-    </label>
-    <div class="u1-diagram-wrap" id="edge-betaFigureWrap" style="display:none">
-      <img src="prodavlivanie-fundament/prodavlivanie-kp-8.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img">
+    <div class="perimeter-layout">
+      <div class="perimeter-data">
+        <table class="input-table">
+          <tr><td class="it-label">u₁ — контрольный периметр, мм<span class="it-sub">(по умолчанию — авто; можно уменьшить вручную)</span></td><td class="it-value"><input type="number" id="edge-u1Override" placeholder="авто"></td></tr>
+          <tr>
+            <td class="it-label">Метод расчёта β</td>
+            <td class="it-value">
+              <select id="edge-betaMethod">
+                <option value="formula" selected>По формулам (6.44/6.46)</option>
+                <option value="figure">Приближённо, по рис. 6.21N</option>
+                <option value="manual">Задать вручную</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+        <div id="edge-manualBetaWrap" style="display:none">
+          <table class="input-table">
+            <tr><td class="it-label">β (вручную)</td><td class="it-value"><input type="number" id="edge-manualBeta" value="1.4" step="0.01"></td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="perimeter-image">
+        <div class="u1-diagram-wrap"><img src="prodavlivanie-fundament/prodavlivanie-u1-perimeter-edge.png" alt="Схема контрольного периметра u1 вокруг колонны (по рис. 6.15 EN 1992-1-1)" class="sketch-img u1-diagram-img"></div>
+      </div>
     </div>
-    <label id="edge-manualBetaWrap" style="display:none">β (вручную)
-      <input type="number" id="edge-manualBeta" value="1.4" step="0.01">
-    </label>
-    <label id="edge-betaFigureWrap" style="display:none"><div class="u1-diagram-wrap"><img src="prodavlivanie-fundament/prodavlivanie-kp-9.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img"></div></label>
     <div id="edge-figureBetaDiagramWrap" class="u1-diagram-wrap" style="display:none"><img src="prodavlivanie-fundament/prodavlivanie-kp-10.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img"></div>
   </details>
 
@@ -1189,9 +1347,9 @@ summary {
     <div id="edge-meshRowsY"></div>
     <button type="button" id="edge-addMeshYBtn" class="mesh-add-btn" title="Добавить сетку по Y">+</button>
 
-    <label>Рабочая высота d, мм <span class="hint" style="display:inline" title="Среднее (dx+dy)/2 по сеткам выше — считается автоматически, как в EN 1992-1-1">ⓘ</span>
-      <input type="number" id="edge-d" value="450" readonly>
-    </label>
+    <table class="input-table">
+      <tr><td class="it-label">Рабочая высота d, мм</td><td class="it-value"><input type="number" id="edge-d" value="450" readonly></td></tr>
+    </table>
   </details>
 
   <template id="edge-meshRowTemplate">
@@ -1219,40 +1377,56 @@ summary {
 
   <details class="card reinf-section" id="edge-reinfSection" open>
     <summary>Поперечная арматура на продавливание<span id="edge-reinfModeLabel" class="reinf-mode-label"></span></summary>
-    <label>Класс арматуры на продавливание (хомуты)
-      <select id="edge-fywk">
-        <option value="400">A400 (fyk = 400 МПа)</option>
-        <option value="500" selected>A500 (fyk = 500 МПа)</option>
-      </select>
-    </label>
-    <label>Режим
-      <select id="edge-reinfMode">
-        <option value="check">Проверить свою раскладку</option>
-        <option value="none" selected>Без поперечной арматуры</option>
-      </select>
-    </label>
+    <table class="input-table">
+      <tr>
+        <td class="it-label">Класс арматуры на продавливание (хомуты)</td>
+        <td class="it-value">
+          <select id="edge-fywk">
+            <option value="400">A400 (fyk = 400 МПа)</option>
+            <option value="500" selected>A500 (fyk = 500 МПа)</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="it-label">Режим</td>
+        <td class="it-value">
+          <select id="edge-reinfMode">
+            <option value="check">Проверить свою раскладку</option>
+            <option value="none" selected>Без поперечной арматуры</option>
+          </select>
+        </td>
+      </tr>
+    </table>
 
     <div id="edge-reinfManualFields">
-      <label>Диаметр хомутов Ø, мм
-        <select id="edge-manDia">
-          <option value="8">8</option>
-          <option value="10">10</option>
-          <option value="12">12</option>
-          <option value="14">14</option>
-          <option value="16">16</option>
-          <option value="18">18</option>
-          <option value="20">20</option>
-        </select>
-      </label>
-      
-      <label>Сторона свободного края (на схеме)
-        <select id="edge-edgeOrientation">
-          <option value="left">Слева</option>
-          <option value="right">Справа</option>
-          <option value="top">Сверху</option>
-          <option value="bottom">Снизу</option>
-        </select>
-      </label>
+      <table class="input-table">
+        <tr>
+          <td class="it-label">Диаметр хомутов Ø, мм</td>
+          <td class="it-value">
+            <select id="edge-manDia">
+              <option value="8">8</option>
+              <option value="10">10</option>
+              <option value="12">12</option>
+              <option value="14">14</option>
+              <option value="16">16</option>
+              <option value="18">18</option>
+              <option value="20">20</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="it-label">Сторона свободного края (на схеме)</td>
+          <td class="it-value">
+            <select id="edge-edgeOrientation">
+              <option value="left">Слева</option>
+              <option value="right">Справа</option>
+              <option value="top">Сверху</option>
+              <option value="bottom">Снизу</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+
       <p class="hint">Для каждого ряда (периметра) — расстояние от грани колонны отдельно по X и Y, и число стержней отдельно по X и Y. В углах стержень всегда есть, остальные распределяются между углами на равных расстояниях. Прямоугольный контур ряда получается автоматически из этих расстояний.</p>
 
       <div class="reinf-diagram-wrap">
@@ -1270,30 +1444,32 @@ summary {
     <div class="reinf-row">
       <div class="reinf-row-title"></div>
       <div class="row-gap-info"></div>
-      <div class="grid-2">
-        <label>Расстояние от грани по X, мм
-          <input type="number" class="row-offsetX" value="200" step="10">
-        </label>
-        <label>Расстояние от грани по Y, мм
-          <input type="number" class="row-offsetY" value="200" step="10">
-        </label>
-        <label>Число стержней по X (с углами)
-          <input type="number" class="row-countX" value="4" step="1" min="2">
-        </label>
-        <label>Число стержней по Y (с углами)
-          <input type="number" class="row-countY" value="4" step="1" min="2">
-        </label>
-      </div>
+      <table class="input-table row-pack">
+        <tr>
+          <td class="it-label">Расстояние от грани по X, мм</td>
+          <td class="it-value"><input type="number" class="row-offsetX" value="200" step="10"></td>
+          <td class="it-label">Число стержней по X (с углами)</td>
+          <td class="it-value"><input type="number" class="row-countX" value="4" step="1" min="2"></td>
+        </tr>
+        <tr>
+          <td class="it-label">Расстояние от грани по Y, мм</td>
+          <td class="it-value"><input type="number" class="row-offsetY" value="200" step="10"></td>
+          <td class="it-label">Число стержней по Y (с углами)</td>
+          <td class="it-value"><input type="number" class="row-countY" value="4" step="1" min="2"></td>
+        </tr>
+      </table>
       <button type="button" class="row-remove btn-secondary">Удалить ряд</button>
     </div>
   </template>
 
-  <button id="edge-calcBtn" class="btn-primary">Рассчитать</button>
-
   <section id="edge-results" class="card result-card" hidden>
     <div class="results-header">
-      <h2>Результаты</h2>
-      <button type="button" id="edge-reportBtn" class="btn-secondary">Печать</button>
+      <h2 style="margin:0;">Результаты расчёта</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" onclick="exportDataFile()">💾 Сохранить</button>
+        <button type="button" class="btn-secondary" onclick="document.getElementById('importFileInput').click()">📂 Загрузить</button>
+        <button type="button" id="edge-reportBtn" class="btn-secondary">🖨️ Расчётная записка</button>
+      </div>
     </div>
 
     <div class="live-detail-hidden">
@@ -1391,74 +1567,70 @@ summary {
     <div class="col2-data">
       <div class="subgroup">
         <h2>Колонна</h2>
-        <div class="grid-2">
-          <label>c₁, мм (⊥ свободному краю)
-            <input type="number" id="corner-c1" value="400" min="250">
-          </label>
-          <label>c₂, мм (∥ свободному краю)
-            <input type="number" id="corner-c2" value="400" min="250">
-          </label>
-        </div>
-
-        <label style="flex-direction:row;align-items:center;gap:8px">
-          <input type="checkbox" id="corner-hasPedestal">
-          Есть подколонник (уширение колонны в основании)
-        </label>
-        <div id="corner-pedestalFields" style="display:none">
-          <p class="hint">В плиту продавливает именно подколонник — его размеры используются вместо c₁/c₂ во всех расчётах ниже.</p>
-          <div class="grid-3">
-            <label>b₁, мм (по стороне c₁)
-              <input type="number" id="corner-pedB1" value="600">
-            </label>
-            <label>b₂, мм (по стороне c₂)
-              <input type="number" id="corner-pedB2" value="600">
-            </label>
-            <label>hₚ, мм (высота)
-              <input type="number" id="corner-pedHp" value="400">
-            </label>
-          </div>
-          <p id="corner-pedestalHeightWarning" class="warning" hidden></p>
-        </div>
-
-        <label style="flex-direction:row;align-items:center;gap:8px">
-          <input type="checkbox" id="corner-towardInterior" checked>
-          Эксцентриситет направлен внутрь плиты (обычный случай)
-        </label>
-
+        <table class="input-table row-pack">
+          <tr>
+            <td class="it-label">c₁, мм (⊥ свободному краю)</td><td class="it-value"><input type="number" id="corner-c1" value="400" min="250"></td>
+            <td class="it-label">c₂, мм (∥ свободному краю)</td><td class="it-value"><input type="number" id="corner-c2" value="400" min="250"></td>
+          </tr>
+        </table>
+        <table class="input-table">
+          <tr>
+            <td class="it-label">Эксцентриситет</td>
+            <td class="it-value">
+              <div class="row-check">
+                <input type="checkbox" id="corner-towardInterior" checked>
+                <label for="corner-towardInterior">Направлен внутрь плиты (обычный случай)</label>
+              </div>
+            </td>
+          </tr>
+        </table>
         <p id="corner-aspectWarning" class="warning" hidden></p>
       </div>
 
       <div class="subgroup">
-        <h2>Нагрузки на обрез фундамента (ULS)</h2>
-        <div class="grid-3">
-          <label>N, тс
-            <input type="number" id="corner-N" value="120">
-          </label>
-          <label>Mx, тс·м
-            <input type="number" id="corner-Mx" value="0">
-          </label>
-          <label>My, тс·м
-            <input type="number" id="corner-My" value="0">
-          </label>
+        <h2>Подколонник<input type="checkbox" id="corner-hasPedestal" class="pedestal-checkbox"></h2>
+        <div id="corner-pedestalFields" style="display:none">
+          <p class="hint">В плиту продавливает именно подколонник — его размеры используются вместо c₁/c₂ во всех расчётах ниже.</p>
+          <table class="input-table row-pack">
+            <tr>
+              <td class="it-label">b₁, мм</td><td class="it-value"><input type="number" id="corner-pedB1" value="600"></td>
+              <td class="it-label">b₂, мм</td><td class="it-value"><input type="number" id="corner-pedB2" value="600"></td>
+              <td class="it-label">hₚ, мм</td><td class="it-value"><input type="number" id="corner-pedHp" value="400"></td>
+            </tr>
+          </table>
+          <p id="corner-pedestalHeightWarning" class="warning" hidden></p>
         </div>
       </div>
 
       <div class="subgroup">
         <h2>Фундамент</h2>
-        <div class="grid-2">
-          <label>Класс бетона
-            <select id="corner-fck">
-              <option value="20">C20/25</option>
-              <option value="25" selected>C25/30</option>
-              <option value="30">C30/37</option>
-              <option value="35">C35/45</option>
-              <option value="40">C40/50</option>
-            </select>
-          </label>
-          <label>Отпор грунта p, тс/м²
-            <input type="number" id="corner-soilPressure" value="15" step="0.5">
-          </label>
-        </div>
+        <table class="input-table row-pack">
+          <tr>
+            <td class="it-label">Класс бетона</td>
+            <td class="it-value">
+              <select id="corner-fck">
+                <option value="20">C20/25</option>
+                <option value="25" selected>C25/30</option>
+                <option value="30">C30/37</option>
+                <option value="35">C35/45</option>
+                <option value="40">C40/50</option>
+              </select>
+            </td>
+            <td class="it-label">Отпор грунта p, тс/м²</td>
+            <td class="it-value"><input type="number" id="corner-soilPressure" value="15" step="0.5"></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="subgroup">
+        <h2>Нагрузки на обрез фундамента (ULS)</h2>
+        <table class="input-table row-pack">
+          <tr>
+            <td class="it-label">N, тс</td><td class="it-value"><input type="number" id="corner-N" value="120"></td>
+            <td class="it-label">Mx, тс·м</td><td class="it-value"><input type="number" id="corner-Mx" value="0"></td>
+            <td class="it-label">My, тс·м</td><td class="it-value"><input type="number" id="corner-My" value="0"></td>
+          </tr>
+        </table>
       </div>
     </div>
 
@@ -1470,24 +1642,31 @@ summary {
 
   <details class="card reinf-section" id="corner-perimeterSection" open>
     <summary class="summary-badge"><span>Контрольный периметр и метод расчёта</span><span class="perimeter-badge" id="corner-perimeterBadge">u₁ = — · β = —</span></summary>
-    <div class="u1-diagram-wrap"><img src="prodavlivanie-fundament/prodavlivanie-kp-11.webp" alt="Схема контрольного периметра u1 вокруг колонны (по рис. 6.13 EN 1992-1-1)" class="sketch-img u1-diagram-img"></div>
-    <label>u₁ — контрольный периметр, мм (по умолчанию — авто; можно уменьшить вручную, например при отверстии рядом с колонной — значение должно быть меньше авто-расчётного)
-      <input type="number" id="corner-u1Override" placeholder="авто">
-    </label>
-    <label>Метод расчёта β
-      <select id="corner-betaMethod">
-        <option value="formula" selected>По формулам (6.44/6.46)</option>
-        <option value="figure">Приближённо, по рис. 6.21N</option>
-        <option value="manual">Задать вручную</option>
-      </select>
-    </label>
-    <div class="u1-diagram-wrap" id="corner-betaFigureWrap" style="display:none">
-      <img src="prodavlivanie-fundament/prodavlivanie-kp-12.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img">
+    <div class="perimeter-layout">
+      <div class="perimeter-data">
+        <table class="input-table">
+          <tr><td class="it-label">u₁ — контрольный периметр, мм<span class="it-sub">(по умолчанию — авто; можно уменьшить вручную)</span></td><td class="it-value"><input type="number" id="corner-u1Override" placeholder="авто"></td></tr>
+          <tr>
+            <td class="it-label">Метод расчёта β</td>
+            <td class="it-value">
+              <select id="corner-betaMethod">
+                <option value="formula" selected>По формулам (6.44/6.46)</option>
+                <option value="figure">Приближённо, по рис. 6.21N</option>
+                <option value="manual">Задать вручную</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+        <div id="corner-manualBetaWrap" style="display:none">
+          <table class="input-table">
+            <tr><td class="it-label">β (вручную)</td><td class="it-value"><input type="number" id="corner-manualBeta" value="1.5" step="0.01"></td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="perimeter-image">
+        <div class="u1-diagram-wrap"><img src="prodavlivanie-fundament/prodavlivanie-u1-perimeter-corner.png" alt="Схема контрольного периметра u1 вокруг колонны (по рис. 6.15 EN 1992-1-1)" class="sketch-img u1-diagram-img"></div>
+      </div>
     </div>
-    <label id="corner-manualBetaWrap" style="display:none">β (вручную)
-      <input type="number" id="corner-manualBeta" value="1.5" step="0.01">
-    </label>
-    <label id="corner-betaFigureWrap" style="display:none"><div class="u1-diagram-wrap"><img src="prodavlivanie-fundament/prodavlivanie-kp-13.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img"></div></label>
     <div id="corner-figureBetaDiagramWrap" class="u1-diagram-wrap" style="display:none"><img src="prodavlivanie-fundament/prodavlivanie-kp-14.webp" alt="Рисунок 6.21N — рекомендуемые значения β" class="sketch-img u1-diagram-img"></div>
   </details>
 
@@ -1501,9 +1680,9 @@ summary {
     <div id="corner-meshRowsY"></div>
     <button type="button" id="corner-addMeshYBtn" class="mesh-add-btn" title="Добавить сетку по Y">+</button>
 
-    <label>Рабочая высота d, мм <span class="hint" style="display:inline" title="Среднее (dx+dy)/2 по сеткам выше — считается автоматически, как в EN 1992-1-1">ⓘ</span>
-      <input type="number" id="corner-d" value="450" readonly>
-    </label>
+    <table class="input-table">
+      <tr><td class="it-label">Рабочая высота d, мм</td><td class="it-value"><input type="number" id="corner-d" value="450" readonly></td></tr>
+    </table>
   </details>
 
   <template id="corner-meshRowTemplate">
@@ -1531,40 +1710,56 @@ summary {
 
   <details class="card reinf-section" id="corner-reinfSection" open>
     <summary>Поперечная арматура на продавливание<span id="corner-reinfModeLabel" class="reinf-mode-label"></span></summary>
-    <label>Класс арматуры на продавливание (хомуты)
-      <select id="corner-fywk">
-        <option value="400">A400 (fyk = 400 МПа)</option>
-        <option value="500" selected>A500 (fyk = 500 МПа)</option>
-      </select>
-    </label>
-    <label>Режим
-      <select id="corner-reinfMode">
-        <option value="check">Проверить свою раскладку</option>
-        <option value="none" selected>Без поперечной арматуры</option>
-      </select>
-    </label>
+    <table class="input-table">
+      <tr>
+        <td class="it-label">Класс арматуры на продавливание (хомуты)</td>
+        <td class="it-value">
+          <select id="corner-fywk">
+            <option value="400">A400 (fyk = 400 МПа)</option>
+            <option value="500" selected>A500 (fyk = 500 МПа)</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="it-label">Режим</td>
+        <td class="it-value">
+          <select id="corner-reinfMode">
+            <option value="check">Проверить свою раскладку</option>
+            <option value="none" selected>Без поперечной арматуры</option>
+          </select>
+        </td>
+      </tr>
+    </table>
 
     <div id="corner-reinfManualFields">
-      <label>Диаметр хомутов Ø, мм
-        <select id="corner-manDia">
-          <option value="8">8</option>
-          <option value="10">10</option>
-          <option value="12">12</option>
-          <option value="14">14</option>
-          <option value="16">16</option>
-          <option value="18">18</option>
-          <option value="20">20</option>
-        </select>
-      </label>
-      
-      <label>Стороны свободного края (на схеме)
-        <select id="corner-edgeOrientation">
-          <option value="top-left">Сверху-слева</option>
-          <option value="top-right">Сверху-справа</option>
-          <option value="bottom-left">Снизу-слева</option>
-          <option value="bottom-right">Снизу-справа</option>
-        </select>
-      </label>
+      <table class="input-table">
+        <tr>
+          <td class="it-label">Диаметр хомутов Ø, мм</td>
+          <td class="it-value">
+            <select id="corner-manDia">
+              <option value="8">8</option>
+              <option value="10">10</option>
+              <option value="12">12</option>
+              <option value="14">14</option>
+              <option value="16">16</option>
+              <option value="18">18</option>
+              <option value="20">20</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="it-label">Стороны свободного края (на схеме)</td>
+          <td class="it-value">
+            <select id="corner-edgeOrientation">
+              <option value="top-left">Сверху-слева</option>
+              <option value="top-right">Сверху-справа</option>
+              <option value="bottom-left">Снизу-слева</option>
+              <option value="bottom-right">Снизу-справа</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+
       <p class="hint">Для каждого ряда (периметра) — расстояние от грани колонны отдельно по X и Y, и число стержней отдельно по X и Y. В углах стержень всегда есть, остальные распределяются между углами на равных расстояниях. Прямоугольный контур ряда получается автоматически из этих расстояний.</p>
 
       <div class="reinf-diagram-wrap">
@@ -1582,30 +1777,32 @@ summary {
     <div class="reinf-row">
       <div class="reinf-row-title"></div>
       <div class="row-gap-info"></div>
-      <div class="grid-2">
-        <label>Расстояние от грани по X, мм
-          <input type="number" class="row-offsetX" value="200" step="10">
-        </label>
-        <label>Расстояние от грани по Y, мм
-          <input type="number" class="row-offsetY" value="200" step="10">
-        </label>
-        <label>Число стержней по X (с углами)
-          <input type="number" class="row-countX" value="4" step="1" min="2">
-        </label>
-        <label>Число стержней по Y (с углами)
-          <input type="number" class="row-countY" value="4" step="1" min="2">
-        </label>
-      </div>
+      <table class="input-table row-pack">
+        <tr>
+          <td class="it-label">Расстояние от грани по X, мм</td>
+          <td class="it-value"><input type="number" class="row-offsetX" value="200" step="10"></td>
+          <td class="it-label">Число стержней по X (с углами)</td>
+          <td class="it-value"><input type="number" class="row-countX" value="4" step="1" min="2"></td>
+        </tr>
+        <tr>
+          <td class="it-label">Расстояние от грани по Y, мм</td>
+          <td class="it-value"><input type="number" class="row-offsetY" value="200" step="10"></td>
+          <td class="it-label">Число стержней по Y (с углами)</td>
+          <td class="it-value"><input type="number" class="row-countY" value="4" step="1" min="2"></td>
+        </tr>
+      </table>
       <button type="button" class="row-remove btn-secondary">Удалить ряд</button>
     </div>
   </template>
 
-  <button id="corner-calcBtn" class="btn-primary">Рассчитать</button>
-
   <section id="corner-results" class="card result-card" hidden>
     <div class="results-header">
-      <h2>Результаты</h2>
-      <button type="button" id="corner-reportBtn" class="btn-secondary">Печать</button>
+      <h2 style="margin:0;">Результаты расчёта</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" onclick="exportDataFile()">💾 Сохранить</button>
+        <button type="button" class="btn-secondary" onclick="document.getElementById('importFileInput').click()">📂 Загрузить</button>
+        <button type="button" id="corner-reportBtn" class="btn-secondary">🖨️ Расчётная записка</button>
+      </div>
     </div>
 
     <div class="live-detail-hidden">
@@ -2281,11 +2478,50 @@ function clearFieldError(inputEl) {
   if (hint) hint.remove();
 }
 
+/* Рендер формул KaTeX внутри уже вставленного HTML (см. .report-formula) */
+function renderMath(el) {
+  if (window.renderMathInElement) {
+    renderMathInElement(el, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$', right: '$', display: false },
+      ],
+      throwOnError: false,
+    });
+  }
+}
+
+/* Строка сводки с процентом использования и шкалой (util-ok/warn/bad — 3 уровня) */
+function gaugeRowHtml(label, pct, opts) {
+  opts = opts || {};
+  const cls = opts.colorClass || (pct > 100 ? 'util-bad' : (pct > 90 ? 'util-warn' : 'util-ok'));
+  const color = cls === 'util-bad' ? '#f87171' : cls === 'util-warn' ? 'var(--warning-text)' : cls === 'util-neutral' ? 'var(--accent)' : 'var(--success-text)';
+  const barPct = Math.min(Math.max(pct, 0), 100);
+  const note = opts.note ? `<div class="note">${opts.note}</div>` : '';
+  const idAttr = opts.id ? ` id="${opts.id}"` : '';
+  const extraClass = opts.extraClass ? ` ${opts.extraClass}` : '';
+  const symbol = opts.symbol || '';
+  return `<div class="check-row${extraClass}"${idAttr}>${label}${note}
+    <div class="gauge-row">
+      <span class="gauge-pct" style="color:${color}">${pct.toFixed(0)}%${symbol}</span>
+      <div class="bar-wrap"><div class="bar" style="width:${barPct}%;background:${color}"></div></div>
+    </div>
+  </div>`;
+}
+
+/* Строка сводки прошёл/не прошёл — без числового значения (бейдж) */
+function badgeRowHtml(label, ok, text, opts) {
+  opts = opts || {};
+  const idAttr = opts.id ? ` id="${opts.id}"` : '';
+  const extraClass = opts.extraClass ? ` ${opts.extraClass}` : '';
+  return `<div class="check-row badge-row${extraClass}"${idAttr}>${label}<span class="badge ${ok ? 'ok' : 'fail'}">${text}</span></div>`;
+}
+
 function initPanel(prefix, position) {
   const $ = (id) => document.getElementById(prefix + '-' + id);
 
   // Последний расчёт — сохраняется для построения развёрнутой пояснительной записки
-  let lastR = null, lastRInner = null, lastInput = null, lastMeta = null, lastReinfSummaryText = '';
+  let lastR = null, lastRInner = null, lastInput = null, lastMeta = null, lastReinfSummaryText = '', lastOverallOk = false, lastReinfConstructiveOk = true, lastStrengthOk = false, lastRemediationText = '', lastU1Class = 'util-ok', lastReinfClass = 'util-ok', lastReinfRelevant = false;
   // Если пользователь ещё не трогал поле u1 вручную, оно живо обновляется
   // автоматически вычисленным значением (само поле, а не только placeholder).
   // Как только пользователь вводит своё значение, автообновление для этого
@@ -2347,7 +2583,7 @@ function initPanel(prefix, position) {
     pedestalNeedsInnerCheck = lH >= 2 * hpv;
     if (pedestalNeedsInnerCheck) {
       pedestalHeightWarnEl.hidden = false;
-      pedestalHeightWarnEl.textContent = `Вылет подколонника (l_H = ${lH.toFixed(0)} мм) не меньше 2h_H (h_H = ${hpv} мм) — по §6.4.2(10)–(11) EN 1992-1-1 одной проверки по контуру подколонника недостаточно, нужна ещё проверка у грани самой колонны (см. "Внутренняя проверка" в результатах ниже).`;
+      pedestalHeightWarnEl.textContent = `Вылет подколонника (l_H = ${lH.toFixed(0)} мм) не меньше 2h_H (h_H = ${hpv} мм) — по §6.4.2(10)–(11) EN 1992-1-1 калькулятор автоматически добавляет проверку у грани самой колонны (см. "Внутренняя проверка" в результатах ниже).`;
     } else {
       pedestalHeightWarnEl.hidden = true;
     }
@@ -2361,7 +2597,7 @@ function initPanel(prefix, position) {
   const manualBetaWrap = $('manualBetaWrap');
   const figureBetaDiagramWrap = $('figureBetaDiagramWrap');
   function updateBetaMethodUI() {
-    manualBetaWrap.style.display = betaMethodSelect.value === 'manual' ? 'flex' : 'none';
+    manualBetaWrap.style.display = betaMethodSelect.value === 'manual' ? 'block' : 'none';
     if (figureBetaDiagramWrap) {
       figureBetaDiagramWrap.style.display = betaMethodSelect.value === 'figure' ? 'flex' : 'none';
     }
@@ -2616,6 +2852,7 @@ function initPanel(prefix, position) {
       rowEl.remove();
       renumberReinfRows();
       renderReinfDiagram();
+      scheduleAutoCalc();
     });
     rowEl.querySelectorAll('input').forEach((inp) => {
       inp.addEventListener('input', renderReinfDiagram);
@@ -2631,7 +2868,7 @@ function initPanel(prefix, position) {
     });
   }
 
-  $('addRowBtn').addEventListener('click', addReinfRow);
+  $('addRowBtn').addEventListener('click', () => { addReinfRow(); scheduleAutoCalc(); });
   addReinfRow(); // первый ряд по умолчанию
 
   const u1OverrideEl = $('u1Override');
@@ -2674,6 +2911,7 @@ function initPanel(prefix, position) {
       rowEl.remove();
       renumberMeshRows(container, dirLabel, addBtn);
       updateAverageD();
+      scheduleAutoCalc();
     });
     rowEl.querySelectorAll('input, select').forEach((inp) => {
       inp.addEventListener('input', updateAverageD);
@@ -2740,8 +2978,8 @@ function initPanel(prefix, position) {
 
   const addMeshXBtn = $('addMeshXBtn');
   const addMeshYBtn = $('addMeshYBtn');
-  addMeshXBtn.addEventListener('click', () => addMeshRow(meshRowsXContainer, 'X', addMeshXBtn));
-  addMeshYBtn.addEventListener('click', () => addMeshRow(meshRowsYContainer, 'Y', addMeshYBtn));
+  addMeshXBtn.addEventListener('click', () => { addMeshRow(meshRowsXContainer, 'X', addMeshXBtn); scheduleAutoCalc(); });
+  addMeshYBtn.addEventListener('click', () => { addMeshRow(meshRowsYContainer, 'Y', addMeshYBtn); scheduleAutoCalc(); });
   addMeshRow(meshRowsXContainer, 'X', addMeshXBtn); // первая сетка по умолчанию
   addMeshRow(meshRowsYContainer, 'Y', addMeshYBtn);
 
@@ -2993,7 +3231,7 @@ function initPanel(prefix, position) {
     lastMeta = {
       c1, c2, c1raw, c2raw, pedestalUsed,
       pedHp: pedestalUsed ? parseRuNumber($('pedHp').value) : null,
-      meshesX, meshesY, dx, dy, fywk: parseRuNumber($('fywk').value),
+      meshesX, meshesY, dx, dy, meshFyk: parseRuNumber(getFykPlate()), fywk: parseRuNumber($('fywk').value),
     };
 
     $('results').hidden = false;
@@ -3029,6 +3267,8 @@ function initPanel(prefix, position) {
 
     const verdictEl = $('reinfVerdict');
     let reinfSummaryText = ''; // для итоговой таблицы-сводки (для экспертизы)
+    lastReinfConstructiveOk = true; // сбрасывается на каждый расчёт, переопределяется ниже только в режиме 'check'
+    lastRemediationText = '';
 
     // Проверка по грани колонны (u0 vs vRd,max) — приоритетнее любого
     // результата по u1. Если бетон уже раздавливается у самой грани,
@@ -3073,6 +3313,7 @@ function initPanel(prefix, position) {
       const pct = chk.utilizationPct;
       const over = pct > 100;
       const constructiveOk = chk.minAreaOk && chk.extentOk && chk.firstRowOk && chk.radialSpacingOk && chk.minRowsOk;
+      lastReinfConstructiveOk = constructiveOk;
       verdictEl.className = 'reinf-verdict ' + (over ? 'critical' : (constructiveOk ? 'ok' : 'needed'));
 
       const rowsTable = `
@@ -3094,20 +3335,30 @@ function initPanel(prefix, position) {
         </table>
         ${chk.rowResults.some((rr) => !rr.participates) ? '<p class="hint">Ряды за пределами зоны u<sub>out,ef</sub> введены, но по §6.4.5(4)/§9.4.3 EN 1992-1-1 в расчёте не участвуют — бетон дальше этой границы уже сам справляется без арматуры.</p>' : ''}`;
 
-      let constructiveNote = '';
-      if (!constructiveOk) {
-        const mark = (ok) => ok ? '✓' : '✗';
-        constructiveNote = `<p class="hint" style="margin-top:10px">
-          Первый ряд на расстоянии 0,3d–0,5d от грани колонны ${mark(chk.firstRowOk)}
-          (введено ≈${chk.firstRow.avgOffset.toFixed(0)} мм = ${(chk.firstRow.avgOffset / d).toFixed(2)}d, допустимо ${chk.firstRowMin.toFixed(0)}–${chk.firstRowMax.toFixed(0)} мм, §9.4.3),<br>
-          радиальный шаг между рядами ≤ 0,75d ${mark(chk.radialSpacingOk)}
-          (худший промежуток ≈${chk.maxRadialGap.toFixed(0)} мм, допустимо ≤${chk.radialSpacingLimit.toFixed(0)} мм, §9.4.3(1)),<br>
-          минимум 2 ряда хомутов ${mark(chk.minRowsOk)} (введено рядов: ${chk.rowResults.length}),<br>
-          мин. армирование расчётного ряда ${mark(chk.minAreaOk)},
-          протяжённость зоны армирования до k·d от u<sub>out,ef</sub> ${mark(chk.extentOk)}
-          (обеспечено ≈${chk.rowResults[chk.rowResults.length - 1].avgOffset.toFixed(0)} мм, нужно ≥${chk.extentTargetReq.toFixed(0)} мм; u<sub>out,ef</sub> на радиусе ≈${chk.rOutReq.toFixed(0)} мм)</p>`;
-      }
+      // Расчётная несущая способность (V_Ed/V_Rd,cs) и конструктивные
+      // требования §9.4.3 — это две РАЗНЫЕ проверки, и их легко перепутать,
+      // если показывать вперемешку (например: "23%" сверху и красный ✗ по
+      // протяжённости зоны ниже — читатель может решить, что 23% недостоверны).
+      // Поэтому показываем их отдельными блоками, каждый со своим вердиктом.
+      const checklistItems = [
+        { ok: chk.firstRowOk, text: `Первый ряд на расстоянии 0,3d–0,5d от грани колонны (введено ≈${chk.firstRow.avgOffset.toFixed(0)} мм = ${(chk.firstRow.avgOffset / d).toFixed(2)}d, допустимо ${chk.firstRowMin.toFixed(0)}–${chk.firstRowMax.toFixed(0)} мм, §9.4.3)` },
+        { ok: chk.radialSpacingOk, text: `Радиальный шаг между рядами ≤ 0,75d (худший промежуток ≈${chk.maxRadialGap.toFixed(0)} мм, допустимо ≤${chk.radialSpacingLimit.toFixed(0)} мм, §9.4.3(1))` },
+        { ok: chk.minRowsOk, text: `Минимум 2 ряда хомутов (введено рядов: ${chk.rowResults.length})` },
+        { ok: chk.minAreaOk, text: `Минимальное армирование расчётного ряда` },
+        { ok: chk.extentOk, text: `Протяжённость зоны армирования до k·d от u<sub>out,ef</sub> (обеспечено ≈${chk.rowResults[chk.rowResults.length - 1].avgOffset.toFixed(0)} мм, нужно ≥${chk.extentTargetReq.toFixed(0)} мм; u<sub>out,ef</sub> на радиусе ≈${chk.rOutReq.toFixed(0)} мм)` },
+      ];
+      const constructiveListHtml = `<ul class="constructive-list">${checklistItems.map((it) => `<li><span class="${it.ok ? 'check-ok' : 'check-bad'}">${it.ok ? '✓' : '✗'}</span> ${it.text}</li>`).join('')}</ul>`;
 
+      const remediationItems = [];
+      if (!chk.firstRowOk) remediationItems.push(`сместить первый ряд хомутов в диапазон 0,3d–0,5d от грани колонны (${chk.firstRowMin.toFixed(0)}–${chk.firstRowMax.toFixed(0)} мм)`);
+      if (!chk.radialSpacingOk) remediationItems.push(`уменьшить радиальный шаг между рядами до ≤${chk.radialSpacingLimit.toFixed(0)} мм`);
+      if (!chk.minRowsOk) remediationItems.push(`добавить ряды хомутов — минимум 2 (сейчас ${chk.rowResults.length})`);
+      if (!chk.minAreaOk) remediationItems.push(`увеличить площадь армирования расчётного ряда (диаметр хомутов или число стержней)`);
+      if (!chk.extentOk) remediationItems.push(`увеличить протяжённость зоны поперечного армирования с ≈${chk.rowResults[chk.rowResults.length - 1].avgOffset.toFixed(0)} до не менее ${chk.extentTargetReq.toFixed(0)} мм`);
+      const remediationHtml = remediationItems.length
+        ? `<div class="warning" style="margin-top:10px;">Требуется устранить конструктивное несоответствие: ${remediationItems.join('; ')}.</div>`
+        : '';
+      lastRemediationText = remediationItems.join('; ');
 
       // Переводим из напряжений (МПа) в усилия (кН) — так нагляднее для
       // экспертизы: VEd = vEd·u1·d, VRd,cs = vRd,cs·u1·d (Н → кН делением на 1000)
@@ -3116,17 +3367,21 @@ function initPanel(prefix, position) {
       const reserve = 100 - pct;
       const utilRowClass = over ? 'util-bad' : (pct > 90 ? 'util-warn' : 'util-ok');
 
-      verdictEl.innerHTML = `<h3>Использовано: ${pct.toFixed(0)}%</h3>
+      verdictEl.innerHTML = `<h3>Поперечная арматура</h3>
         Ø${dia} мм, ${chk.rowResults.length} ряд(ов). Расчётный (самый нагруженный) — ряд с отступом ≈${chk.governing.avgOffset.toFixed(0)} мм, локальный радиальный шаг до соседнего ряда ≈${chk.srLocal.toFixed(0)} мм.
         ${rowsTable}
-        <table class="summary-table" style="margin-top:10px">
+        <div class="formula-label" style="margin-top:10px;">Расчётная несущая способность:</div>
+        <p style="margin:2px 0;"><span class="${over ? 'check-bad' : 'check-ok'}" style="font-size:1.05rem;">${pct.toFixed(0)} % — ${over ? '✗' : '✓'}</span></p>
+        <table class="summary-table" style="margin-top:4px">
           <tr><th>Проверка</th><th>Значение</th></tr>
           <tr><td>V<sub>Ed</sub></td><td>${VEd_kN.toFixed(0)} кН</td></tr>
           <tr><td>V<sub>Rd,cs</sub></td><td>${VRdCs_kN.toFixed(0)} кН</td></tr>
           <tr><td>Использование</td><td class="${utilRowClass}">${pct.toFixed(1)} %</td></tr>
           <tr><td>Запас</td><td class="${reserve >= 0 ? 'util-ok' : 'util-bad'}">${reserve.toFixed(1)} %</td></tr>
         </table>
-        ${constructiveNote}`;
+        <div class="formula-label" style="margin-top:14px;">Конструктивные требования (§9.4.3):</div>
+        ${constructiveListHtml}
+        ${remediationHtml}`;
       reinfSummaryText = over
         ? `<span class="util-bad">${pct.toFixed(0)}% — недостаточно</span>`
         : (constructiveOk ? `<span class="util-ok">${pct.toFixed(0)}%</span>` : `<span class="util-warn">${pct.toFixed(0)}% (констр. требования)</span>`);
@@ -3134,9 +3389,12 @@ function initPanel(prefix, position) {
 
     // --- Итоговая таблица-сводка (для экспертизы) ---
     lastReinfSummaryText = reinfSummaryText.replace(/<[^>]+>/g, ''); // без HTML-разметки, для отчёта
+    const reinfClassMatch = reinfSummaryText.match(/class="(util-\w+)"/);
+    lastReinfClass = reinfClassMatch ? reinfClassMatch[1] : 'util-ok'; // 'не требуется' — без span, читаем как ok
     const facePct = (r.vEd0 / r.vRdMax) * 100;
     const u1Pct = (r.critical.vEd / r.vRdc) * 100;
     const pctClass = (pct) => pct > 100 ? 'util-bad' : (pct > 90 ? 'util-warn' : 'util-ok');
+    lastReinfRelevant = u1Pct > 100 && reinfModeSelect.value !== 'none';
 
     // v_Ed/v_Rd,c на u₁ > 100% — это НЕ обязательно провал: если ниже
     // подобрана/задана рабочая арматура, окраска этой строки должна
@@ -3159,32 +3417,75 @@ function initPanel(prefix, position) {
         u1Note = ' <span class="hint" style="display:inline">(без арматуры; с хомутами — см. строку ниже)</span>';
       }
     }
+    lastU1Class = u1Class;
 
-    const aspectHtml = aspect.isColumn
-      ? `<span class="util-ok">выполнено (c₁/c₂ = ${aspect.ratio.toFixed(2)} ≤ 4)</span>`
-      : `<span class="util-bad">не выполнено (c₁/c₂ = ${aspect.ratio.toFixed(2)} > 4 — фактически стена)</span>`;
+    const aspectRowHtml = badgeRowHtml(
+      'Геометрия — колонна, а не стена (c₁/c₂ ≤ 4, §9.5.1)',
+      aspect.isColumn,
+      aspect.isColumn ? `ПРОХОДИТ (${aspect.ratio.toFixed(2)} ≤ 4)` : `НЕ ПРОХОДИТ (${aspect.ratio.toFixed(2)} > 4)`
+    );
 
-    const rhoMinHtml = r.rhoMinOk
-      ? `<span class="util-ok">выполнено (ρl = ${(r.rhol * 100).toFixed(3)}% ≥ ρmin = ${(r.rhoMin * 100).toFixed(3)}%)</span>`
-      : `<span class="util-bad">не выполнено (ρl = ${(r.rhol * 100).toFixed(3)}% &lt; ρmin = ${(r.rhoMin * 100).toFixed(3)}%) — v<sub>Rd,c</sub> формально недостоверна</span>`;
+    const rhoMinRowHtml = badgeRowHtml(
+      'Минимальное армирование плиты (ρl ≥ ρmin, §9.2.1.1)',
+      r.rhoMinOk,
+      r.rhoMinOk ? 'ПРОХОДИТ' : 'НЕ ПРОХОДИТ'
+    );
 
     let pedestalRowHtml = '';
     if (rInner) {
       const faceIntPct = (rInner.vEd0 / rInner.vRdMax) * 100;
       const u1IntPct = (rInner.critical.vEd / rInner.vRdc) * 100;
       const pedestalPct = Math.max(faceIntPct, u1IntPct);
-      pedestalRowHtml = `<tr><td>Внутренняя проверка у грани колонны — низкий/широкий подколонник (§6.4.2(10)–(11))</td><td class="${pctClass(pedestalPct)}">${pedestalPct.toFixed(0)} %</td></tr>`;
+      pedestalRowHtml = gaugeRowHtml('Внутренняя проверка у грани колонны — низкий/широкий подколонник (§6.4.2(10)–(11))', pedestalPct);
     }
+
+    // Строка "Поперечная арматура…" — по числу (если оно есть в тексте) рисуем
+    // шкалу, иначе (нет данных/не требуется/авария по грани) — бейдж.
+    const reinfPctMatch = reinfSummaryText.match(/(\d+(?:[.,]\d+)?)\s*%/);
+    const reinfIsBad = reinfSummaryText.includes('util-bad');
+    const reinfIsWarn = reinfSummaryText.includes('util-warn');
+    const reinfLabel = lastReinfRelevant ? 'С заданной поперечной арматурой' : 'Поперечная арматура на продавливание (§6.4.5)';
+    const reinfLabelWithArrow = `<span class="toggle-arrow">▶</span>${reinfLabel}`;
+    const reinfRowHtml = reinfPctMatch
+      ? gaugeRowHtml(reinfLabelWithArrow, parseFloat(reinfPctMatch[1].replace(',', '.')), {
+          colorClass: reinfIsBad ? 'util-bad' : reinfIsWarn ? 'util-warn' : 'util-ok',
+          id: `${prefix}-reinfSummaryRow`,
+          extraClass: 'toggle-row',
+          symbol: lastReinfRelevant ? (reinfIsBad ? ' ✗' : ' ✓') : '',
+        })
+      : badgeRowHtml(reinfLabelWithArrow, !reinfIsBad, lastReinfSummaryText, {
+          id: `${prefix}-reinfSummaryRow`,
+          extraClass: 'toggle-row',
+        });
+
+    // u1Class уже учитывает поперечную арматуру (util-ok/util-neutral — решает
+    // проблему, util-warn — решает по прочности, но есть конструктивное
+    // замечание, util-bad — не решает или арматура не задана). Общий вердикт
+    // должен опираться на него, а не на «сырой» u1Pct без учёта хомутов —
+    // иначе процент по грани/периметру никогда не «спасается» арматурой.
+    const u1Ok = u1Class === 'util-ok' || u1Class === 'util-neutral';
+    const overallOk = facePct <= 100 && u1Ok;
+    lastOverallOk = overallOk;
+    // Отдельно от overallOk — проходит ли расчётная несущая способность
+    // (грань + периметр u1, с учётом арматуры, но БЕЗ конструктивных
+    // требований §9.4.3). util-warn означает «по прочности решено, но есть
+    // конструктивное замечание» — то есть прочность в порядке.
+    lastStrengthOk = facePct <= 100 && u1Class !== 'util-bad';
+    const positionLabel = position === 'internal' ? 'Внутренняя колонна' : position === 'edge' ? 'Крайняя колонна' : 'Угловая колонна';
+
     $('summaryTable').innerHTML = `
-      <table class="summary-table">
-        <tr><th>Проверка</th><th>Использование</th></tr>
-        <tr><td>Геометрия — колонна, а не стена (c₁/c₂ ≤ 4, §9.5.1)</td><td>${aspectHtml}</td></tr>
-        <tr><td>Минимальное армирование плиты (ρl ≥ ρmin, §9.2.1.1)</td><td>${rhoMinHtml}</td></tr>
-        <tr><td>Раздавливание бетона у грани колонны (v<sub>Ed</sub>/v<sub>Rd,max</sub>, §6.4.3(2))</td><td class="${pctClass(facePct)}">${facePct.toFixed(0)} %</td></tr>
-        <tr><td>Продавливание по контрольному периметру u₁ (v<sub>Ed</sub>/v<sub>Rd,c</sub>, §6.4.4)</td><td class="${u1Class}">${u1Pct.toFixed(0)} %${u1Note}</td></tr>
+      <div class="result-title" style="color:${overallOk ? 'var(--success-text)' : '#f87171'}">${overallOk ? 'Плита ДОСТАТОЧНА' : 'Плита НЕ ДОСТАТОЧНА'} по продавливанию</div>
+      <div class="checks">
+        ${rhoMinRowHtml}
+        ${gaugeRowHtml('Раздавливание бетона у грани колонны (v<sub>Ed</sub>/v<sub>Rd,max</sub>, §6.4.3(2))', facePct)}
+        ${gaugeRowHtml(
+          lastReinfRelevant ? 'Без поперечной арматуры' : 'Продавливание по контрольному периметру u₁ (v<sub>Ed</sub>/v<sub>Rd,c</sub>, §6.4.4)',
+          u1Pct,
+          lastReinfRelevant ? { colorClass: 'util-bad', symbol: ' ✗' } : { colorClass: u1Class, note: u1Note.replace(/<[^>]+>/g, '') }
+        )}
         ${pedestalRowHtml}
-        <tr id="${prefix}-reinfSummaryRow" class="toggle-row"><td><span class="toggle-arrow">▶</span> Поперечная арматура на продавливание (§6.4.5)</td><td>${reinfSummaryText}</td></tr>
-      </table>`;
+        ${reinfRowHtml}
+      </div>`;
 
     // Строка "Поперечная арматура…" в сводке разворачивает/сворачивает
     // подробный блок (verdictEl) с раскладкой рядов и проверками §9.4.3 —
@@ -3293,7 +3594,20 @@ function initPanel(prefix, position) {
     }
   }
 
-  $('calcBtn').addEventListener('click', runCalculation);
+  // Кнопки на странице нет — расчёт всегда автоматический (ниже), но
+  // внешним функциям (восстановление из localStorage/.json-файла) нужен
+  // способ форсировать немедленный пересчёт конкретной вкладки извне
+  // замыкания initPanel — регистрируем runCalculation в общем реестре.
+  window.__prodavRunCalc = window.__prodavRunCalc || {};
+  window.__prodavRunCalc[prefix] = runCalculation;
+
+  // u1Override визуально показывает авто-значение прямо в поле, пока
+  // пользователь его не тронул (см. updateU1Placeholder) — поэтому снаружи
+  // нужен способ отличить "это реально ввёл пользователь" от "это просто
+  // отображается автозначение", иначе сохранение/восстановление (.json,
+  // localStorage) примет автозначение за ручной ввод.
+  window.__prodavU1Edited = window.__prodavU1Edited || {};
+  window.__prodavU1Edited[prefix] = () => u1UserEdited;
 
   // --- Автоматический пересчёт при изменении любого поля панели ---
   // Небольшая задержка (debounce), чтобы не пересчитывать на каждый
@@ -3314,11 +3628,11 @@ function initPanel(prefix, position) {
 
   // --- Пояснительная записка ---
   const POSITION_LABELS = { internal: 'внутренняя колонна', edge: 'крайняя колонна', corner: 'угловая колонна' };
-  const BETA_METHOD_LABELS = { formula: 'по формулам EN 1992-1-1', figure: 'приближённо, по рис. 6.21N', manual: 'задано вручную' };
+  const BETA_METHOD_LABELS = { formula: 'по формулам СП РК EN 1992-1-1:2004/2011', figure: 'приближённо, по рис. 6.21N', manual: 'задано вручную' };
 
   function buildReport() {
     if (!lastR || !lastInput) {
-      return '<p class="hint">Сначала нажмите «Рассчитать» выше — записка формируется по последнему расчёту.</p>';
+      return '<p class="hint">Сначала заполните исходные данные выше — записка формируется по последнему расчёту.</p>';
     }
 
     const r = lastR, input = lastInput, meta = lastMeta;
@@ -3335,7 +3649,11 @@ function initPanel(prefix, position) {
 
     const utilFace = r.vEd0 / r.vRdMax;
     const utilU1 = r.critical.vEd / r.vRdc;
-    const overall = utilFace <= 1 && utilU1 <= 1;
+    // lastOverallOk учитывает поперечную арматуру (см. расчёт сводки выше) —
+    // «сырой» utilU1 никогда не опускается ниже 100% при добавлении хомутов,
+    // это ожидаемо (vRd,c — сопротивление бетона БЕЗ арматуры), реальная
+    // проверка при utilU1 > 1 переходит на vRd,cs (раздел 7 записки).
+    const overall = lastOverallOk;
 
     // Картинка со схемой осей и нагрузок — есть только на вкладке "Колонна средняя".
     // Если в расчёте использовался подколонник — берём эскиз с подколонником
@@ -3362,21 +3680,38 @@ function initPanel(prefix, position) {
       ? `<div class="report-fig">${reinfSvg}<div class="report-fig-caption">Рис. 2. Раскладка хомутов вокруг колонны (вид сверху)${reinfDiagramNote}</div></div>`
       : '';
 
-    // Схема контрольного периметра u1 (рис. 6.13 EN 1992-1-1) — общая для всех вкладок
+    // Схема контрольного периметра u1 — для внутренней колонны рис. 6.13,
+    // для крайней/угловой (периметр обрезан свободным краем) — рис. 6.15.
     const u1DiagramImg = document.querySelector('#panel-' + prefix + ' .u1-diagram-img');
+    const u1DiagramFigRef = position === 'internal' ? '6.13' : '6.15';
+    const u1DiagramSmallCls = (u1DiagramImg && u1DiagramImg.classList.contains('u1-fig-small')) ? ' u1-fig-small' : '';
     const u1DiagramHtml = u1DiagramImg
-      ? `<div class="report-fig"><img src="${u1DiagramImg.src}" alt="Схема контрольного периметра u1" class="sketch-img"><div class="report-fig-caption">Рис. 3. Контрольный периметр u1 (по рис. 6.13 EN 1992-1-1)</div></div>`
+      ? `<div class="report-fig"><img src="${u1DiagramImg.src}" alt="Схема контрольного периметра u1" class="sketch-img${u1DiagramSmallCls}"><div class="report-fig-caption">Рис. 3. Контрольный периметр u1 (по рис. ${u1DiagramFigRef} СП РК EN 1992-1-1:2004/2011)</div></div>`
       : '';
 
     const aspectText = r.aspect.isColumn
-      ? `Отношение большей стороны колонны к меньшей c₁/c₂ = ${r.aspect.ratio.toFixed(2)} не превышает 4 — элемент по геометрии является колонной, методика §6.4 EN 1992-1-1 применима напрямую.`
+      ? `Отношение большей стороны колонны к меньшей c₁/c₂ = ${r.aspect.ratio.toFixed(2)} не превышает 4 — элемент по геометрии является колонной, методика §6.4 СП РК EN 1992-1-1:2004/2011 применима напрямую.`
       : `Отношение сторон колонны c₁/c₂ = ${r.aspect.ratio.toFixed(2)} превышает 4 — по §9.5.1 при таком соотношении элемент считается стеной, а не колонной. Методика §6.4 рассчитана на колонны; для стеновых опор нужен отдельный подход (линейное опирание), приведённый ниже расчёт по контрольным периметрам для стены не совсем корректен.`;
 
     const betaText = input.betaMethod === 'figure'
-      ? `Коэффициент β учитывает неравномерность распределения касательных напряжений по контрольному периметру из-за возможного эксцентриситета нагрузки. Здесь применён упрощённый способ по рисунку 6.21N EN 1992-1-1: для данного положения колонны (${POSITION_LABELS[position]}) принято фиксированное значение без явного расчёта момента, при условии что устойчивость конструкции не зависит от рамного взаимодействия «плита—колонна» и соседние пролёты отличаются по длине не более чем на 25% (§6.4.3(6)).`
+      ? `Коэффициент β учитывает неравномерность распределения касательных напряжений по контрольному периметру из-за возможного эксцентриситета нагрузки. Здесь применён упрощённый способ по рисунку 6.21N СП РК EN 1992-1-1:2004/2011: для данного положения колонны (${POSITION_LABELS[position]}) принято фиксированное значение без явного расчёта момента, при условии что устойчивость конструкции не зависит от рамного взаимодействия «плита—колонна» и соседние пролёты отличаются по длине не более чем на 25% (§6.4.3(6)).`
       : input.betaMethod === 'manual'
         ? `Значение β задано вручную пользователем (например, по результатам стороннего расчёта или конструктивного решения), без прямого применения формул §6.4.3.`
-        : `Коэффициент β учитывает неравномерность распределения касательных напряжений по контрольному периметру из-за эксцентриситета нагрузки (момента) относительно центра колонны. Значение получено по формуле (${r.betaRes.formula}) EN 1992-1-1, с учётом фактических моментов Mx = ${Mx_tc} тс·м и My = ${My_tc} тс·м.`;
+        : `Коэффициент β учитывает неравномерность распределения касательных напряжений по контрольному периметру из-за эксцентриситета нагрузки (момента) относительно центра колонны. Значение получено по формуле (${r.betaRes.formula}) СП РК EN 1992-1-1:2004/2011, с учётом фактических моментов Mx = ${Mx_tc} тс·м и My = ${My_tc} тс·м.`;
+
+    // u1* (рис. 6.20) — только для крайней/угловой колонны. u1* — чисто
+    // геометрическая величина (не зависит от момента), поэтому показываем
+    // её всегда на этих вкладках, а не только когда формула β реально
+    // на неё ссылается (6.44/6.46) — при β=1,0 (M=0) или эксцентриситете
+    // наружу (формула 6.39) u1* в САМОЙ формуле β не участвует, но остаётся
+    // полезной геометрической справкой.
+    const u1StarImgSrc = position === 'edge' ? 'prodavlivanie-fundament/prodavlivanie-u1star-edge.png'
+      : position === 'corner' ? 'prodavlivanie-fundament/prodavlivanie-u1star-corner.png' : null;
+    const u1StarValue = u1StarImgSrc ? getU1Star(position, meta.c1, meta.c2, input.d) : null;
+    const u1StarUsedInFormula = r.betaRes.u1star !== undefined;
+    const u1StarHtml = u1StarImgSrc
+      ? `<div class="report-fig"><img src="${u1StarImgSrc}" alt="Эквивалентный контрольный периметр u1*" class="sketch-img"><div class="report-fig-caption">Рис. 4. Эквивалентный контрольный периметр u₁* (рис. 6.20 СП РК EN 1992-1-1:2004/2011) — u₁* = ${u1StarValue.toFixed(0)} мм${u1StarUsedInFormula ? '' : ' (в данном расчёте не используется — β = 1,0 либо эксцентриситет направлен наружу)'}</div></div>`
+      : '';
 
     const u1Text = r.u1IsOverridden
       ? `Основной контрольный периметр u₁ задан пользователем вручную и составляет ${r.u1.toFixed(0)} мм (например, из-за отверстия в плите рядом с колонной, уменьшающего рабочую часть периметра). Для справки: периметр, вычисленный по формуле при отступе 2d от грани колонны, составил бы ${r.u1Calc.toFixed(0)} мм.`
@@ -3386,21 +3721,25 @@ function initPanel(prefix, position) {
       <div class="report-doc">
         <h2>Пояснительная записка</h2>
         <div class="report-meta">Расчёт на продавливание фундаментной плиты под колонной — ${POSITION_LABELS[position]}<br>
-        EN 1992-1-1 (СП РК EN 1992-1-1) §6.4.1–6.4.5 · дата формирования: ${dateStr}</div>
+        СП РК EN 1992-1-1:2004/2011 §6.4.1–6.4.5 · дата формирования: ${dateStr}</div>
 
-        <p>Настоящая записка содержит проверку фундаментной плиты на продавливание колонной по предельному состоянию несущей способности (ULS), согласно разделу 6.4 EN 1992-1-1. Проверяются два условия: прочность бетона у грани колонны (по максимально допустимому напряжению v<sub>Rd,max</sub>) и прочность бетона на основном контрольном периметре, отстоящем от грани колонны на 2d (по сопротивлению v<sub>Rd,c</sub>, при необходимости — с учётом поперечной арматуры).</p>
+        <p>Настоящая записка содержит проверку фундаментной плиты на продавливание колонной по предельному состоянию несущей способности (ULS), согласно разделу 6.4 СП РК EN 1992-1-1:2004/2011. Проверяются два условия: прочность бетона у грани колонны (по максимально допустимому напряжению v<sub>Rd,max</sub>) и прочность бетона на основном контрольном периметре, отстоящем от грани колонны на 2d (по сопротивлению v<sub>Rd,c</sub>, при необходимости — с учётом поперечной арматуры).</p>
 
         ${sketchHtml}
 
         <h3>1. Исходные данные</h3>
-        <table>
-          <tr><td class="report-label">Колонна</td><td>c₁ = ${meta.c1raw} мм, c₂ = ${meta.c2raw} мм</td></tr>
-          ${meta.pedestalUsed ? `<tr><td class="report-label">Подколонник</td><td>b₁ = ${meta.c1} мм, b₂ = ${meta.c2} мм, h<sub>p</sub> = ${meta.pedHp} мм — используется в расчёте продавливания вместо c₁/c₂</td></tr>` : ''}
-          <tr><td class="report-label">Нагрузки (ULS)</td><td>N = ${N_tc} тс, Mx = ${Mx_tc} тс·м, My = ${My_tc} тс·м</td></tr>
-          <tr><td class="report-label">Фундамент</td><td>класс бетона ${fckLabel}, рабочая высота d = ${input.d} мм, отпор грунта p = ${p_tc} тс/м²</td></tr>
-          <tr><td class="report-label">Армирование плиты — X</td><td>${meta.meshesX.map((m) => `Ø${m.diam} шаг ${m.spacing} мм, d=${m.d} мм`).join('; ')} (d<sub>x</sub> = ${meta.dx.toFixed(1)} мм)</td></tr>
-          <tr><td class="report-label">Армирование плиты — Y</td><td>${meta.meshesY.map((m) => `Ø${m.diam} шаг ${m.spacing} мм, d=${m.d} мм`).join('; ')} (d<sub>y</sub> = ${meta.dy.toFixed(1)} мм)</td></tr>
-          <tr><td class="report-label">ρ<sub>l</sub></td><td>${(r.rhol * 100).toFixed(3)} %</td></tr>
+        <table class="kv-table">
+          <tr><th>Параметр</th><th>Значение</th></tr>
+          <tr><td class="report-label">Класс бетона</td><td>${fckLabel}</td></tr>
+          <tr><td class="report-label">Размер колонны</td><td>${meta.c1raw}×${meta.c2raw} мм</td></tr>
+          ${meta.pedestalUsed ? `<tr><td class="report-label">Подколонник</td><td>${meta.c1}×${meta.c2} мм, h<sub>p</sub> = ${meta.pedHp} мм</td></tr>` : ''}
+          <tr><td class="report-label">Рабочая высота d</td><td>${input.d} мм</td></tr>
+          <tr><td class="report-label">N<sub>Ed</sub></td><td>${N_tc} тс</td></tr>
+          <tr><td class="report-label">M<sub>x,Ed</sub></td><td>${Mx_tc} тс·м</td></tr>
+          <tr><td class="report-label">M<sub>y,Ed</sub></td><td>${My_tc} тс·м</td></tr>
+          <tr><td class="report-label">Отпор грунта p</td><td>${p_tc} тс/м²</td></tr>
+          <tr><td class="report-label">Армирование X</td><td>${meta.meshesX.map((m) => `Ø${m.diam} A${meta.meshFyk}, шаг ${m.spacing}`).join('; ')}</td></tr>
+          <tr><td class="report-label">Армирование Y</td><td>${meta.meshesY.map((m) => `Ø${m.diam} A${meta.meshFyk}, шаг ${m.spacing}`).join('; ')}</td></tr>
           <tr><td class="report-label">Хомуты</td><td>класс ${fywkLabel}</td></tr>
         </table>
 
@@ -3410,23 +3749,27 @@ function initPanel(prefix, position) {
         <h3>3. Коэффициент β (§6.4.3)</h3>
         <p>Метод: ${betaMethodLabel}.</p>
         <p>${betaText}</p>
-        <p class="report-formula">Принято β = ${r.betaRes.beta.toFixed(3)} ${input.betaMethod === 'formula' ? '— формула ' + r.betaRes.formula : ''}</p>
+        <p class="report-formula">Принято $\\beta = ${r.betaRes.beta.toFixed(3)}$ ${input.betaMethod === 'formula' ? '— формула ' + r.betaRes.formula : ''}</p>
+        ${u1StarHtml}
 
         <h3>4. Проверка по грани колонны (§6.4.5(3), формула 6.53)</h3>
         <p>У самой грани колонны напряжения максимальны — проверяется, что они не превышают v<sub>Rd,max</sub> (условие раздавливания бетона сжатыми наклонными полосами). Периметр грани u₀ определяется положением колонны на плите и составляет ${r.u0.toFixed(0)} мм.</p>
-        <table>
-          <tr><td class="report-label">u₀</td><td>${r.u0.toFixed(0)} мм</td></tr>
-          <tr><td class="report-label">v<sub>Ed</sub> = β·N/(u₀·d)</td><td>${r.vEd0.toFixed(3)} МПа</td></tr>
-          <tr><td class="report-label">v<sub>Rd,max</sub> = 0,5·ν·f<sub>cd</sub></td><td>${r.vRdMax.toFixed(3)} МПа</td></tr>
-          <tr><td class="report-label">Использовано</td><td>${(utilFace * 100).toFixed(0)} % ${utilFace > 1 ? '— ПРЕВЫШЕНИЕ' : '— в норме'}</td></tr>
-        </table>
+        <div class="formula-label">Расчётное напряжение:</div>
+        <p class="report-formula">$$v_{Ed} = \\frac{\\beta \\cdot N}{u_0 \\cdot d} = ${r.vEd0.toFixed(3)}\\text{ МПа}$$</p>
+        <div class="formula-label">Предельное сопротивление:</div>
+        <p class="report-formula">$$v_{Rd,max} = 0{,}5 \\cdot \\nu \\cdot f_{cd} = ${r.vRdMax.toFixed(3)}\\text{ МПа}$$</p>
+        <div class="formula-label">Коэффициент использования:</div>
+        <p class="report-formula">$$\\eta = \\frac{v_{Ed}}{v_{Rd,max}} = ${utilFace.toFixed(2)} = ${(utilFace * 100).toFixed(0)}\\%$$</p>
+        <div class="report-verdict ${utilFace <= 1 ? '' : 'bad'}">${utilFace <= 1 ? '✓ Условие выполнено' : '✗ Условие не выполнено — ПРЕВЫШЕНИЕ'}</div>
 
         <h3>5. Основной контрольный периметр u₁ и сопротивление бетона (§6.4.4, §6.4.2)</h3>
         <p>${u1Text}</p>
         ${u1DiagramHtml}
         <p>Сопротивление бетона продавливанию без поперечной арматуры v<sub>Rd,c</sub> зависит от класса бетона, рабочей высоты плиты (масштабный фактор k) и процента продольного армирования ρ<sub>l</sub>:</p>
-        <p class="report-formula">k = 1 + √(200/d) = ${r.kSize.toFixed(3)} (не более 2,0); ρ<sub>l</sub> = √(ρ<sub>lx</sub>·ρ<sub>ly</sub>) = ${(r.rhol * 100).toFixed(3)} %; v<sub>min</sub> = 0,035·k^1,5·√f<sub>ck</sub> = ${r.vmin.toFixed(3)} МПа</p>
-        <p class="report-formula">v<sub>Rd,c</sub> = max(C<sub>Rd,c</sub>·k·(100·ρ<sub>l</sub>·f<sub>ck</sub>)^(1/3); v<sub>min</sub>) = ${r.vRdc.toFixed(3)} МПа</p>
+        <p class="report-formula">$$k = 1 + \\sqrt{\\frac{200}{d}} = ${r.kSize.toFixed(3)}\\text{ (не более 2,0)}$$</p>
+        <p class="report-formula">$$\\rho_l = \\sqrt{\\rho_{lx} \\cdot \\rho_{ly}} = ${(r.rhol * 100).toFixed(3)}\\%$$</p>
+        <p class="report-formula">$$v_{min} = 0{,}035 \\cdot k^{1{,}5} \\cdot \\sqrt{f_{ck}} = ${r.vmin.toFixed(3)}\\text{ МПа}$$</p>
+        <p class="report-formula">$$v_{Rd,c} = \\max\\left(C_{Rd,c} \\cdot k \\cdot (100 \\cdot \\rho_l \\cdot f_{ck})^{1/3};\\ v_{min}\\right) = ${r.vRdc.toFixed(3)}\\text{ МПа}$$</p>
         <p>Формула v<sub>Rd,c</sub> откалибрована по фактически заармированным сечениям — её достоверность зависит от того, выполнено ли минимальное армирование плиты (§9.2.1.1(1), формула 9.1N): ρ<sub>min</sub> = max(0,26·f<sub>ctm</sub>/f<sub>yk</sub>; 0,0013) = ${(r.rhoMin * 100).toFixed(3)} % (f<sub>ctm</sub> = ${r.fctm.toFixed(3)} МПа). ${r.rhoMinOk ? `Условие выполнено (ρ<sub>l</sub> = ${(r.rhol * 100).toFixed(3)} % ≥ ρ<sub>min</sub>).` : `<strong>Условие НЕ выполнено</strong> (ρ<sub>l</sub> = ${(r.rhol * 100).toFixed(3)} % < ρ<sub>min</sub>) — формула v<sub>Rd,c</sub> формально недостоверна, рекомендуется увеличить армирование плиты.`}</p>
 
         <h3>6. Проверка на основном периметре u₁ с учётом реакции грунта</h3>
@@ -3435,10 +3778,14 @@ function initPanel(prefix, position) {
         <table>
           <tr><td class="report-label">Площадь внутри u₁</td><td>A = ${(r.critical.A / 1e6).toFixed(3)} м²</td></tr>
           <tr><td class="report-label">Разгрузка от грунта</td><td>ΔV<sub>Ed</sub> = p·A = ${deltaV_tc} тс</td></tr>
-          <tr><td class="report-label">v<sub>Ed</sub> = β·(N−ΔV<sub>Ed</sub>)/(u₁·d)</td><td>${r.critical.vEd.toFixed(3)} МПа</td></tr>
-          <tr><td class="report-label">v<sub>Rd,c</sub></td><td>${r.vRdc.toFixed(3)} МПа</td></tr>
-          <tr><td class="report-label">Использовано</td><td>${(utilU1 * 100).toFixed(0)} % ${utilU1 > 1 ? '— требуется поперечная арматура (см. ниже)' : '— в норме, арматура не требуется'}</td></tr>
         </table>
+        <div class="formula-label">Расчётное напряжение:</div>
+        <p class="report-formula">$$v_{Ed} = \\frac{\\beta \\cdot (N - \\Delta V_{Ed})}{u_1 \\cdot d} = ${r.critical.vEd.toFixed(3)}\\text{ МПа}$$</p>
+        <div class="formula-label">Предельное сопротивление (без поперечной арматуры):</div>
+        <p class="report-formula">$$v_{Rd,c} = ${r.vRdc.toFixed(3)}\\text{ МПа}$$</p>
+        <div class="formula-label">Коэффициент использования:</div>
+        <p class="report-formula">$$\\eta = \\frac{v_{Ed}}{v_{Rd,c}} = ${utilU1.toFixed(2)} = ${(utilU1 * 100).toFixed(0)}\\%$$</p>
+        <div class="report-verdict ${utilU1 <= 1 ? '' : 'bad'}">${utilU1 <= 1 ? '✓ Условие выполнено — поперечная арматура не требуется' : '✗ Условие не выполнено — требуется поперечная арматура (см. раздел 7)'}</div>
 
         <h3>7. Поперечная арматура на продавливание (§6.4.5, §9.4.3)</h3>
         ${$('reinfVerdict').innerHTML || '<p class="hint">Не рассчитано.</p>'}
@@ -3447,17 +3794,24 @@ function initPanel(prefix, position) {
         <h3>Сводная таблица проверок</h3>
         <table>
           <tr><th>Проверка</th><th>Использование</th></tr>
-          <tr><td>Грань колонны</td><td>${(utilFace * 100).toFixed(0)} %</td></tr>
-          <tr><td>Контрольный периметр</td><td>${(utilU1 * 100).toFixed(0)} %</td></tr>
-          <tr><td>Поперечная арматура</td><td>${lastReinfSummaryText}</td></tr>
+          <tr><td>Грань колонны</td><td><span class="${utilFace >= 1 ? 'util-bad' : 'util-ok'}">${(utilFace * 100).toFixed(0)} %</span></td></tr>
+          ${lastReinfRelevant ? `
+          <tr><td>Без поперечной арматуры</td><td><span class="util-bad">${(utilU1 * 100).toFixed(0)} % ✗</span></td></tr>
+          <tr><td>С заданной поперечной арматурой</td><td><span class="${lastReinfClass}">${lastReinfSummaryText} ${lastReinfClass === 'util-bad' ? '✗' : '✓'}</span></td></tr>` : `
+          <tr><td>Контрольный периметр</td><td><span class="${lastU1Class}">${(utilU1 * 100).toFixed(0)} %</span></td></tr>
+          <tr><td>Поперечная арматура</td><td>${lastReinfSummaryText}</td></tr>`}
         </table>
 
-        <div class="report-verdict ${overall ? '' : 'bad'}">
-          Итог: сечение плиты ${overall ? 'достаточно' : 'НЕ достаточно'} по продавливанию
-          (грань: ${(utilFace * 100).toFixed(0)} %, u₁: ${(utilU1 * 100).toFixed(0)} %)${overall ? '' : ' — смотрите раздел 7 выше'}.
-        </div>
+        ${lastStrengthOk && !lastReinfConstructiveOk
+          ? `<div class="report-verdict bad">
+              По расчётной несущей способности плита проходит проверку на продавливание (грань: ${(utilFace * 100).toFixed(0)} %, u₁: ${(utilU1 * 100).toFixed(0)} %). Конструктивное выполнение поперечного армирования требует корректировки: ${lastRemediationText || 'см. раздел 7 выше'}.
+            </div>`
+          : `<div class="report-verdict ${overall ? '' : 'bad'}">
+              Итог: сечение плиты ${overall ? 'достаточно' : 'НЕ достаточно'} по продавливанию
+              (грань: ${(utilFace * 100).toFixed(0)} %, u₁: ${(utilU1 * 100).toFixed(0)} %)${overall ? '' : ' — смотрите раздел 7 выше'}.
+            </div>`}
 
-        <p class="report-note">Примечание: при необходимости в записку можно вставить дополнительные чертежи (например, схему контрольных периметров u₀/u₁ по рис. 6.13/6.20 EN 1992-1-1, план раскладки арматуры плиты или разрез фундамента) — пришлите изображение, и оно будет встроено в отчёт аналогично рис. 1–2 выше.</p>
+        <div class="report-footer">Документ сформирован автоматически в «Электронном справочнике конструктора» · автор проекта — Кайыртаев Б.Б.</div>
       </div>
     `;
   }
@@ -3466,6 +3820,7 @@ function initPanel(prefix, position) {
     const html = buildReport();
     const printArea = document.getElementById('printArea');
     printArea.innerHTML = html;
+    renderMath(printArea);
     window.print();
   });
 }
@@ -3486,6 +3841,260 @@ tabButtons.forEach((btn) => {
   });
 });
 
+/* ══════════════════════════════════════════════════════
+   СОХРАНЕНИЕ / ЗАГРУЗКА ДАННЫХ РАСЧЁТА (.json)
+   Файл хранит исходные данные всех трёх вкладок (колонна
+   средняя/крайняя/угловая) сразу — их можно позже загрузить,
+   поправить и пересчитать. В отличие от печатного отчёта
+   (готовый плоский документ) этот файл обратно читается.
+   ══════════════════════════════════════════════════════ */
+const PRODAV_SIMPLE_FIELD_IDS = [
+  'c1', 'c2', 'hasPedestal', 'pedB1', 'pedB2', 'pedHp',
+  'N', 'Mx', 'My', 'fck', 'betaMethod', 'manualBeta',
+  'fywk', 'reinfMode', 'manDia', 'u1Override', 'soilPressure',
+  'edgeOrientation', 'towardInterior',
+];
+
+function prodavCollectTabData(prefix) {
+  const $ = (id) => document.getElementById(prefix + '-' + id);
+  const data = {};
+
+  PRODAV_SIMPLE_FIELD_IDS.forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    data[id] = (el.type === 'checkbox') ? el.checked : el.value;
+  });
+
+  // u1Override отображает авто-значение прямо в поле, пока пользователь его
+  // не тронул — сохранять это как "введённое" значение нельзя (при
+  // восстановлении оно окажется НЕ меньше заново вычисленного авто-значения
+  // и провалит валидацию, пряча весь блок результатов).
+  const u1EditedFn = window.__prodavU1Edited && window.__prodavU1Edited[prefix];
+  if (!u1EditedFn || !u1EditedFn()) data.u1Override = '';
+
+  const readMeshContainer = (containerId) => {
+    const container = $(containerId);
+    if (!container) return [];
+    return [...container.querySelectorAll('.mesh-row')].map((rowEl) => ({
+      diam: rowEl.querySelector('.mesh-diam').value,
+      spacing: rowEl.querySelector('.mesh-spacing').value,
+      d: rowEl.querySelector('.mesh-d').value,
+    }));
+  };
+  data.meshRowsX = readMeshContainer('meshRowsX');
+  data.meshRowsY = readMeshContainer('meshRowsY');
+  const anyMeshFyk = document.querySelector(`#panel-${prefix} .mesh-fyk`);
+  data.meshFyk = anyMeshFyk ? anyMeshFyk.value : null;
+
+  const rowsContainer = $('rowsContainer');
+  data.reinfRows = rowsContainer ? [...rowsContainer.querySelectorAll('.reinf-row')].map((rowEl) => ({
+    offsetX: rowEl.querySelector('.row-offsetX').value,
+    offsetY: rowEl.querySelector('.row-offsetY').value,
+    countX: rowEl.querySelector('.row-countX').value,
+    countY: rowEl.querySelector('.row-countY').value,
+  })) : [];
+
+  return data;
+}
+
+function exportDataFile() {
+  const data = {
+    format: 'esk-prodavlivanie-fundament-data',
+    version: 1,
+    savedAt: new Date().toISOString(),
+    tabs: {
+      int: prodavCollectTabData('int'),
+      edge: prodavCollectTabData('edge'),
+      corner: prodavCollectTabData('corner'),
+    },
+  };
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'prodavlivanie-fundament-raschet.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importDataFile(inputEl) {
+  const file = inputEl.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let data;
+    try {
+      data = JSON.parse(e.target.result);
+    } catch (err) {
+      alert('Не удалось прочитать файл — это не тот формат JSON.\n' + err.message);
+      inputEl.value = '';
+      return;
+    }
+    if (data.format !== 'esk-prodavlivanie-fundament-data') {
+      alert('Этот файл не похож на сохранённые данные калькулятора "Продавливание фундаментной плиты".');
+      inputEl.value = '';
+      return;
+    }
+    ['int', 'edge', 'corner'].forEach((prefix) => {
+      if (data.tabs && data.tabs[prefix]) prodavApplyTabData(prefix, data.tabs[prefix]);
+    });
+    inputEl.value = ''; /* сброс, чтобы можно было загрузить тот же файл повторно после правок */
+  };
+  reader.readAsText(file);
+}
+
+/* Приводит контейнер динамических строк (сетки/ряды хомутов) к нужному
+   количеству, кликая по кнопкам "+"/"удалить" — так же, как это делает
+   пользователь. Сами функции добавления/удаления строк — замыкания внутри
+   initPanel() и снаружи недоступны, зато их кнопки доступны всегда. */
+function prodavSetRowCount(container, addBtn, targetCount, rowSelector) {
+  if (!container) return;
+  let rows = container.querySelectorAll(rowSelector);
+  while (rows.length > targetCount && rows.length > 1) {
+    const removeBtn = rows[rows.length - 1].querySelector('.row-remove, .mesh-remove-btn');
+    if (!removeBtn) break;
+    removeBtn.click();
+    rows = container.querySelectorAll(rowSelector);
+  }
+  while (rows.length < targetCount) {
+    addBtn.click();
+    rows = container.querySelectorAll(rowSelector);
+  }
+}
+
+function prodavApplyTabData(prefix, data) {
+  const $ = (id) => document.getElementById(prefix + '-' + id);
+  const setField = (id, value) => {
+    const el = $(id);
+    if (!el || value === undefined) return;
+    if (el.type === 'checkbox') el.checked = !!value;
+    else el.value = value;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+
+  // Сначала сетки армирования плиты и ряды хомутов — до полей, которые
+  // от них зависят (например, d плиты пересчитывается по сеткам).
+  const meshRowsXContainer = $('meshRowsX');
+  const meshRowsYContainer = $('meshRowsY');
+  prodavSetRowCount(meshRowsXContainer, $('addMeshXBtn'), Math.max(1, (data.meshRowsX || []).length), '.mesh-row');
+  prodavSetRowCount(meshRowsYContainer, $('addMeshYBtn'), Math.max(1, (data.meshRowsY || []).length), '.mesh-row');
+
+  const fillMeshRows = (container, rowsData) => {
+    if (!container || !rowsData) return;
+    const rowEls = [...container.querySelectorAll('.mesh-row')];
+    rowsData.forEach((rd, i) => {
+      const rowEl = rowEls[i];
+      if (!rowEl) return;
+      const diamEl = rowEl.querySelector('.mesh-diam');
+      const spacingEl = rowEl.querySelector('.mesh-spacing');
+      const dEl = rowEl.querySelector('.mesh-d');
+      if (diamEl && rd.diam !== undefined) { diamEl.value = rd.diam; diamEl.dispatchEvent(new Event('change', { bubbles: true })); }
+      if (spacingEl && rd.spacing !== undefined) { spacingEl.value = rd.spacing; spacingEl.dispatchEvent(new Event('input', { bubbles: true })); }
+      if (dEl && rd.d !== undefined) { dEl.value = rd.d; dEl.dispatchEvent(new Event('input', { bubbles: true })); }
+    });
+  };
+  fillMeshRows(meshRowsXContainer, data.meshRowsX);
+  fillMeshRows(meshRowsYContainer, data.meshRowsY);
+  if (data.meshFyk) {
+    const firstFyk = document.querySelector(`#panel-${prefix} .mesh-fyk`);
+    if (firstFyk) { firstFyk.value = data.meshFyk; firstFyk.dispatchEvent(new Event('change', { bubbles: true })); }
+  }
+
+  // Режим поперечной арматуры — раньше рядов хомутов, т.к. поле "Режим"
+  // управляет видимостью блока с рядами.
+  setField('reinfMode', data.reinfMode);
+
+  const rowsContainer = $('rowsContainer');
+  prodavSetRowCount(rowsContainer, $('addRowBtn'), Math.max(1, (data.reinfRows || []).length), '.reinf-row');
+  if (rowsContainer && data.reinfRows) {
+    const rowEls = [...rowsContainer.querySelectorAll('.reinf-row')];
+    data.reinfRows.forEach((rd, i) => {
+      const rowEl = rowEls[i];
+      if (!rowEl) return;
+      ['offsetX', 'offsetY', 'countX', 'countY'].forEach((f) => {
+        const el = rowEl.querySelector('.row-' + f);
+        if (el && rd[f] !== undefined) { el.value = rd[f]; el.dispatchEvent(new Event('input', { bubbles: true })); }
+      });
+    });
+  }
+
+  // Подколонник — сначала чекбокс (переключает видимость полей b1/b2/hp),
+  // затем сами значения.
+  setField('hasPedestal', data.hasPedestal);
+  ['c1', 'c2', 'pedB1', 'pedB2', 'pedHp', 'N', 'Mx', 'My', 'fck',
+    'betaMethod', 'manualBeta', 'fywk', 'manDia', 'soilPressure',
+    'edgeOrientation', 'towardInterior'].forEach((id) => setField(id, data[id]));
+
+  // u1Override — последним: пустая строка возвращает поле в автоматический
+  // режим, непустая помечает его как введённое пользователем (см. слушатель
+  // 'input' на этом поле внутри initPanel).
+  setField('u1Override', data.u1Override !== undefined ? data.u1Override : '');
+
+  if (window.__prodavRunCalc && window.__prodavRunCalc[prefix]) window.__prodavRunCalc[prefix]();
+
+  // Подстраховка от уже сохранённых где-то (до этого исправления) битых
+  // данных: если восстановленное u1Override не проходит валидацию (типично —
+  // равно старому авто-значению, см. комментарий в prodavCollectTabData),
+  // сбрасываем поле в автоматический режим и пересчитываем ещё раз, вместо
+  // того чтобы оставлять весь блок результатов скрытым.
+  const u1El = $('u1Override');
+  const u1Wrap = u1El && (u1El.closest('label') || u1El.parentElement);
+  if (u1Wrap && u1Wrap.classList.contains('field-error')) {
+    u1El.value = '';
+    u1El.dispatchEvent(new Event('input', { bubbles: true }));
+    if (window.__prodavRunCalc && window.__prodavRunCalc[prefix]) window.__prodavRunCalc[prefix]();
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   СОХРАНЕНИЕ ДАННЫХ МЕЖДУ ВИЗИТАМИ (localStorage)
+   Использует те же prodavCollectTabData/prodavApplyTabData,
+   что и сохранение/загрузка .json — учитывает все поля всех
+   трёх вкладок, включая динамические строки сеток и хомутов.
+   ══════════════════════════════════════════════════════ */
+const PRODAV_LS_KEY = 'esk-prodavlivanie-fundament-v1';
+
+function prodavSaveToStorage() {
+  try {
+    const data = {
+      format: 'esk-prodavlivanie-fundament-data',
+      version: 1,
+      savedAt: new Date().toISOString(),
+      tabs: {
+        int: prodavCollectTabData('int'),
+        edge: prodavCollectTabData('edge'),
+        corner: prodavCollectTabData('corner'),
+      },
+    };
+    localStorage.setItem(PRODAV_LS_KEY, JSON.stringify(data));
+  } catch (e) {}
+}
+
+function prodavLoadFromStorage() {
+  try {
+    const raw = localStorage.getItem(PRODAV_LS_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.format !== 'esk-prodavlivanie-fundament-data') return;
+    ['int', 'edge', 'corner'].forEach((prefix) => {
+      if (data.tabs && data.tabs[prefix]) prodavApplyTabData(prefix, data.tabs[prefix]);
+    });
+  } catch (e) {}
+}
+
+let prodavSaveTimer = null;
+function prodavScheduleSave() {
+  if (prodavSaveTimer) clearTimeout(prodavSaveTimer);
+  prodavSaveTimer = setTimeout(prodavSaveToStorage, 300);
+}
+document.addEventListener('input', prodavScheduleSave);
+document.addEventListener('change', prodavScheduleSave);
+
+prodavLoadFromStorage();
 </script>
 
 </body>
