@@ -211,10 +211,7 @@
 <div class="wrap">
   <div id="site-header"></div>
 
-  <div style="position:relative;">
-    <h1 style="text-align:center;">Перемычка из пары уголков</h1>
-    <button id="helpBtn" onclick="document.getElementById('helpModal').style.display='flex'" style="position:absolute;top:0;right:0;width:auto;margin:0;padding:6px 12px;font-size:12.5px;background:var(--panel2);color:var(--text);border:1px solid var(--border);">📖 Справка</button>
-  </div>
+  <h1 style="text-align:center;">Перемычка из пары уголков</h1>
 
   <div class="card" id="inputsCard">
     <h2>Исходные данные</h2>
@@ -1239,7 +1236,10 @@ function renderResult(r, Lcalc_mm){
   return `<div class="card">
     <div class="results-header">
       <h2 style="margin:0;">Результаты расчёта</h2>
-      <button class="print-btn" onclick="printReport()">🖨️ Печать</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="print-btn" onclick="document.getElementById('helpModal').style.display='flex'">📖 Справка</button>
+        <button class="print-btn" onclick="printReport()">🖨️ Расчётная записка</button>
+      </div>
     </div>
     <div class="result-card">
       <div class="result-title">2L ${r.dispLabel}${gostRef?' '+gostRef:''}, L=${Lcalc_mm.toFixed(0)}мм, m=${totalMass.toFixed(2)}кг</div>
