@@ -83,9 +83,6 @@ input[type="number"] {
 .auth-name {
   color: #d7dae8;
   font-size: 13px;
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .auth-logout {
