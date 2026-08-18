@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ветровая нагрузка на боковые стены здания — Электронный справочник конструктора</title>
+<style>
+:root {
+  --bg:       #0f1117;
+  --surface:  #1a1d27;
+  --surface2: #22263a;
+  --border:   #2e3347;
+  --accent:   #4f8ef7;
+  --green:    #7dd3a8;
+  --warn:     #f4b942;
+  --red:      #ef4444;
+  --text:     #d6daf0;
+  --muted:    #6b7099;
+  --mono:     'JetBrains Mono','Courier New',monospace;
+  --sans:     'Inter','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;padding:24px 16px 48px;}
+.page-wrap{max-width:1100px;margin:0 auto;}
+.page-title{font-size:22px;font-weight:700;color:#fff;text-align:center;margin-bottom:4px;}
+.page-subtitle{text-align:center;color:var(--muted);font-size:12px;margin-bottom:24px;}
+
+/* ── Карточки ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.card-header{background:var(--surface2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+.card-header .title{font-size:13px;font-weight:700;color:#fff;}
+.card-header .ref{font-family:var(--mono);font-size:10.5px;color:var(--accent);background:transparent;border:none;padding:0;opacity:.85;}
+.card-body{padding:16px;}
+
+/* ── Поля ввода ── */
+.field{margin-bottom:14px;min-width:0;}
+.field:last-child{margin-bottom:0;}
+.field label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;}
+.field input[type=text],.field input[type=number],.field select{
+  width:100%;background:transparent;border:1px solid transparent;color:var(--green);
+  font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 12px;border-radius:7px;outline:none;
+  transition:background .15s,border-color .15s;
+}
+.field input::placeholder{color:var(--green);opacity:.65;font-weight:500;}
+.field input:hover,.field select:hover{background:var(--surface2);border-color:var(--border);}
+.field input:focus,.field select:focus{background:var(--surface2);border-color:var(--accent);}
+.field .hint{font-size:11px;color:var(--muted);margin-top:5px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.checkbox-field{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.checkbox-field input{width:16px;height:16px;accent-color:var(--accent);}
+.checkbox-field label{margin:0;text-transform:none;font-size:13px;font-weight:500;color:var(--text);}
+@media(max-width:640px){ .field-row,.field-row3{grid-template-columns:1fr;} }
+
+/* ── Табличная форма (label | значение) ── */
+table.input-table{width:100%;border-collapse:collapse;font-size:13px;}
+table.input-table td{padding:6px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
+table.input-table tr:last-child td{border-bottom:none;}
+table.input-table td.it-label{width:260px;color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;}
+table.input-table td.it-value{position:relative;}
+table.input-table input[type=text],table.input-table input[type=number],table.input-table select{
+  width:100%;background:transparent;border:1px solid transparent;color:var(--green);
+  font-family:var(--sans);font-size:14px;font-weight:600;padding:8px 10px;border-radius:7px;outline:none;
+  transition:background .15s,border-color .15s;
+}
+table.input-table input::placeholder{color:var(--green);opacity:.65;font-weight:500;}
+table.input-table input:hover,table.input-table select:hover{background:var(--surface2);border-color:var(--border);}
+table.input-table input:focus,table.input-table select:focus{background:var(--surface2);border-color:var(--accent);}
+table.input-table .hint{font-size:11px;color:var(--muted);margin-top:5px;}
+@media(max-width:640px){
+  table.input-table,table.input-table tbody,table.input-table tr,table.input-table td{display:block;width:auto;}
+  table.input-table td.it-label{padding-bottom:4px;}
+  table.input-table td.it-value{padding-top:0;}
+}
+
+/* ── Города (комбобокс) ── */
+.combo-wrap{position:relative;min-width:0;}
+.combo-input{padding-right:44px !important;}
+.combo-arrow{position:absolute;right:0;top:0;bottom:0;width:40px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--green);}
+.combo-dropdown{display:none;position:fixed;z-index:200;background:var(--surface2);border:1px solid var(--border);border-radius:8px;max-height:340px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.combo-dropdown div{padding:9px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);}
+.combo-dropdown div:hover,.combo-dropdown div.active{background:var(--surface);}
+
+/* ── Результаты — таблица зон ── */
+table.zones{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
+table.zones th{background:var(--surface2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:9px 10px;border-bottom:1px solid var(--border);text-align:center;}
+table.zones th:first-child{text-align:left;}
+table.zones td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:center;}
+table.zones td:first-child{text-align:left;font-weight:700;color:#fff;}
+table.zones tr:last-child td{border-bottom:none;}
+table.zones tr:nth-child(even){background:rgba(255,255,255,.02);}
+td.zone-empty{color:var(--muted);font-style:italic;}
+td.we-val{font-family:var(--mono);font-weight:700;color:var(--warn);}
+
+/* ── Использованные данные ── */
+table.usedparams{width:100%;border-collapse:collapse;font-size:12px;}
+table.usedparams td{padding:7px 12px;border-bottom:1px solid var(--border);}
+table.usedparams tr:last-child td{border-bottom:none;}
+table.usedparams td:first-child{color:var(--muted);width:55%;}
+table.usedparams td:nth-child(2){color:var(--text);font-family:var(--mono);font-weight:600;text-align:right;}
+
+/* ── Формулы (KaTeX) ── */
+.formula-steps{font-family:var(--sans);font-size:13px;line-height:1.7;color:var(--text);}
+.formula-steps p{margin:8px 0 4px;}
+.formula-steps p:first-child{margin-top:0;}
+.formula-steps b{color:var(--green);}
+.formula-steps .katex{color:#e8ecf1;font-size:1.05em;}
+.formula-steps .katex-display{margin:4px 0 10px;}
+
+/* ── Сворачиваемые карточки ── */
+summary.card-header{cursor:pointer;list-style:none;user-select:none;}
+summary.card-header::-webkit-details-marker{display:none;}
+summary.card-header:hover{background:var(--surface);}
+.details-arrow{display:inline-block;margin-right:8px;font-size:10px;color:var(--accent);transition:transform .15s ease;}
+details[open] > summary.card-header .details-arrow{transform:rotate(90deg);}
+
+.warn-box{background:rgba(244,185,66,.08);border:1px solid rgba(244,185,66,.35);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--warn);margin:0 16px 16px;}
+.error-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.35);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--red);}
+.error-box ul{margin:4px 0 0;padding-left:18px;}
+input.input-invalid{border-color:var(--red)!important;background:rgba(239,68,68,.08)!important;}
+
+/* ── Печать отчёта ── */
+.print-btn{width:auto;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:8px 14px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--sans);}
+.print-btn:hover{background:var(--surface);border-color:var(--accent);}
+#printArea{display:none;}
+.print-header{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #printArea, #printArea *{visibility:visible;}
+  #printArea{display:block;position:absolute;top:0;left:0;width:100%;background:#fff;color:#111;padding:0;}
+  .print-header{display:block;margin-bottom:16px;text-align:center;}
+  .print-header h1{font-size:19px;margin:0 0 6px;color:#111;letter-spacing:.01em;}
+  .print-subtitle{font-size:12px;color:#555;margin-bottom:6px;}
+  .print-date{font-size:11px;color:#555;}
+  .print-footer{margin-top:24px;padding-top:10px;border-top:1px solid #ccc;font-size:10px;color:#777;text-align:center;}
+  .print-section{margin-bottom:18px;page-break-inside:avoid;}
+  .print-section h2{font-size:14px;color:#111;border-bottom:1px solid #ccc;padding-bottom:4px;}
+  #printArea .print-section p{margin:4px 0 10px;font-size:12px;color:#222;line-height:1.5;}
+  #printArea .formula-steps{color:#222;}
+  #printArea .formula-steps .katex{color:#111;}
+  #printArea table{color:#111;width:100%;border-collapse:collapse;}
+  #printArea th,#printArea td{border-bottom:1px solid #ccc;padding:6px 8px;}
+  #printArea table.zones th{background:#eee;}
+  #printArea svg text{fill:#111 !important;}
+  #printArea svg rect,#printArea svg line{stroke:#333 !important;}
+}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+<div id="printArea"></div>
+<div class="page-wrap">
+
+<div id="site-header"></div>
+
+<div class="page-title">Ветровая нагрузка на боковые стены здания</div>
+<div class="page-subtitle">Ветровое давление на все грани прямоугольного в плане здания — зоны D, A, B, C, E — СП РК EN 1991-1-4:2005/2011 + НТП РК 01-01-3.1(4.1)-2017</div>
+
+<!-- ═══════════════ ИСХОДНЫЕ ДАННЫЕ ═══════════════ -->
+<div class="card" id="inputsCard">
+  <div class="card-header">
+    <span class="title">Исходные данные</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <table class="input-table">
+      <tr>
+        <td class="it-label">Населённый пункт</td>
+        <td class="it-value">
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+            <div class="combo-wrap" style="flex:0 0 260px;">
+              <input type="text" id="cityInput" class="combo-input" placeholder="Загрузка данных..." autocomplete="off" disabled
+                onfocus="showCityDropdown(this.value)" onblur="setTimeout(closeCityDropdown,150)">
+              <button type="button" class="combo-arrow" onclick="toggleCityDropdown()"><svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div id="cityDropdown" class="combo-dropdown"></div>
+            </div>
+            <div class="hint" id="cityWindHint" style="margin-top:0;">—</div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="it-label">Тип местности (Табл. 4.1)</td>
+        <td class="it-value">
+          <select id="terrain">
+            <option value="0">0 — моря, открытые побережья</option>
+            <option value="I">I — озёра, плоская местность без препятствий</option>
+            <option value="II" selected>II — открытая местность с низкой растительностью</option>
+            <option value="III">III — равномерная застройка/лес (посёлки, пригород)</option>
+            <option value="IV">IV — плотная городская застройка (&gt;15% площади, здания &gt;15 м)</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="it-label">Орография местности</td>
+        <td class="it-value">
+          <div class="checkbox-field" style="margin:2px 0 0;">
+            <input type="checkbox" id="flatTerrain" checked>
+            <label for="flatTerrain">Ровная местность, орографический коэффициент c₀ = 1,0</label>
+          </div>
+        </td>
+      </tr>
+      <tr id="c0Field" style="display:none;">
+        <td class="it-label">Орографический коэффициент, c₀</td>
+        <td class="it-value"><input type="number" id="c0Manual" value="1.0" min="1" max="2" step="0.01"></td>
+      </tr>
+    </table>
+
+    <table class="input-table">
+      <tr>
+        <td class="it-label">Ширина здания поперёк ветра, b (м)</td>
+        <td class="it-value"><input type="number" id="bWidth" value="24" min="1" step="0.5"></td>
+      </tr>
+      <tr>
+        <td class="it-label">Длина здания вдоль ветра, d (м)</td>
+        <td class="it-value"><input type="number" id="dDepth" value="48" min="1" step="0.5"></td>
+      </tr>
+      <tr>
+        <td class="it-label">Высота здания, h (м)</td>
+        <td class="it-value"><input type="number" id="hHeight" value="9" min="1" step="0.5"></td>
+      </tr>
+      <tr id="dMidStripsField" style="display:none;">
+        <td class="it-label">Пром. полосы зоны D (при h &gt; 2b)</td>
+        <td class="it-value">
+          <input type="number" id="dMidStrips" value="1" min="1" max="10" step="1">
+          <div class="hint">Наветренная стена при h &gt; 2b делится на нижнюю и верхнюю полосы высотой b, а промежуток между ними — на это число равных полос (7.2.2(1), Рисунок 7.4; число полос выбирает инженер, норма не задаёт его жёстко)</div>
+        </td>
+      </tr>
+    </table>
+    <div class="hint" style="padding:10px 16px;">
+      Ветер набегает на грань шириной b (наветренная стена, зона D). Боковые стены — грани здания, параллельные
+      направлению ветра, длиной d (зоны A, B, C). Противоположная грань шириной b — подветренная стена, зона E.
+    </div>
+    <div id="validationErrors" style="display:none;padding:0 16px 16px;"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ ДОПОЛНИТЕЛЬНЫЕ ПАРАМЕТРЫ ДАВЛЕНИЯ ═══════════════ -->
+<div class="card" id="advParamsCard">
+  <details>
+    <summary class="card-header">
+      <span class="title"><span class="details-arrow">▶</span>Дополнительные параметры давления</span>
+      <span class="ref">внутреннее давление · площадь элемента</span>
+    </summary>
+    <div class="card-body" style="padding:0;">
+      <div class="hint" style="padding:10px 16px;">
+        Значения ниже приняты по умолчанию как для здания <b>без доминирующего фасада</b> (ворота/проёмы приняты
+        закрытыми, п. 7.2.9(3)) — обычный случай для большинства зданий. Менять их нужно, только если у здания
+        есть заведомо доминирующий проём и это специально проверяется как особая расчётная ситуация.
+      </div>
+      <table class="input-table">
+        <tr>
+          <td class="it-label">Коэфф. внутр. давления, c<sub>pi,min</sub></td>
+          <td class="it-value">
+            <input type="number" id="cpiMin" value="-0.3" step="0.05">
+            <div class="hint">Здание без доминирующего фасада — принимается наихудшее из c<sub>pi,min</sub>/c<sub>pi,max</sub> (7.2.9(6), Примечание 2)</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="it-label">Коэфф. внутр. давления, c<sub>pi,max</sub></td>
+          <td class="it-value"><input type="number" id="cpiMax" value="0.2" step="0.05"></td>
+        </tr>
+        <tr>
+          <td class="it-label">Площадь элемента, A (м²)</td>
+          <td class="it-value">
+            <input type="number" id="loadArea" value="10" min="0.1" step="0.5">
+            <div class="hint">По умолчанию 10 м² — расчёт на всю конструкцию (c<sub>pe,10</sub>). Для промежуточных площадей 1–10 м² c<sub>pe</sub> определяется логарифмической интерполяцией между c<sub>pe,1</sub> и c<sub>pe,10</sub> (7.2.1(1))</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </details>
+</div>
+
+<!-- ═══════════════ ПРЕДУПРЕЖДЕНИЕ h/d > 5 ═══════════════ -->
+<div class="card" id="hdWarningCard" style="display:none;">
+  <div class="card-body">
+    <div class="warn-box" style="margin:0;">
+      <b>h/d &gt; 5</b> — по п. 7.2.2(2) Примечание 2 СП РК EN 1991-1-4 при таком соотношении результирующую ветровую нагрузку
+      следует определять через коэффициенты усилия (7.6–7.8, 7.9.2), а не через коэффициенты давления зон A–E.
+      Результаты ниже посчитаны по зонам A–E формально, но для здания с такими пропорциями (высокое и узкое)
+      этот метод не является нормативно корректным — используйте коэффициенты усилия.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ РАСЧЁТНАЯ СХЕМА ═══════════════ -->
+<div class="card" id="schemeCard" style="display:none;">
+  <div class="card-header">
+    <span class="title">Расчётная схема</span>
+    <span class="ref">по текущим b, d, h</span>
+  </div>
+  <div class="card-body" style="overflow-x:auto;">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+      <div id="schemePlanContainer" style="flex:1 1 240px;max-width:280px;min-width:220px;"></div>
+      <div id="schemeFrontContainer" style="flex:1 1 260px;max-width:300px;min-width:240px;"></div>
+      <div id="schemeSideContainer" style="flex:1 1 260px;max-width:300px;min-width:240px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ СУММАРНОЕ ДАВЛЕНИЕ (ВНЕШНЕЕ − ВНУТРЕННЕЕ) ═══════════════ -->
+<div class="card" id="netCard" style="display:none;">
+  <div class="card-header">
+    <span class="title">Суммарное давление (с учётом внутреннего) — зоны D, A, B, C, E</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="print-btn" onclick="document.getElementById('helpModal').style.display='flex'">📖 Справка</button>
+      <button class="print-btn" onclick="printReport()">🖨️ Расчётная записка</button>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="hint" style="margin-bottom:10px;">
+      Это давление принимается в расчётах конструкций и каркаса — w<sub>net</sub> = w<sub>e</sub> − w<sub>i</sub>,
+      наиболее неблагоприятная комбинация c<sub>pi</sub> для здания без доминирующего фасада (7.2.9(6), 5.2(3);
+      значения c<sub>pi,min</sub>/c<sub>pi,max</sub> задаются в блоке «Дополнительные параметры давления»).
+    </div>
+    <table class="zones" id="netTable"></table>
+  </div>
+</div>
+
+<!-- ═══════════════ РЕЗУЛЬТАТЫ (ТОЛЬКО ВНЕШНЕЕ ДАВЛЕНИЕ) ═══════════════ -->
+<div class="card" id="resultsCard" style="display:none;">
+  <details>
+    <summary class="card-header">
+      <span class="title"><span class="details-arrow">▶</span>Внешнее давление на стены (зоны D, A, B, C, E)</span>
+    </summary>
+    <div class="card-body">
+      <table class="zones" id="zonesTable"></table>
+      <div class="hint" style="margin-top:10px;">
+        D — наветренная стена, E — подветренная, A/B/C — боковые стены (параллельные ветру).
+        w<sub>e,10</sub> — для расчёта конструкции и её элементов площадью ≥ 10 м² (стеновые панели, ригели фахверка).
+        w<sub>e,1</sub> — для мелких элементов и креплений площадью ≤ 1 м² (кляммеры, крепёж обшивки). Знак «−» — разрежение (отсос от поверхности), «+» — давление на поверхность.
+      </div>
+    </div>
+  </details>
+</div>
+
+<!-- ═══════════════ ДАВЛЕНИЕ ПО ПЛОЩАДИ ЭЛЕМЕНТА ═══════════════ -->
+<div class="card" id="areaCard" style="display:none;">
+  <details>
+    <summary class="card-header">
+      <span class="title"><span class="details-arrow">▶</span><span id="areaCardTitle">Давление для площади элемента</span></span>
+      <span class="ref">7.2.1(1) — нужно только для мелких элементов/крепежа</span>
+    </summary>
+    <div class="card-body">
+      <table class="zones" id="areaTable"></table>
+      <div class="hint" style="margin-top:10px;">
+        c<sub>pe</sub>(A) — логарифмическая интерполяция между c<sub>pe,1</sub> и c<sub>pe,10</sub> для промежуточной площади элемента (1–10 м²).
+      </div>
+    </div>
+  </details>
+</div>
+
+<div class="card" id="usedParamsCard" style="display:none;">
+  <details>
+    <summary class="card-header">
+      <span class="title"><span class="details-arrow">▶</span>Использованные параметры</span>
+    </summary>
+    <div class="card-body">
+      <table class="usedparams" id="usedParamsTable"></table>
+    </div>
+  </details>
+</div>
+
+<!-- ═══════════════ ОПРЕДЕЛЕНИЕ ПАРАМЕТРОВ (ПОДРОБНЫЙ ПОДСЧЁТ) ═══════════════ -->
+<div class="card" id="stepsCard" style="display:none;">
+  <details>
+    <summary class="card-header">
+      <span class="title"><span class="details-arrow">▶</span>Определение параметров</span>
+      <span class="ref">СП РК EN 1991-1-4, разд. 4, 7.2.2</span>
+    </summary>
+    <div class="card-body">
+      <div class="formula-steps" id="stepsOutput"></div>
+    </div>
+  </details>
+</div>
+
+</div>
+
+<div id="site-footer"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   Ветровая нагрузка на боковые стены здания
+   СП РК EN 1991-1-4:2005/2011 (разд. 4 — скоростной напор,
+   7.2.2 — вертикальные стены) + национальные параметры
+   НТП РК 01-01-3.1(4.1)-2017.
+   ══════════════════════════════════════════════════════ */
+
+/* Табл. 4.1 — типы местности и параметры шероховатости */
+const TERRAIN_TABLE = {
+  '0':  { z0: 0.003, zmin: 1,  label: '0 — моря, открытые побережья' },
+  'I':  { z0: 0.01,  zmin: 1,  label: 'I — озёра, плоская местность без препятствий' },
+  'II': { z0: 0.05,  zmin: 2,  label: 'II — открытая местность с низкой растительностью' },
+  'III':{ z0: 0.3,   zmin: 5,  label: 'III — равномерная застройка/лес' },
+  'IV': { z0: 1.0,   zmin: 10, label: 'IV — плотная городская застройка' }
+};
+
+/* Табл. 7.1 (в редакции приказа №216-НҚ от 30.12.2021) —
+   коэффициенты внешнего давления для зон D (наветренная), A, B, C (боковые),
+   E (подветренная) вертикальных стен. Значения не зависят от h/d
+   (единые для всех строк таблицы). */
+const CPE_D = { cpe10: 0.8, cpe1: 1.0 };
+const CPE_ZONES = [
+  { name: 'A', cpe10: -1.2, cpe1: -1.4 },
+  { name: 'B', cpe10: -0.8, cpe1: -1.1 },
+  { name: 'C', cpe10: -0.5, cpe1: -0.5 }
+];
+const CPE_E = { cpe10: -0.7, cpe1: -0.7 };
+
+const RHO = 1.25; // кг/м3 — плотность воздуха, НП.2.2.5.2
+const KGF_PER_TS = 9.80665; // 1 тс/м2 = 9,80665 кПа
+function tsm2(kpa){ return kpa / KGF_PER_TS; }
+function fmtTsm2(kpa){ return `${tsm2(kpa).toFixed(4)} тс/м²`; }
+
+const BACKEND = 'https://rebar-backend-henna.vercel.app/api/sheet-data';
+let CITIES = [];
+window._currentCity = null;
+
+function v(val){ return (val === null || val === undefined || val === '') ? '—' : String(val); }
+
+/* === Сохранение введённых данных между визитами (localStorage) === */
+const FORM_STORAGE_KEY = 'esk-veter-bokovye-steny-v1';
+const FORM_FIELD_IDS = ['terrain','flatTerrain','c0Manual','bWidth','dDepth','hHeight','dMidStrips','cpiMin','cpiMax','loadArea'];
+function saveFormState(){
+  try{
+    const state = {};
+    FORM_FIELD_IDS.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      state[id] = (el.type === 'checkbox') ? el.checked : el.value;
+    });
+    state.city = document.getElementById('cityInput').value;
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+function loadFormState(){
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if(!raw) return null;
+    const state = JSON.parse(raw);
+    FORM_FIELD_IDS.forEach(id=>{
+      if(!(id in state)) return;
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(el.type === 'checkbox') el.checked = state[id];
+      else el.value = state[id];
+      el.dispatchEvent(new Event('change', {bubbles:true}));
+    });
+    return state.city || null;
+  }catch(e){ return null; }
+}
+
+/* ══════════════════════════════════════════════════════
+   ЗАГРУЗКА ГОРОДОВ (климатика — Google Sheets через бэкенд)
+   ══════════════════════════════════════════════════════ */
+let _savedCityName = null;
+async function loadCities(){
+  const input = document.getElementById('cityInput');
+  try {
+    const res = await fetch(`${BACKEND}?book=climat&sheet=climat_kz`, { headers:{ 'x-app-key':'spravochnik-km-2026-x7k9' } });
+    const json = await res.json();
+    CITIES = (json.records || []).sort((a,b) => a.name.localeCompare(b.name,'ru'));
+    input.disabled = false;
+    input.placeholder = 'Введите название или выберите из списка...';
+    const saved = _savedCityName && CITIES.find(c => c.name === _savedCityName);
+    const astana = CITIES.find(c => c.name === 'Астана');
+    selectCity(saved ? saved.name : (astana ? 'Астана' : (CITIES[0] && CITIES[0].name)));
+  } catch(e){
+    input.placeholder = 'Ошибка загрузки — обновите страницу';
+    console.error('Ошибка загрузки климатических данных:', e);
+  }
+}
+
+function selectCity(name){
+  if (!name) return;
+  document.getElementById('cityInput').value = name;
+  closeCityDropdown();
+  window._currentCity = CITIES.find(c => c.name === name);
+  if (!window._currentCity) return;
+  const c = window._currentCity;
+  const vb = parseFloat(c.wind_speed);
+  document.getElementById('cityWindHint').textContent = isFinite(vb)
+    ? `Ветровой район ${v(c.wind_zone)} · базовая скорость ветра vb = ${vb} м/с (СП РК 2.04-01-2017, прил. А)`
+    : 'Нет данных по базовой скорости ветра для этого города';
+  calc();
+  saveFormState();
+}
+
+let cityDropdownOpen = false;
+function positionDropdownFixed(dd, inputEl){
+  const rect = inputEl.getBoundingClientRect();
+  dd.style.left = rect.left + 'px';
+  dd.style.top = (rect.bottom + 2) + 'px';
+  dd.style.width = rect.width + 'px';
+}
+function showCityDropdown(query){
+  const dd = document.getElementById('cityDropdown');
+  const input = document.getElementById('cityInput');
+  const q = (query||'').trim().toLowerCase();
+  const matches = q.length === 0 ? CITIES : CITIES.filter(c => c.name.toLowerCase().startsWith(q));
+  dd.innerHTML = matches.length
+    ? matches.map(c => `<div onmousedown="event.preventDefault();selectCity('${c.name.replace(/'/g,"\\'")}')">${c.name}</div>`).join('')
+    : '<div style="color:var(--muted);">Ничего не найдено</div>';
+  if (input) positionDropdownFixed(dd, input);
+  dd.style.display = 'block';
+  cityDropdownOpen = true;
+}
+function closeCityDropdown(){ document.getElementById('cityDropdown').style.display = 'none'; cityDropdownOpen = false; }
+function toggleCityDropdown(){
+  const input = document.getElementById('cityInput');
+  cityDropdownOpen ? closeCityDropdown() : (input.focus(), showCityDropdown(''));
+}
+document.getElementById('cityInput').addEventListener('input', function(){ showCityDropdown(this.value); });
+
+/* ══════════════════════════════════════════════════════
+   KaTeX
+   ══════════════════════════════════════════════════════ */
+function renderMath(el){
+  if(window.renderMathInElement){
+    renderMathInElement(el, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "$", right: "$", display: false}
+      ],
+      throwOnError: false
+    });
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   РАСЧЁТ
+   ══════════════════════════════════════════════════════ */
+let lastReportHTML = '';
+
+/* Пиковый скоростной напор q_p(z) на произвольной высоте z (Формулы 4.4, 4.7, 4.8) */
+function qpAt(z, z0, zmin, c0, vb){
+  const zEff = Math.max(z, zmin);
+  const kr = 0.19 * Math.pow(z0/0.05, 0.07);
+  const cr = kr * Math.log(zEff/z0);
+  const vm = cr * c0 * vb;
+  const Iv = 1 / (c0 * Math.log(zEff/z0)); // kl = 1,0 (НП.2.2.4.1)
+  const qp = (1 + 7*Iv) * 0.5 * RHO * vm*vm / 1000; // кПа
+  return { zEff, kr, cr, vm, Iv, qp };
+}
+
+/* Разбивка наветренной стены (зона D) на высотные полосы — 7.2.2(1) + Рисунок 7.4.
+   h ≤ b        — одна полоса на всю высоту h;
+   b < h ≤ 2b   — нижняя полоса высотой b и верхняя высотой (h-b);
+   h > 2b       — нижняя полоса b, верхняя полоса b, между ними — nMid промежуточных полос
+                  равной высоты (число полос выбирает инженер; по умолчанию 1). */
+function windwardBands(b, h, nMid){
+  if (h <= b) return [ { from:0, to:h, ze:h, label:'Зона D' } ];
+  if (h <= 2*b) return [
+    { from:0,   to:b, ze:b, label:"Зона D — нижняя полоса" },
+    { from:b,   to:h, ze:h, label:'Зона D — верхняя полоса' }
+  ];
+  const n = Math.max(1, Math.round(nMid) || 1);
+  const midH = (h - 2*b) / n;
+  const bands = [ { from:0, to:b, ze:b, label:"Зона D — нижняя полоса" } ];
+  for(let i=1;i<=n;i++){
+    const from = b + (i-1)*midH, to = b + i*midH;
+    bands.push({ from, to, ze:to, label: n===1 ? 'Зона D — промежуточная полоса' : `Зона D — промежуточная полоса №${i}` });
+  }
+  bands.push({ from:h-b, to:h, ze:h, label:'Зона D — верхняя полоса' });
+  return bands;
+}
+
+/* ══════════════════════════════════════════════════════
+   РАСЧЁТНАЯ СХЕМА (3 отдельных SVG, генерируются по текущим b, d, h)
+   ══════════════════════════════════════════════════════ */
+function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+const _svgEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* Общий масштаб (px/м) для «Вид спереди» и «Вид сбоку» — чтобы одна и та же высота h
+   рисовалась одинаковым числом пикселей на обеих панелях. Ограничивается тем, что меньше:
+   доступной шириной под b (спереди), доступной шириной под d (сбоку) или доступной высотой под h. */
+function computeSharedScale(b, d, h){
+  const frontMaxW = 100, sideMaxW = 195, sharedMaxH = 130;
+  return Math.min(frontMaxW / b, sideMaxW / d, sharedMaxH / h);
+}
+
+/* «Вид спереди» и «Вид сбоку» рисуются в одном холсте (одинаковые W/H) и оба
+   прижаты к общей линии земли GROUND_Y — так уровень земли совпадает визуально. */
+const SCHEME_W = 300, SCHEME_H = 320, GROUND_Y = 230;
+
+function drawGroundHatch(x1, x2, y){
+  let svg = `<line x1="${x1-10}" y1="${y}" x2="${x2+10}" y2="${y}" stroke="var(--text)" stroke-width="1.5"/>`;
+  const n = 7;
+  for(let i=0;i<n;i++){
+    const gx = x1 - 8 + i*(x2-x1+16)/(n-1);
+    svg += `<line x1="${gx}" y1="${y}" x2="${gx-5}" y2="${y+6}" stroke="var(--text)" stroke-width="1"/>`;
+  }
+  return svg;
+}
+
+function svgWrap(vb, markerId, body){
+  return `<svg viewBox="${vb}" width="100%" style="display:block;">
+    <defs>
+      <marker id="${markerId}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"/>
+      </marker>
+    </defs>
+    ${body}
+  </svg>`;
+}
+
+/* ── Панель 1: План ── */
+function buildPlanSVG(b, d){
+  const W = 260, H = 240, boxX = 30, boxY = 50, maxW = 190, maxH = 165;
+  const aspect = clamp(d / b, 0.4, 2.5); // ширина:высота на чертеже = d:b
+  let rectW = maxW, rectH = maxW / aspect;
+  if (rectH > maxH){ rectH = maxH; rectW = maxH * aspect; }
+  const rx = boxX + (maxW - rectW) / 2, ry = boxY + (maxH - rectH) / 2;
+  let svg = '';
+  svg += `<text x="${W/2}" y="20" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">План</text>`;
+  for(let i=0;i<3;i++){
+    const ay = ry + rectH*(0.2 + i*0.3);
+    svg += `<line x1="4" y1="${ay}" x2="${rx-6}" y2="${ay}" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrowPlan)"/>`;
+  }
+  svg += `<text x="4" y="${ry-8}" font-size="9" fill="var(--accent)">Ветер</text>`;
+  svg += `<rect x="${rx}" y="${ry}" width="${rectW}" height="${rectH}" fill="rgba(79,142,247,.10)" stroke="none"/>`;
+  svg += `<rect x="${rx}" y="${ry}" width="${rectW}" height="${rectH}" fill="none" stroke="var(--text)" stroke-width="1.5"/>`;
+  svg += `<text x="${rx+7}" y="${ry+rectH/2}" font-size="9.5" fill="var(--text)" transform="rotate(-90 ${rx+7} ${ry+rectH/2})" text-anchor="middle">Зона D</text>`;
+  svg += `<text x="${rx+rectW-7}" y="${ry+rectH/2}" font-size="9.5" fill="var(--text)" transform="rotate(-90 ${rx+rectW-7} ${ry+rectH/2})" text-anchor="middle">Зона E</text>`;
+  svg += `<text x="${rx+rectW/2}" y="${ry+13}" font-size="9.5" fill="var(--text)" text-anchor="middle">Зоны A, B, C</text>`;
+  svg += `<text x="${rx+rectW/2}" y="${ry+rectH-6}" font-size="9.5" fill="var(--text)" text-anchor="middle">Зоны A, B, C</text>`;
+  svg += `<line x1="${rx}" y1="${ry-10}" x2="${rx+rectW}" y2="${ry-10}" stroke="var(--muted)" stroke-width="1"/>`;
+  svg += `<text x="${rx+rectW/2}" y="${ry-14}" font-size="9.5" fill="var(--muted)" text-anchor="middle">d = ${d.toFixed(2)} м</text>`;
+  svg += `<line x1="${rx+rectW+10}" y1="${ry}" x2="${rx+rectW+10}" y2="${ry+rectH}" stroke="var(--muted)" stroke-width="1"/>`;
+  svg += `<text x="${rx+rectW+16}" y="${ry+rectH/2}" font-size="9.5" fill="var(--muted)" text-anchor="middle" transform="rotate(90 ${rx+rectW+16} ${ry+rectH/2})">b = ${b.toFixed(2)} м</text>`;
+  return svgWrap(`0 0 ${W} ${H}`, 'arrowPlan', svg);
+}
+
+/* ── Панель 2: Вид спереди (зона D — высотные полосы), с выносными подписями справа ── */
+function buildFrontSVG(b, h, dBands, scale){
+  const W = SCHEME_W, H = SCHEME_H;
+  const boxX = 36, maxW = 100;
+  const rectW = b * scale, rectH = h * scale;
+  const rx = boxX + (maxW - rectW) / 2, ry = GROUND_Y - rectH;
+  let svg = '';
+  svg += `<text x="${W/2}" y="18" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">Вид спереди — зона D</text>`;
+
+  const bandColors = ['rgba(79,142,247,.12)','rgba(79,142,247,.20)','rgba(79,142,247,.30)','rgba(79,142,247,.20)'];
+  const n = dBands.length;
+  /* координаты подписей справа — равномерно распределены по высоте, с выносными линиями к реальному центру полосы */
+  const labelX = rx + rectW + 34;
+  const labelTop = ry + 6, labelBottom = ry + rectH - 6;
+  const labelStep = n > 1 ? (labelBottom - labelTop) / (n - 1) : 0;
+
+  dBands.forEach((band, i) => {
+    const y1 = ry + rectH * (1 - band.to / h);
+    const bh = rectH * ((band.to - band.from) / h);
+    const bandMidY = y1 + bh / 2;
+    const fill = bandColors[i % bandColors.length];
+    svg += `<rect x="${rx}" y="${y1}" width="${rectW}" height="${bh}" fill="${fill}" stroke="var(--text)" stroke-width="1"/>`;
+
+    const labelY = n > 1 ? labelTop + i * labelStep : (labelTop + labelBottom) / 2;
+    const shortLabel = band.label
+      .replace('Зона D — промежуточная полоса №', 'пром. №')
+      .replace('Зона D — промежуточная полоса', 'промежуточная')
+      .replace('Зона D — нижняя полоса', 'нижняя')
+      .replace('Зона D — верхняя полоса', 'верхняя')
+      .replace('Зона D', 'вся высота');
+    svg += `<line x1="${rx+rectW}" y1="${bandMidY}" x2="${labelX-6}" y2="${labelY}" stroke="var(--muted)" stroke-width="1"/>`;
+    svg += `<text x="${labelX}" y="${labelY-2}" font-size="9.5" font-weight="700" fill="var(--text)">${_svgEsc(shortLabel)}</text>`;
+    svg += `<text x="${labelX}" y="${labelY+10}" font-size="8.5" fill="var(--muted)">${band.from.toFixed(1)}–${band.to.toFixed(1)} м</text>`;
+  });
+
+  svg += `<rect x="${rx}" y="${ry}" width="${rectW}" height="${rectH}" fill="none" stroke="var(--text)" stroke-width="1.5"/>`;
+  svg += drawGroundHatch(rx, rx+rectW, GROUND_Y);
+  svg += `<line x1="${rx}" y1="${ry-10}" x2="${rx+rectW}" y2="${ry-10}" stroke="var(--muted)" stroke-width="1"/>`;
+  svg += `<text x="${rx+rectW/2}" y="${ry-14}" font-size="9.5" fill="var(--muted)" text-anchor="middle">b = ${b.toFixed(2)} м</text>`;
+  svg += `<line x1="${rx-16}" y1="${ry}" x2="${rx-16}" y2="${ry+rectH}" stroke="var(--muted)" stroke-width="1"/>`;
+  svg += `<text x="${rx-20}" y="${ry+rectH/2}" font-size="9.5" fill="var(--muted)" text-anchor="middle" transform="rotate(-90 ${rx-20} ${ry+rectH/2})">h = ${h.toFixed(2)} м</text>`;
+  return svgWrap(`0 0 ${W} ${H}`, 'arrowFront', svg);
+}
+
+/* ── Панель 3: Вид сбоку (зоны A, B, C), с легендой ширин под схемой ── */
+function buildSideSVG(d, h, e, zoneA_w, zoneB_w, zoneC_w, scale){
+  const W = SCHEME_W, H = SCHEME_H;
+  const zonesList = [
+    { name:'A', w:zoneA_w, fill:'rgba(239,68,68,.18)' },
+    { name:'B', w:zoneB_w, fill:'rgba(244,185,66,.18)' },
+    { name:'C', w:zoneC_w, fill:'rgba(125,211,168,.18)' }
+  ].filter(z => z.w > 0.001);
+
+  const rx = 85;
+  const rectW = d * scale, rectH = h * scale;
+  const ry = GROUND_Y - rectH;
+
+  let svg = '';
+  svg += `<text x="${W/2}" y="18" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)">Вид сбоку — зоны A, B, C</text>`;
+  svg += `<line x1="8" y1="${ry+rectH/2}" x2="${rx-8}" y2="${ry+rectH/2}" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrowSide)"/>`;
+  svg += `<text x="8" y="${ry+rectH/2-8}" font-size="9" fill="var(--accent)">Ветер</text>`;
+
+  let cx = rx;
+  zonesList.forEach(z => {
+    const w = rectW * (z.w / d);
+    svg += `<rect x="${cx}" y="${ry}" width="${w}" height="${rectH}" fill="${z.fill}" stroke="var(--text)" stroke-width="1"/>`;
+    if (w > 16){
+      svg += `<text x="${cx+w/2}" y="${ry+rectH/2+5}" font-size="12" font-weight="700" fill="var(--text)" text-anchor="middle">${z.name}</text>`;
+    }
+    cx += w;
+  });
+  svg += `<rect x="${rx}" y="${ry}" width="${rectW}" height="${rectH}" fill="none" stroke="var(--text)" stroke-width="1.5"/>`;
+  svg += drawGroundHatch(rx, rx+rectW, GROUND_Y);
+
+  svg += `<line x1="${rx}" y1="${ry-10}" x2="${rx+rectW}" y2="${ry-10}" stroke="var(--muted)" stroke-width="1"/>`;
+  svg += `<text x="${rx+rectW/2}" y="${ry-14}" font-size="9.5" fill="var(--muted)" text-anchor="middle">d = ${d.toFixed(2)} м</text>`;
+  svg += `<line x1="${rx-16}" y1="${ry}" x2="${rx-16}" y2="${ry+rectH}" stroke="var(--muted)" stroke-width="1"/>`;
+  svg += `<text x="${rx-20}" y="${ry+rectH/2}" font-size="9.5" fill="var(--muted)" text-anchor="middle" transform="rotate(-90 ${rx-20} ${ry+rectH/2})">h = ${h.toFixed(2)} м</text>`;
+
+  /* легенда ширин зон — под штриховкой земли, всегда читаемая независимо от того, насколько узкая зона */
+  const legendY = GROUND_Y + 26;
+  const legendText = zonesList.map(z => `${z.name}: ${z.w.toFixed(2)} м`).join('   ·   ');
+  svg += `<text x="${W/2}" y="${legendY}" font-size="10" fill="var(--text)" text-anchor="middle">${_svgEsc(legendText)}</text>`;
+  svg += `<text x="${W/2}" y="${legendY+16}" font-size="9" fill="var(--muted)" text-anchor="middle">e = ${e.toFixed(2)} м</text>`;
+  return svgWrap(`0 0 ${W} ${H}`, 'arrowSide', svg);
+}
+
+function calc(){
+  const c = window._currentCity;
+  if(!c) return;
+  const vb = parseFloat(c.wind_speed);
+  if(!isFinite(vb)){
+    document.getElementById('hdWarningCard').style.display = 'none';
+    document.getElementById('schemeCard').style.display = 'none';
+    document.getElementById('stepsCard').style.display = 'none';
+    document.getElementById('resultsCard').style.display = 'none';
+    document.getElementById('netCard').style.display = 'none';
+    document.getElementById('areaCard').style.display = 'none';
+    document.getElementById('usedParamsCard').style.display = 'none';
+    return;
+  }
+
+  const terrainKey = document.getElementById('terrain').value;
+  const terrain = TERRAIN_TABLE[terrainKey];
+  const z0 = terrain.z0, zmin = terrain.zmin;
+
+  const b = parseFloat(document.getElementById('bWidth').value);
+  const d = parseFloat(document.getElementById('dDepth').value);
+  const h = parseFloat(document.getElementById('hHeight').value);
+  const nMid = parseInt(document.getElementById('dMidStrips').value);
+
+  const flat = document.getElementById('flatTerrain').checked;
+  document.getElementById('c0Field').style.display = flat ? 'none' : '';
+  const c0 = flat ? 1.0 : parseFloat(document.getElementById('c0Manual').value);
+  const cpiMin = parseFloat(document.getElementById('cpiMin').value);
+  const cpiMax = parseFloat(document.getElementById('cpiMax').value);
+  const loadArea = parseFloat(document.getElementById('loadArea').value);
+
+  /* ── Проверка исходных данных ── */
+  const invalidFields = ['bWidth','dDepth','hHeight','c0Manual','dMidStrips','cpiMin','cpiMax','loadArea'];
+  invalidFields.forEach(id => document.getElementById(id).classList.remove('input-invalid'));
+  const errors = [];
+  function fail(id, msg){ errors.push(msg); document.getElementById(id).classList.add('input-invalid'); }
+  if (!isFinite(b) || b <= 0) fail('bWidth', 'Ширина здания b — должна быть положительным числом');
+  if (!isFinite(d) || d <= 0) fail('dDepth', 'Длина здания d — должна быть положительным числом');
+  if (!isFinite(h) || h <= 0) fail('hHeight', 'Высота здания h — должна быть положительным числом');
+  if (!flat && (!isFinite(c0) || c0 < 1)) fail('c0Manual', 'Орографический коэффициент c₀ — не может быть меньше 1,0');
+  if (!isFinite(nMid) || nMid < 1) fail('dMidStrips', 'Число промежуточных полос зоны D — должно быть целым числом не менее 1');
+  if (!isFinite(cpiMin)) fail('cpiMin', 'Коэффициент cpi,min — не задан или задан некорректно');
+  if (!isFinite(cpiMax)) fail('cpiMax', 'Коэффициент cpi,max — не задан или задан некорректно');
+  if (!isFinite(loadArea) || loadArea <= 0) fail('loadArea', 'Площадь элемента A — должна быть положительным числом');
+
+  const errBox = document.getElementById('validationErrors');
+  if (errors.length){
+    errBox.innerHTML = `<div class="error-box"><b>Проверьте исходные данные:</b><ul>${errors.map(e=>`<li>${e}</li>`).join('')}</ul></div>`;
+    errBox.style.display = '';
+    document.getElementById('hdWarningCard').style.display = 'none';
+    document.getElementById('schemeCard').style.display = 'none';
+    document.getElementById('stepsCard').style.display = 'none';
+    document.getElementById('resultsCard').style.display = 'none';
+    document.getElementById('netCard').style.display = 'none';
+    document.getElementById('areaCard').style.display = 'none';
+    document.getElementById('usedParamsCard').style.display = 'none';
+    return;
+  }
+  errBox.style.display = 'none';
+
+  document.getElementById('hdWarningCard').style.display = (h / d > 5) ? '' : 'none';
+
+  document.getElementById('dMidStripsField').style.display = (h > 2*b) ? '' : 'none';
+
+  const qb = 0.5 * RHO * vb*vb / 1000; // кПа
+
+  /* Базовая высота для боковых/подветренной стен — рекомендуется принимать высоту здания h (7.2.2(1), Примечание) */
+  const q = qpAt(h, z0, zmin, c0, vb);
+
+  /* Геометрия зон A/B/C (Рисунок 7.5), полосы вдоль глубины d */
+  const e = Math.min(b, 2*h);
+  const zoneA_w = Math.min(e/5, d);
+  const zoneB_w = d > e/5 ? Math.min(e,d) - e/5 : 0;
+  const zoneC_w = d > e ? d - e : 0;
+  const sideZones = CPE_ZONES.map((z,i) => {
+    const width = i===0 ? zoneA_w : i===1 ? zoneB_w : zoneC_w;
+    return { name:z.name, cpe10:z.cpe10, cpe1:z.cpe1, qp:q.qp,
+      rangeLabel: width>0.001 ? `${width.toFixed(2)} м (вдоль d)` : null,
+      we10: q.qp*z.cpe10, we1: q.qp*z.cpe1 };
+  });
+
+  /* Зона D — по высотным полосам */
+  const dBands = windwardBands(b, h, nMid);
+  const dBandsQ = dBands.map(band => qpAt(band.ze, z0, zmin, c0, vb));
+  const dZones = dBands.map((band,i) => ({
+    name: band.label,
+    cpe10: CPE_D.cpe10, cpe1: CPE_D.cpe1, qp: dBandsQ[i].qp,
+    rangeLabel: `${band.from.toFixed(2)}–${band.to.toFixed(2)} м, zₑ=${band.ze.toFixed(2)} м`,
+    we10: dBandsQ[i].qp*CPE_D.cpe10, we1: dBandsQ[i].qp*CPE_D.cpe1
+  }));
+
+  const eZone = { name:'Зона E (подветренная)', cpe10:CPE_E.cpe10, cpe1:CPE_E.cpe1, qp:q.qp,
+    rangeLabel: `b = ${b.toFixed(2)} м, zₑ=${h.toFixed(2)} м`,
+    we10: q.qp*CPE_E.cpe10, we1: q.qp*CPE_E.cpe1 };
+
+  const zones = [ ...dZones, ...sideZones, eZone ];
+
+  /* ── Суммарное давление с учётом внутреннего (7.2.9(6), 5.2(3)) ── */
+  zones.forEach(z => {
+    /* наиболее неблагоприятный cpi: при cpe≥0 — cpi,min, при cpe<0 — cpi,max (7.2.9(6)) */
+    z.cpiUsed10 = z.cpe10 >= 0 ? cpiMin : cpiMax;
+    z.cpiUsed1  = z.cpe1  >= 0 ? cpiMin : cpiMax;
+    z.wnet10 = z.qp * (z.cpe10 - z.cpiUsed10);
+    z.wnet1  = z.qp * (z.cpe1  - z.cpiUsed1);
+  });
+
+  /* ── Интерполяция c_pe по площади нагружаемого элемента (7.2.1(1)) ── */
+  const Ac = Math.min(10, Math.max(1, loadArea));
+  zones.forEach(z => {
+    z.cpeA = z.cpe1 - (z.cpe1 - z.cpe10) * Math.log10(Ac);
+    z.weA = z.qp * z.cpeA;
+    const cpiA = z.cpeA >= 0 ? cpiMin : cpiMax;
+    z.wnetA = z.qp * (z.cpeA - cpiA);
+  });
+
+  /* ── Промежуточные шаги (KaTeX) ── */
+  const dBandsStepsHtml = dBands.map((band,i) => `<p>${band.label} (${band.from.toFixed(2)}–${band.to.toFixed(2)} м): $z_e=${band.ze.toFixed(2)}$ м → $q_p=${tsm2(dBandsQ[i].qp).toFixed(4)}$ тс/м²</p>`).join('');
+  const steps = `
+<p><b>Базовая скорость ветра</b> (город: ${c.name}, СП РК 2.04-01-2017 прил. А ≈ Приложение Ж СП РК EN 1991-1-4):</p>
+$$v_b = c_{dir}\\cdot c_{season}\\cdot v_{b,0} = 1{,}0\\times 1{,}0\\times ${vb} = ${vb}\\text{ м/с}$$
+<p><b>Базовый скоростной напор</b> (Формула 4.9, ρ = ${RHO} кг/м³):</p>
+$$q_b = 0{,}5\\cdot \\rho\\cdot v_b^2 = 0{,}5\\times ${RHO}\\times ${vb}^2 = ${(qb*1000).toFixed(1)}\\text{ Па} = ${tsm2(qb).toFixed(4)}\\text{ тс/м}^2$$
+<p><b>Коэффициент местности</b> (тип ${terrainKey}, z₀ = ${z0} м, Формула 4.5):</p>
+$$k_r = 0{,}19\\left(\\frac{z_0}{0{,}05}\\right)^{0{,}07} = 0{,}19\\left(\\frac{${z0}}{0{,}05}\\right)^{0{,}07} = ${q.kr.toFixed(4)}$$
+<p><b>Зоны A, B, C, E — базовая высота принята равной высоте здания</b> (7.2.2(1), примечание):</p>
+$$z_e = h = ${h}\\text{ м} \\ \\Rightarrow\\ q_p(z_e) = ${tsm2(q.qp).toFixed(4)}\\text{ тс/м}^2\\ \\ (c_e = q_p/q_b = ${(q.qp/qb).toFixed(3)})$$
+<p><b>Зона D (наветренная стена) — деление на высотные полосы</b> (7.2.2(1), Рисунок 7.4), сравнение h и b:</p>
+<p>$h = ${h}$ м, $b = ${b}$ м → ${h<=b? 'h ≤ b, одна полоса на всю высоту' : (h<=2*b?'b < h ≤ 2b, две полосы (нижняя b, верхняя h−b)':'h > 2b, нижняя и верхняя полосы высотой b, между ними '+nMid+' пром. полос(а)')}</p>
+${dBandsStepsHtml}
+<p><b>Ширина зон боковой стены</b> (Рисунок 7.5):</p>
+$$e = \\min(b,\\ 2h) = \\min(${b},\\ ${2*h}) = ${e.toFixed(2)}\\text{ м}$$
+<p>Зона A: ширина $\\min(e/5,\\ d) = ${zoneA_w.toFixed(2)}$ м${zoneB_w>0?`; зона B: ширина $\\min(e,d)-e/5 = ${zoneB_w.toFixed(2)}$ м`:''}${zoneC_w>0?`; зона C: ширина $d-e = ${zoneC_w.toFixed(2)}$ м`:''}</p>
+<p><b>Коэффициенты внешнего давления</b> (Табл. 7.1): D: c<sub>pe,10</sub> = ${CPE_D.cpe10.toFixed(2)}, c<sub>pe,1</sub> = ${CPE_D.cpe1.toFixed(2)}; A: −1,20 / −1,40; B: −0,80 / −1,10; C: −0,50 / −0,50; E: ${CPE_E.cpe10.toFixed(2)} / ${CPE_E.cpe1.toFixed(2)}.</p>
+<p><b>Внешнее давление в зоне</b> (Формула 5.1): $w_e = q_p(z_e)\\cdot c_{pe}$</p>
+<p><b>Внутреннее давление</b> (7.2.9(6), здание без доминирующего фасада): $c_{pi,min} = ${cpiMin.toFixed(2)}$, $c_{pi,max} = ${cpiMax.toFixed(2)}$. Принято $z_i=z_e$ (7.2.9(7)):</p>
+$$w_i = q_p(z_i)\\cdot c_{pi}$$
+<p><b>Суммарное давление</b> (наиболее неблагоприятная комбинация — Формула 5.2(3)): при $c_{pe}\\ge 0$ принимается $c_{pi,min}$, при $c_{pe}<0$ — $c_{pi,max}$:</p>
+$$w_{net} = w_e - w_i = q_p(z_e)\\cdot(c_{pe}-c_{pi})$$
+<p><b>Интерполяция c<sub>pe</sub> по площади элемента</b> (Формула 7.2.1(1), A = ${loadArea} м² → принято ${Ac.toFixed(2)} м² в диапазоне 1–10 м²):</p>
+$$c_{pe}(A) = c_{pe,1} - (c_{pe,1}-c_{pe,10})\\cdot \\lg A = c_{pe,1} - (c_{pe,1}-c_{pe,10})\\times ${Math.log10(Ac).toFixed(3)}$$`;
+
+  document.getElementById('stepsOutput').innerHTML = steps;
+  document.getElementById('stepsCard').style.display = '';
+  renderMath(document.getElementById('stepsOutput'));
+
+  /* ── Таблица результатов ── */
+  const zonesRows = zones.map(z => z.rangeLabel
+    ? `<tr><td>${z.name}</td><td>${z.rangeLabel}</td><td>${z.cpe10.toFixed(2)}</td><td>${z.cpe1.toFixed(2)}</td><td class="we-val">${fmtTsm2(z.we10)}</td><td>${fmtTsm2(z.we1)}</td></tr>`
+    : `<tr><td>${z.name}</td><td colspan="5" class="zone-empty">не образуется (глубина здания d недостаточна)</td></tr>`
+  ).join('');
+  document.getElementById('zonesTable').innerHTML = `
+    <tr><th>Зона</th><th>Полоса / диапазон</th><th>c<sub>pe,10</sub></th><th>c<sub>pe,1</sub></th><th>w<sub>e,10</sub></th><th>w<sub>e,1</sub></th></tr>
+    ${zonesRows}`;
+  document.getElementById('resultsCard').style.display = '';
+
+  /* ── Расчётная схема (3 отдельных SVG: план → вид спереди → вид сбоку) ──
+     Вид спереди и вид сбоку рисуются в одном масштабе px/м, чтобы высота h
+     на обеих панелях была визуально одинаковой. */
+  const schemeScale = computeSharedScale(b, d, h);
+  const planSVG = buildPlanSVG(b, d);
+  const frontSVG = buildFrontSVG(b, h, dBands, schemeScale);
+  const sideSVG = buildSideSVG(d, h, e, zoneA_w, zoneB_w, zoneC_w, schemeScale);
+  document.getElementById('schemePlanContainer').innerHTML = planSVG;
+  document.getElementById('schemeFrontContainer').innerHTML = frontSVG;
+  document.getElementById('schemeSideContainer').innerHTML = sideSVG;
+  document.getElementById('schemeCard').style.display = '';
+
+  /* ── Таблица суммарного давления (внешнее − внутреннее) ── */
+  const netRows = zones.map(z => z.rangeLabel
+    ? `<tr><td>${z.name}</td><td>c<sub>pi</sub>=${z.cpiUsed10>=0?'+':''}${z.cpiUsed10.toFixed(2)} / ${z.cpiUsed1>=0?'+':''}${z.cpiUsed1.toFixed(2)}</td><td class="we-val">${fmtTsm2(z.wnet10)}</td><td>${fmtTsm2(z.wnet1)}</td></tr>`
+    : `<tr><td>${z.name}</td><td colspan="3" class="zone-empty">не образуется</td></tr>`
+  ).join('');
+  document.getElementById('netTable').innerHTML = `
+    <tr><th>Зона</th><th>Принятый c<sub>pi</sub> (10 / 1)</th><th>w<sub>net,10</sub></th><th>w<sub>net,1</sub></th></tr>
+    ${netRows}`;
+  document.getElementById('netCard').style.display = '';
+
+  /* ── Таблица давления по заданной площади элемента ── */
+  const areaRows = zones.map(z => z.rangeLabel
+    ? `<tr><td>${z.name}</td><td>${z.cpeA.toFixed(3)}</td><td class="we-val">${fmtTsm2(z.weA)}</td><td class="we-val">${fmtTsm2(z.wnetA)}</td></tr>`
+    : `<tr><td>${z.name}</td><td colspan="3" class="zone-empty">не образуется</td></tr>`
+  ).join('');
+  document.getElementById('areaTable').innerHTML = `
+    <tr><th>Зона</th><th>c<sub>pe</sub>(A)</th><th>w<sub>e</sub>(A)</th><th>w<sub>net</sub>(A)</th></tr>
+    ${areaRows}`;
+  document.getElementById('areaCardTitle').textContent = `Давление для площади элемента A = ${loadArea} м²${loadArea!==Ac?` (принято ${Ac.toFixed(2)} м², вне диапазона 1–10 м²)`:''}`;
+  document.getElementById('areaCard').style.display = '';
+
+  /* ── Использованные параметры ── */
+  const usedRows = [
+    ['Город', c.name],
+    ['Тип местности', terrain.label],
+    ['z₀ / z_min', `${z0} м / ${zmin} м`],
+    ['Орографический коэффициент c₀', c0.toFixed(2)],
+    ['b × d × h', `${b} × ${d} × ${h} м`],
+    ['h/b (для банд зоны D)', (b>0 ? (h/b).toFixed(2) : '—')],
+    ['v_b', `${vb} м/с`],
+    ['q_b', fmtTsm2(qb)],
+    ['q_p(h) — для зон A, B, C, E', fmtTsm2(q.qp)],
+    ['c_pi,min / c_pi,max', `${cpiMin.toFixed(2)} / ${cpiMax.toFixed(2)}`],
+    ['Площадь элемента, A', `${loadArea} м²`],
+  ];
+  document.getElementById('usedParamsTable').innerHTML = usedRows.map(([k,val])=>`<tr><td>${k}</td><td>${val}</td></tr>`).join('');
+  document.getElementById('usedParamsCard').style.display = '';
+
+  /* ── Отчёт для печати ── */
+  lastReportHTML = `
+    <div class="print-header">
+      <h1>ВЕТРОВОЕ ДАВЛЕНИЕ НА БОКОВЫЕ СТЕНЫ ЗДАНИЯ</h1>
+      <div class="print-subtitle">СП РК EN 1991-1-4:2005/2011 + НТП РК 01-01-3.1(4.1)-2017</div>
+      <div class="print-date">составлено ${new Date().toLocaleDateString('ru-RU')}</div>
+    </div>
+    <div class="print-section">
+      <h2>Исходные данные</h2>
+      <table>${usedRows.map(([k,val])=>`<tr><td>${k}</td><td>${val}</td></tr>`).join('')}</table>
+    </div>
+    <div class="print-section">
+      <h2>Расчётная схема</h2>
+      <div style="display:flex;gap:14px;">
+        <div style="flex:1;">${planSVG}</div>
+        <div style="flex:1;">${frontSVG}</div>
+        <div style="flex:1;">${sideSVG}</div>
+      </div>
+    </div>
+    <div class="print-section">
+      <h2>Расчёт</h2>
+      <div class="formula-steps">${steps}</div>
+    </div>
+    <div class="print-section">
+      <h2>Суммарное давление (с учётом внутреннего) — зоны D, A, B, C, E</h2>
+      <table class="zones">
+        <tr><th>Зона</th><th>Принятый c_pi (10 / 1)</th><th>w_net,10</th><th>w_net,1</th></tr>
+        ${netRows}
+      </table>
+    </div>
+    <div class="print-section">
+      <h2>Внешнее давление в зонах D, A, B, C, E</h2>
+      <table class="zones">
+        <tr><th>Зона</th><th>Полоса / диапазон</th><th>c_pe,10</th><th>c_pe,1</th><th>w_e,10</th><th>w_e,1</th></tr>
+        ${zonesRows}
+      </table>
+    </div>
+    <div class="print-section">
+      <h2>Давление для площади элемента A = ${loadArea} м²</h2>
+      <table class="zones">
+        <tr><th>Зона</th><th>c_pe(A)</th><th>w_e(A)</th><th>w_net(A)</th></tr>
+        ${areaRows}
+      </table>
+    </div>
+    <div class="print-footer">Документ сформирован автоматически в «Электронном справочнике конструктора» · автор проекта — Кайыртаев Б.Б.</div>
+  `;
+}
+
+function printReport(){
+  const el = document.getElementById('printArea');
+  el.innerHTML = lastReportHTML;
+  renderMath(el);
+  window.print();
+}
+
+/* ══════════════════════════════════════════════════════
+   ИНИЦИАЛИЗАЦИЯ
+   ══════════════════════════════════════════════════════ */
+document.getElementById('inputsCard').addEventListener('change', () => { calc(); saveFormState(); });
+document.getElementById('inputsCard').addEventListener('input', () => { calc(); saveFormState(); });
+document.getElementById('advParamsCard').addEventListener('change', () => { calc(); saveFormState(); });
+document.getElementById('advParamsCard').addEventListener('input', () => { calc(); saveFormState(); });
+
+_savedCityName = loadFormState();
+loadCities();
+</script>
+
+<div id="helpModal" onclick="if(event.target===this) this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;max-width:680px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;font-size:14px;font-weight:700;color:#fff;">Область применения калькулятора</h2>
+      <button onclick="document.getElementById('helpModal').style.display='none'" style="width:auto;margin:0;padding:6px 12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:13px;">✕ Закрыть</button>
+    </div>
+    <div class="formula-steps">
+      <b style="color:var(--green);">Что считает калькулятор</b><br>
+      • Ветровое давление на вертикальные стены прямоугольного в плане здания — зоны D (наветренная), A, B, C (боковые), E (подветренная) по СП РК EN 1991-1-4:2005/2011 §7.2.2 и НТП РК 01-01-3.1(4.1)-2017<br>
+      • Пиковый скоростной напор q<sub>p</sub>(z) по высоте — с учётом типа местности (Табл. 4.1) и орографии<br>
+      • Зона D делится на высотные полосы при h &gt; b (§7.2.2(1), Рисунок 7.4) — число промежуточных полос задаёт пользователь<br>
+      • Коэффициенты c<sub>pe</sub> — по Табл. 7.1 в редакции приказа №216-НҚ от 30.12.2021 (значения зафиксированы, не зависят от h/d — актуальная казахстанская редакция, отличается от «ванильного» EN 1991-1-4)<br><br>
+
+      <b style="color:var(--green);">Внутреннее давление и площадь элемента</b><br>
+      • Блоки «Суммарное давление» и «Площадь элемента» рассчитаны для здания <b>без доминирующего фасада</b> — ворота, крупные проёмы и т.п. приняты закрытыми (п. 7.2.9(3): доминантные проёмы в предельном состоянии по несущей способности рассматриваются закрытыми, случай с открытыми проёмами — отдельная особая расчётная ситуация по EN 1990)<br>
+      • Коэффициент c<sub>pi</sub> по умолчанию — наихудшее из +0,2/−0,3 (п. 7.2.9(6), Примечание 2), это стандартный подход для типового здания без явно доминирующего проёма<br>
+      • Если у здания есть заведомо доминирующий проём и его специально нужно проверить как особую расчётную ситуацию — эта методика (формулы 7.1/7.2) в калькуляторе не реализована<br><br>
+
+      <b style="color:var(--warn);">Что НЕ учитывается (ограничения модели)</b><br>
+      • Здания с h/d &gt; 5 — по норме считаются через коэффициенты усилия (§7.6–7.8, 7.9.2), а не через коэффициенты давления зон A–E — калькулятор эту границу не проверяет автоматически<br>
+      • Отсутствие корреляции давления между наветренной и подветренной стороной (§7.2.2(3), понижающий коэффициент до 0,85 для суммарной силы) — не применяется, здесь считаются только локальные давления по зонам, не итоговая сила на здание<br>
+      • Точный орографический коэффициент c₀(z) для сложного рельефа (Приложение А.3, холмы/обрывы) — не вычисляется, только ручной ввод при отключённой «ровной местности»<br>
+      • Давление на кровлю (зоны F/G/H/I, покрытия любой формы) — не считается, только вертикальные стены<br>
+      • Динамический (резонансный) отклик гибких конструкций и конструкционный коэффициент c<sub>s</sub>c<sub>d</sub> (Раздел 6) — не учитываются, здание принимается жёстким<br><br>
+
+      <b style="color:var(--muted);">Если условия объекта выходят за эти рамки — расчёт носит ориентировочный характер, требуется проверка вручную.</b>
+    </div>
+  </div>
+</div>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+</body>
+</html>
