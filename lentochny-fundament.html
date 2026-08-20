@@ -1315,7 +1315,7 @@ function recalcAll(){
     <div class="print-section qr-section" style="text-align:center;page-break-inside:avoid;">
       <h2 style="text-align:center;">Проверка расчёта</h2>
       <a href="${qrShareUrl}" target="_blank" rel="noopener" title="Открыть калькулятор с этими же исходными данными">
-        <img src="${generateQrDataUrl(qrShareUrl)}" width="120" height="120" alt="QR-код проверки расчёта" style="cursor:pointer;">
+        <img src="${generateQrDataUrl(qrShareUrl)}" width="300" height="300" alt="QR-код проверки расчёта" style="cursor:pointer;">
       </a>
       <p style="max-width:320px;margin:8px auto 0;">Отсканируйте QR (или кликните по нему), чтобы открыть этот калькулятор с теми же исходными данными и сверить результат живым пересчётом.</p>
     </div>
@@ -1484,9 +1484,18 @@ function importDataFile(inputEl){
 }
 
 // === QR-проверка расчёта (кодирует исходные данные в ссылку — сканирование открывает калькулятор с теми же значениями) ===
+// Компактная позиционная кодировка (без имён полей) — держит URL короче, чтобы
+// QR получался менее плотным (иначе при полном JSON состояния QR выходит
+// ~100х100 модулей, и в печатном размере камера телефона его не распознаёт).
 function buildShareUrl(){
-  const json = JSON.stringify(buildState());
-  const encoded = btoa(unescape(encodeURIComponent(json)));
+  const state = buildState();
+  const compact = [
+    FORM_FIELD_IDS.map(id => state.fields[id] ?? ''),
+    state.soilMode,
+    state.layers.map(l => [l.h, l.E, l.gamma]),
+    state.distrSpacingManual
+  ];
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(compact))));
   const url = new URL(window.location.href);
   url.search = '';
   url.hash = '';
@@ -1497,18 +1506,24 @@ function applyShareStateFromUrl(){
   try{
     const encoded = new URLSearchParams(window.location.search).get('d');
     if(!encoded) return false;
-    const json = decodeURIComponent(escape(atob(encoded)));
-    applyState(JSON.parse(json));
+    const compact = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    const [fieldsArr, soilMode, layersArr, distrSpacingManual] = compact;
+    const fields = {};
+    FORM_FIELD_IDS.forEach((id,i)=>{ fields[id] = fieldsArr[i]; });
+    applyState({ fields, soilMode, distrSpacingManual, layers: layersArr.map(([h,E,gamma])=>({h,E,gamma})) });
     return true;
   }catch(e){ return false; }
 }
+// Печатный размер (мм) должен давать ≥5 px на модуль QR, иначе камера телефона
+// код не распознаёт (проверено — при 120x120 и полном JSON получалось ~1,2 px/модуль).
 function generateQrDataUrl(text){
   if(typeof QRCode === 'undefined') return '';
   const tempDiv = document.createElement('div');
   tempDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
   document.body.appendChild(tempDiv);
   try{
-    new QRCode(tempDiv, { text, width:120, height:120, correctLevel: QRCode.CorrectLevel.M });
+    const size = 300;
+    new QRCode(tempDiv, { text, width:size, height:size, correctLevel: QRCode.CorrectLevel.L });
     const canvas = tempDiv.querySelector('canvas');
     return canvas ? canvas.toDataURL('image/png') : '';
   }catch(e){
