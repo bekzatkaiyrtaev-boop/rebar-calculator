@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расчёт ленточного фундамента — Электронный справочник конструктора</title>
+<style>
+:root {
+  --bg:       #0f1117;
+  --surface:  #1a1d27;
+  --surface2: #22263a;
+  --border:   #2e3347;
+  --accent:   #4f8ef7;
+  --green:    #7dd3a8;
+  --warn:     #f4b942;
+  --red:      #c0362c;
+  --red-bg:   rgba(192,54,44,.16);
+  --text:     #d6daf0;
+  --muted:    #6b7099;
+  --mono:     'JetBrains Mono','Courier New',monospace;
+  --sans:     'Inter','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;padding:24px 16px 48px;}
+.page-wrap{max-width:1100px;margin:0 auto;}
+.page-title{font-size:22px;font-weight:700;color:#fff;text-align:center;margin-bottom:4px;}
+.page-subtitle{text-align:center;color:var(--muted);font-size:12px;margin-bottom:24px;}
+
+/* ── Карточки ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.card-header{background:var(--surface2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.card-header .title{font-size:13px;font-weight:700;color:#fff;}
+.card-header .ref{font-family:var(--mono);font-size:10.5px;color:var(--accent);background:transparent;border:none;padding:0;opacity:.85;}
+.card-body{padding:16px;}
+
+/* ── Табличная форма ввода (label | значение) ── */
+table.input-table{width:100%;border-collapse:collapse;font-size:13px;}
+table.input-table td{padding:6px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
+table.input-table tr:last-child td{border-bottom:none;}
+table.input-table td.it-label{width:280px;color:var(--muted);font-size:12px;font-weight:600;}
+table.input-table td.it-value{position:relative;}
+table.input-table input[type=text],table.input-table input[type=number],table.input-table select{
+  width:100%;background:transparent;border:1px solid transparent;color:var(--green);
+  font-family:var(--sans);font-size:14px;font-weight:600;padding:8px 10px;border-radius:7px;outline:none;
+  transition:background .15s,border-color .15s;
+}
+table.input-table input::placeholder{color:var(--green);opacity:.65;font-weight:500;}
+table.input-table input:hover,table.input-table select:hover{background:var(--surface2);border-color:var(--border);}
+table.input-table input:focus,table.input-table select:focus{background:var(--surface2);border-color:var(--accent);}
+table.input-table input:disabled{color:var(--muted);opacity:.7;}
+
+/* ── Подсветка некорректно заполненных полей ── */
+.field-invalid,
+table.input-table input.field-invalid,
+table.input-table select.field-invalid,
+.arm-field input.field-invalid,
+.arm-field select.field-invalid,
+table.layers input.field-invalid{
+  border-color:var(--red) !important;
+  background:var(--red-bg) !important;
+  color:#ef4444 !important;
+}
+.validation-banner{padding:14px 16px;}
+.validation-banner ul{margin:8px 0 0 18px;font-weight:500;font-size:12.5px;line-height:1.7;}
+
+@media(max-width:640px){
+  table.input-table,table.input-table tbody,table.input-table tr,table.input-table td{display:block;width:auto;}
+  table.input-table td.it-label{padding-bottom:4px;}
+  table.input-table td.it-value{padding-top:0;}
+}
+
+.note{font-size:11.5px;color:var(--muted);background:var(--surface2);border-radius:6px;padding:10px 12px;margin:10px 16px 0;line-height:1.55;}
+.card-body > .note:first-child{margin-top:0;}
+
+/* ── Подсказка (?) ── */
+.info-btn{
+  display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:10px;font-weight:700;
+  cursor:pointer;flex-shrink:0;
+}
+.info-btn:hover{color:var(--accent);border-color:var(--accent);}
+.tooltip-box{
+  display:none;position:fixed;z-index:200;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.5);width:320px;
+}
+.tooltip-box.wide{width:540px;max-height:70vh;overflow-y:auto;}
+.tooltip-box table{width:100%;border-collapse:collapse;font-size:11px;}
+.tooltip-box th,.tooltip-box td{padding:5px 6px;border-bottom:1px solid var(--border);text-align:center;}
+.tooltip-box th{color:var(--accent);font-weight:600;}
+.tooltip-box td:first-child,.tooltip-box th:first-child{text-align:left;color:var(--muted);}
+.tooltip-box .group-row td{text-align:left;color:var(--text);font-weight:700;background:var(--bg);}
+
+/* ── Переключатели режима ── */
+.tab-bar{display:flex;gap:6px;padding:12px 16px 0;}
+.tab-btn{flex:1;padding:8px 8px;background:var(--bg);border:1px solid var(--border);border-radius:7px;
+  color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:.15s;font-family:var(--sans);}
+.tab-btn:hover{border-color:var(--accent);color:var(--text);}
+.tab-btn.active{background:var(--accent);color:#08111d;border-color:var(--accent);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── Таблица слоёв (осадка) ── */
+table.layers{width:100%;border-collapse:collapse;font-size:13px;}
+table.layers th{background:var(--surface2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;}
+table.layers td{padding:5px 8px;border-bottom:1px solid var(--border);vertical-align:middle;}
+table.layers input[type=number]{
+  width:100%;background:transparent;border:1px solid transparent;color:var(--green);
+  font-family:var(--sans);font-size:13px;font-weight:600;padding:6px 8px;border-radius:6px;outline:none;
+  transition:background .15s,border-color .15s;
+}
+table.layers input:hover{background:var(--surface2);border-color:var(--border);}
+table.layers input:focus{background:var(--surface2);border-color:var(--accent);}
+.icon-btn{background:transparent;border:1px solid transparent;color:var(--muted);width:24px;height:24px;border-radius:5px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.15s;margin:0 auto;}
+.icon-btn:hover,.icon-btn:focus-visible{background:var(--surface2);color:var(--red);border-color:var(--border);outline:none;}
+.add-row-btn{background:transparent;border:1px dashed var(--border);color:var(--muted);padding:8px;width:100%;margin-top:10px;border-radius:7px;cursor:pointer;font-size:12px;font-family:var(--sans);transition:.15s;}
+.add-row-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ── Формулы (KaTeX) ── */
+.formula-steps{font-family:var(--sans);font-size:13px;line-height:1.7;color:var(--text);}
+.formula-steps .katex{color:#e8ecf1;font-size:1.02em;}
+.formula-steps .katex-display{margin:4px 0 10px;}
+.card-body .ref-line{font-family:var(--mono);font-size:10.5px;color:var(--accent);opacity:.85;margin-bottom:8px;}
+
+/* ── Результаты ── */
+table.usedparams{width:100%;border-collapse:collapse;font-size:13px;}
+table.usedparams td{padding:7px 16px;border-bottom:1px dashed var(--border);}
+table.usedparams tr:last-child td{border-bottom:none;}
+table.usedparams td:first-child{color:var(--muted);}
+table.usedparams td:last-child{color:var(--text);font-family:var(--mono);font-weight:600;text-align:right;}
+.verdict{padding:12px 16px;font-size:13.5px;font-weight:700;border-top:1px solid var(--border);}
+.verdict.ok{background:rgba(125,211,168,.1);color:var(--green);}
+.verdict.fail{background:var(--red-bg);color:#ef4444;}
+.card.fail{border-color:rgba(192,54,44,.5);}
+.checks{display:flex;flex-direction:column;gap:14px;padding:16px;}
+.check-row{font-size:13px;color:var(--text);}
+.check-row .note{color:var(--muted);font-size:11px;margin-top:2px;}
+.gauge-row{display:flex;align-items:center;gap:10px;margin-top:6px;}
+.gauge-pct{font-size:14px;font-weight:700;min-width:48px;text-align:right;font-family:var(--mono);}
+.bar-wrap{flex:1;background:var(--bg);border-radius:20px;height:10px;overflow:hidden;}
+.bar{height:100%;border-radius:20px;transition:width .2s ease;}
+.badge-row{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.badge{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap;}
+.badge.ok{background:rgba(125,211,168,.15);color:var(--green);}
+.badge.fail{background:var(--red-bg);color:#ef4444;}
+
+.export-btn{background:var(--accent);border:none;color:#fff;font-size:12px;font-weight:600;padding:8px 16px;
+  border-radius:6px;cursor:pointer;font-family:var(--sans);transition:opacity .15s;width:auto;}
+.export-btn:hover{opacity:.85;}
+.export-btn.secondary{background:var(--surface2);color:var(--accent);border:1px solid var(--border);}
+.export-btn.secondary:hover{opacity:1;border-color:var(--accent);}
+
+.scheme-wrap{display:flex;justify-content:center;padding:16px;}
+.pressure-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;padding:16px;}
+.pressure-loads{min-width:0;}
+.pressure-layout .scheme-wrap{padding:0;}
+@media(max-width:640px){.pressure-layout{grid-template-columns:1fr;}}
+
+.soil-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:16px 16px 0;}
+.soil-inputs{min-width:0;border-right:1px solid var(--border);padding-right:20px;}
+.soil-settle{min-width:0;}
+.soil-settle .subsection-label{padding-left:0;padding-right:0;}
+@media(max-width:640px){.soil-layout{grid-template-columns:1fr;}.soil-inputs{border-right:none;padding-right:0;border-bottom:1px solid var(--border);padding-bottom:16px;}}
+
+/* ── Модалка «Справка» ── */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;max-width:680px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;}
+.modal-box h2{margin:0 0 16px;font-size:16px;color:var(--accent);}
+.modal-box .close-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;font-family:var(--sans);}
+.modal-box .close-btn:hover{color:var(--text);border-color:var(--accent);}
+.modal-box p{font-size:13px;line-height:1.6;margin:0 0 10px;color:var(--text);}
+.modal-box b{color:#fff;}
+.modal-box ul{margin:0 0 14px;padding-left:20px;}
+.modal-box li{font-size:13px;line-height:1.6;color:var(--text);margin-bottom:3px;}
+.modal-box .scope-warn{color:var(--warn);}
+
+/* ── Печатный отчёт (Расчётная записка) ── */
+#printArea{display:none;}
+.print-header{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #printArea, #printArea *{visibility:visible;}
+  #printArea{display:block;position:absolute;top:0;left:0;width:100%;background:#fff;color:#111;padding:0;}
+  .print-header{display:block;margin-bottom:16px;text-align:center;}
+  .print-header h1{font-size:19px;margin:0 0 6px;color:#111;}
+  .print-subtitle{font-size:12px;color:#555;margin-bottom:6px;}
+  .print-date{font-size:11px;color:#555;}
+  .print-footer{margin-top:24px;padding-top:10px;border-top:1px solid #ccc;font-size:10px;color:#777;text-align:center;}
+  .print-section{margin-bottom:18px;page-break-inside:avoid;}
+  .print-section h2{font-size:14px;color:#111;border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:6px;}
+  #printArea .print-section p{margin:4px 0 10px;font-size:12px;color:#222;line-height:1.5;}
+  #printArea .print-section p b{color:#000;}
+  #printArea .print-section p.ref-note{margin:-6px 0 10px;font-size:10.5px;color:#777;font-style:italic;}
+  .summary-table{width:100%;border-collapse:collapse;margin:8px 0 14px;font-size:13px;}
+  .summary-table th{text-align:left;padding:8px 10px;background:#eee;color:#111;border-bottom:2px solid #999;font-size:11px;text-transform:uppercase;letter-spacing:.02em;}
+  .summary-table td{padding:7px 10px;border-bottom:1px solid #ddd;color:#111;}
+  .summary-table tr:nth-child(even) td{background:#f5f6f8;}
+  .summary-table td:last-child{text-align:right;font-family:var(--mono);}
+  .summary-table td.v-ok{color:#1a7a4c;font-weight:700;}
+  .summary-table td.v-fail{color:#c0392b;font-weight:700;}
+  #printArea .print-section p b.v-ok{color:#1a7a4c;}
+  #printArea .print-section p b.v-fail{color:#c0392b;}
+  .verdict-banner{margin-top:20px;padding:22px;border-radius:10px;text-align:center;font-size:18px;font-weight:700;}
+  .verdict-banner.ok{background:#e3f5ec;color:#1a7a4c;border:2px solid #1a7a4c;}
+  .verdict-banner.fail{background:#fbe9e9;color:#c0392b;border:2px solid #c0392b;}
+  #printArea .katex{color:#111;}
+  #printArea .scheme-bg{fill:#fff !important;stroke:#ddd;}
+  #printArea .scheme-elem{fill:#e7e9f2 !important;}
+}
+
+/* ── Раскрываемые формульные выкладки внутри карточки результата ── */
+summary.details-toggle{cursor:pointer;list-style:none;user-select:none;padding:10px 16px;font-size:11.5px;
+  color:var(--muted);border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;transition:color .15s;}
+summary.details-toggle::-webkit-details-marker{display:none;}
+summary.details-toggle:hover{color:var(--accent);}
+.details-arrow{display:inline-block;font-size:10px;color:var(--accent);transition:transform .15s ease;}
+details[open] > summary.details-toggle .details-arrow{transform:rotate(90deg);}
+.result-slot{margin-bottom:16px;}
+.result-slot:empty{margin-bottom:0;}
+
+/* ── Подпись подраздела внутри объединённой карточки (ввод + результат / несколько подразделов) ── */
+.subsection-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);padding:12px 16px 4px;}
+.subsection-label.divider{border-top:1px solid var(--border);padding-top:12px;margin-top:4px;}
+
+/* ── Компактная строка армирования: подпись + Ø/шаг/класс в одну линию (по образцу prodavlivanie-fundament.html) ── */
+.arm-row{display:flex;align-items:center;flex-wrap:nowrap;gap:14px;padding:12px 16px;}
+.arm-row.divider{border-top:1px solid var(--border);}
+.arm-row-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);white-space:nowrap;margin-right:2px;}
+.arm-field{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
+.arm-field select,.arm-field input{width:62px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--green);
+  font-family:var(--sans);font-size:13px;font-weight:600;padding:5px 6px;outline:none;transition:background .15s,border-color .15s;}
+.arm-field select:hover,.arm-field input:hover{background:var(--surface2);}
+.arm-field select:focus,.arm-field input:focus{background:var(--surface2);border-color:var(--accent);}
+.arm-field select.arm-class{width:72px;}
+
+/* ── Расчётная схема (картинка) между полями геометрии+нагрузок (слева) и армированием (справа), по образцу peremychka-ugolok.html ── */
+.geom-layout{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:start;padding:16px;}
+.geom-inputs{min-width:0;}
+.geom-loads{min-width:0;}
+.geom-image{min-width:0;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:10px;padding:14px;}
+.scheme-photo{max-width:100%;height:auto;display:block;border-radius:4px;}
+.geom-image .scheme-photo{max-width:240px;}
+.geom-loads .arm-row{flex-wrap:wrap;row-gap:6px;padding:10px 4px;}
+.geom-loads .arm-row-label{flex-basis:100%;}
+.geom-loads .subsection-label{padding-left:4px;padding-right:4px;}
+.geom-loads .note{margin-left:4px;margin-right:4px;}
+.geom-loads table.input-table td.it-label{width:auto;white-space:nowrap;padding-right:8px;}
+.geom-loads table.input-table td.it-value{width:100%;}
+
+@media(max-width:640px){
+  .row2,.row3{grid-template-columns:1fr;}
+  .geom-layout{grid-template-columns:1fr;}
+}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+<div id="printArea"></div>
+<div class="page-wrap">
+
+<div id="site-header"></div>
+
+<div class="page-title">Расчёт ленточного фундамента</div>
+<div class="page-subtitle">НТП РК 07-01.4-2012 (несущая способность, осадка) · СП РК EN 1992-1-1 (армирование, срез)</div>
+
+<input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importDataFile(this)">
+
+<div class="result-slot" id="validationResult"></div>
+<div class="result-slot" id="loadResult"></div>
+
+    <div class="card" id="geomCard">
+      <div class="card-header"><span class="title">1. Геометрия и материалы фундамента</span></div>
+      <div class="card-body" style="padding:0;">
+        <div class="geom-layout">
+          <div class="geom-inputs">
+            <table class="input-table">
+              <tr>
+                <td class="it-label">b<sub>w</sub> — толщина стены, мм</td>
+                <td class="it-value"><input type="number" id="bw" value="400" step="10"></td>
+              </tr>
+              <tr>
+                <td class="it-label">B — ширина подошвы, мм</td>
+                <td class="it-value"><input type="number" id="B" value="1200" step="50"></td>
+              </tr>
+              <tr>
+                <td class="it-label">h<sub>f</sub> — высота фундамента, мм</td>
+                <td class="it-value"><input type="number" id="hf" value="400" step="10"></td>
+              </tr>
+              <tr>
+                <td class="it-label">D<sub>1</sub> — глубина заложения, сторона 1, мм</td>
+                <td class="it-value"><input type="number" id="D1" value="1600" step="100"></td>
+              </tr>
+              <tr>
+                <td class="it-label">D<sub>2</sub> — глубина заложения, сторона 2, мм</td>
+                <td class="it-value"><input type="number" id="D2" value="1600" step="100"></td>
+              </tr>
+              <tr>
+                <td class="it-label">a<sub>1</sub> — защитный слой арматуры, мм</td>
+                <td class="it-value"><input type="number" id="cover" value="40" step="5"></td>
+              </tr>
+              <tr>
+                <td class="it-label">e — смещение оси стены от оси подошвы, мм</td>
+                <td class="it-value"><input type="number" id="eccW" value="0" step="10"></td>
+              </tr>
+            </table>
+          </div>
+          <div class="geom-image"><img class="scheme-photo" src="Картинки/Ленточный-фундамент.png" alt="Расчётная схема ленточного фундамента: N, bw, D1, D2, Hf, B, e, Q1/Q2, a1"></div>
+          <div class="geom-loads">
+            <input type="hidden" id="fyk" value="500">
+            <div class="arm-row">
+              <span class="arm-row-label">Рабочая арматура нижней сетки</span>
+              <span class="arm-field">Ø<select id="barDia">
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                    <option value="12" selected>12</option>
+                    <option value="14">14</option>
+                    <option value="16">16</option>
+                    <option value="18">18</option>
+                    <option value="20">20</option>
+                    <option value="22">22</option>
+                    <option value="25">25</option>
+              </select></span>
+              <span class="arm-field">шаг<input type="number" id="barSpacing" value="200" step="10"></span>
+              <span class="arm-field">класс<select id="barClass" class="arm-class"><option value="400">A400</option><option value="500" selected>A500</option></select></span>
+            </div>
+            <div class="arm-row divider">
+              <span class="arm-row-label">Поперечная арматура нижней сетки</span>
+              <span class="arm-field">Ø<select id="distrDia">
+                    <option value="6" selected>6</option>
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="14">14</option>
+                    <option value="16">16</option>
+              </select></span>
+              <span class="arm-field">шаг<input type="number" id="distrSpacing" value="" step="10"></span>
+              <span class="arm-field">класс<select id="distrClass" class="arm-class"><option value="400">A400</option><option value="500" selected>A500</option></select></span>
+            </div>
+            <div class="subsection-label divider">Вертикальное (срез у грани стены)</div>
+            <table class="input-table">
+              <tr>
+                <td class="it-label">Ø хомута, мм</td>
+                <td class="it-value">
+                  <select id="stirDia">
+                    <option value="0" selected>0 (без хомутов)</option>
+                    <option value="6">6</option>
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                  </select>
+                </td>
+              </tr>
+            </table>
+            <table class="input-table" id="shearRowsFields">
+              <tr>
+                <td class="it-label">Число ветвей на 1 п.м стены</td>
+                <td class="it-value"><input type="number" id="stirLegs" value="2" step="1" min="2"></td>
+              </tr>
+              <tr>
+                <td class="it-label">Шаг вдоль стены s, мм</td>
+                <td class="it-value"><input type="number" id="stirSpacing" value="200" step="10"></td>
+              </tr>
+            </table>
+            <div class="subsection-label divider">Класс бетона</div>
+            <table class="input-table">
+              <tr>
+                <td class="it-value">
+                  <select id="fck">
+                    <option value="12">C12/15</option>
+                    <option value="16">C16/20</option>
+                    <option value="20">C20/25</option>
+                    <option value="25" selected>C25/30</option>
+                    <option value="30">C30/37</option>
+                    <option value="35">C35/45</option>
+                    <option value="40">C40/50</option>
+                    <option value="45">C45/55</option>
+                    <option value="50">C50/60</option>
+                    <option value="55">C55/67</option>
+                    <option value="60">C60/75</option>
+                    <option value="70">C70/85</option>
+                    <option value="80">C80/95</option>
+                    <option value="90">C90/105</option>
+                  </select>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-header"><span class="title">2. Загружения и эпюра давления</span></div>
+      <div class="card-body" style="padding:0;">
+        <div class="pressure-layout">
+          <div class="pressure-loads">
+            <table class="input-table">
+              <tr>
+                <td class="it-label">N — нормативная нагрузка, тс/м</td>
+                <td class="it-value"><input type="number" id="Nk" value="13" step="0.5"></td>
+              </tr>
+              <tr>
+                <td class="it-label">q<sub>1,вр</sub> — полезная (временная) нагрузка, сторона 1, тс/м²</td>
+                <td class="it-value"><input type="number" id="q1_live" value="0" step="0.1"></td>
+              </tr>
+              <tr>
+                <td class="it-label">q<sub>2,вр</sub> — полезная (временная) нагрузка, сторона 2, тс/м²</td>
+                <td class="it-value"><input type="number" id="q2_live" value="0" step="0.1"></td>
+              </tr>
+              <tr>
+                <td class="it-label">Q<sub>1</sub> — пригрузка сбоку, сторона 1 (грунт+врем.), тс/м²</td>
+                <td class="it-value" id="q1TotalDisplay" style="color:var(--accent);font-weight:600;padding:8px 10px;">—</td>
+              </tr>
+              <tr>
+                <td class="it-label">Q<sub>2</sub> — пригрузка сбоку, сторона 2 (грунт+врем.), тс/м²</td>
+                <td class="it-value" id="q2TotalDisplay" style="color:var(--accent);font-weight:600;padding:8px 10px;">—</td>
+              </tr>
+            </table>
+          </div>
+          <div class="scheme-wrap" id="schemeWrap"></div>
+        </div>
+      </div>
+
+      <div class="card-header"><span class="title">3. Параметры основания</span></div>
+      <div class="card-body" style="padding:0;">
+        <div class="soil-layout">
+          <div class="soil-inputs">
+            <div class="tab-bar">
+              <div class="tab-btn active" data-soilmode="phi">φ' / c' / γ</div>
+              <div class="tab-btn" data-soilmode="r0">Готовое R0</div>
+            </div>
+            <div id="soil-phi" class="tab-panel active">
+              <table class="input-table">
+                <tr>
+                  <td class="it-label">φ' — угол внутр. трения, °</td>
+                  <td class="it-value"><input type="number" id="phi" value="22" step="1"></td>
+                </tr>
+                <tr>
+                  <td class="it-label">c' — удельное сцепление, тс/м²</td>
+                  <td class="it-value"><input type="number" id="c" value="0.8" step="0.1"></td>
+                </tr>
+                <tr>
+                  <td class="it-label">γ — уд. вес грунта, т/м³</td>
+                  <td class="it-value"><input type="number" id="gamma" value="1.8" step="0.05"></td>
+                </tr>
+                <tr>
+                  <td class="it-label">γ' (ниже подошвы, с учётом взвешивания), т/м³</td>
+                  <td class="it-value"><input type="number" id="gammaBelow" value="1.8" step="0.05"></td>
+                </tr>
+              </table>
+            </div>
+            <div id="soil-r0" class="tab-panel">
+              <table class="input-table">
+                <tr>
+                  <td class="it-label">R0 — расчётное сопротивление грунта, тс/м²</td>
+                  <td class="it-value"><input type="number" id="R0" value="20" step="1"></td>
+                </tr>
+                <tr>
+                  <td class="it-label">γ<sub>II</sub> — уд. вес грунта над подошвой, т/м³</td>
+                  <td class="it-value"><input type="number" id="gammaR0" value="1.8" step="0.05"></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div class="soil-settle" id="settleCard">
+            <div class="subsection-label">Осадка</div>
+            <div style="padding:12px 16px 16px;">
+              <table class="layers">
+                <thead><tr><th>h слоя, м</th><th>E, МПа</th><th>γ, т/м³</th><th style="width:36px;"></th></tr></thead>
+                <tbody id="layersBody"></tbody>
+              </table>
+              <button class="add-row-btn" id="addLayerBtn" type="button">+ добавить слой</button>
+            </div>
+            <div id="settleResult"></div>
+            <table class="input-table">
+              <tr>
+                <td class="it-label">Предельная величина деформации фундамента S<sub>u</sub>, мм <span class="info-btn" onclick="toggleSuTooltip(event)">?</span></td>
+                <td class="it-value">
+                  <input type="number" id="suLimit" value="100" step="1" placeholder="не задано">
+                  <div id="suTooltip" class="tooltip-box wide">
+                    <table>
+                      <tr><th>Сооружения</th><th>(Δs/L)<sub>u</sub></th><th>Крен i<sub>u</sub></th><th>s̄<sub>u</sub> (s<sub>max,u</sub>), см</th></tr>
+                      <tr class="group-row"><td colspan="4">1. Здания с полным каркасом</td></tr>
+                      <tr><td>железобетонным</td><td>0,002</td><td>–</td><td>(10)</td></tr>
+                      <tr><td>то же, с ж/б поясами или монолитными перекрытиями, монолитные</td><td>0,003</td><td>–</td><td>(15)</td></tr>
+                      <tr><td>стальным</td><td>0,004</td><td>–</td><td>(15)</td></tr>
+                      <tr><td>то же, с ж/б поясами или монолитными перекрытиями</td><td>0,005</td><td>–</td><td>(18)</td></tr>
+                      <tr class="group-row"><td colspan="4">2. Здания без усилий от неравномерных осадок</td></tr>
+                      <tr><td>—</td><td>0,006</td><td>–</td><td>20</td></tr>
+                      <tr class="group-row"><td colspan="4">3. Бескаркасные здания с несущими стенами (ленточный фундамент)</td></tr>
+                      <tr><td>крупных панелей</td><td>0,0016</td><td>0,005</td><td>12</td></tr>
+                      <tr><td>крупных блоков / кирпичной кладки без армирования</td><td>0,0020</td><td>0,005</td><td>12</td></tr>
+                      <tr><td>то же, с армированием (пояса/перекрытия), монолитные</td><td>0,0024</td><td>0,005</td><td>18</td></tr>
+                      <tr class="group-row"><td colspan="4">4. Элеваторы из ж/б конструкций</td></tr>
+                      <tr><td>раб. здание + силосный корпус, монолитные, одна плита</td><td>–</td><td>0,003</td><td>40</td></tr>
+                      <tr><td>то же, сборные</td><td>–</td><td>0,003</td><td>30</td></tr>
+                      <tr><td>отдельно стоящий силосный корпус, монолитный</td><td>–</td><td>0,004</td><td>40</td></tr>
+                      <tr><td>то же, сборный</td><td>–</td><td>0,004</td><td>30</td></tr>
+                      <tr><td>отдельно стоящее рабочее здание</td><td>–</td><td>0,004</td><td>25</td></tr>
+                      <tr class="group-row"><td colspan="4">5. Дымовые трубы высотой H, м</td></tr>
+                      <tr><td>H ≤ 100</td><td>–</td><td>0,005</td><td>40</td></tr>
+                      <tr><td>100 &lt; H ≤ 200</td><td>–</td><td>1/2H</td><td>30</td></tr>
+                      <tr><td>200 &lt; H ≤ 300</td><td>–</td><td>1/2H</td><td>20</td></tr>
+                      <tr><td>H &gt; 300</td><td>–</td><td>1/2H</td><td>10</td></tr>
+                      <tr class="group-row"><td colspan="4">6. Жёсткие сооружения высотой до 100 м (кроме поз. 4, 5)</td></tr>
+                      <tr><td>—</td><td>–</td><td>0,004</td><td>20</td></tr>
+                      <tr class="group-row"><td colspan="4">7. Антенные сооружения связи</td></tr>
+                      <tr><td>стволы мачт заземлённые</td><td>–</td><td>0,002</td><td>20</td></tr>
+                      <tr><td>то же, электрически изолированные</td><td>–</td><td>0,001</td><td>10</td></tr>
+                      <tr><td>башни радио</td><td>0,002</td><td>–</td><td>–</td></tr>
+                      <tr><td>башни коротковолновых радиостанций</td><td>0,0025</td><td>–</td><td>–</td></tr>
+                      <tr><td>башни (отдельные блоки)</td><td>0,001</td><td>–</td><td>–</td></tr>
+                      <tr class="group-row"><td colspan="4">8. Опоры воздушных линий электропередачи</td></tr>
+                      <tr><td>промежуточные прямые</td><td>0,003</td><td>0,003</td><td>–</td></tr>
+                      <tr><td>анкерные/угловые, концевые, порталы ОРУ</td><td>0,0025</td><td>0,0025</td><td>–</td></tr>
+                      <tr><td>специальные переходные</td><td>0,002</td><td>0,002</td><td>–</td></tr>
+                    </table>
+                    <div style="font-size:10px;color:var(--muted);margin-top:8px;">Табл. В.1 «Предельные деформации оснований». Для ленточного фундамента под несущую стену — см. поз. 3. Полные примечания (1–5) — в тексте норматива.</div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-slot" id="reinfShearResult"></div>
+
+<div id="site-footer"></div>
+</div>
+
+<div class="modal-backdrop" id="helpModal" onclick="if(event.target===this) closeHelpModal()">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;">Порядок работы и алгоритм расчёта</h2>
+      <button class="close-btn" onclick="closeHelpModal()">✕ Закрыть</button>
+    </div>
+    <p><b>Область применения.</b> Непрерывный ленточный фундамент под несущую стену (равномерная линейная нагрузка). Стена может быть смещена относительно оси подошвы (эксцентриситет e) — калькулятор пересчитывает трапециевидную эпюру давления и проверяет обе стороны отдельно. Момент от вышележащих конструкций (кроме эксцентриситета самой стены) не учитывается. Основание принимается однородным (для несущей способности по Бринч-Хансену); послойность грунта учитывается только в расчёте осадки.</p>
+    <p>В расчёт входят проверки: несущая способность основания (с учётом веса фундамента и грунта на выступах подошвы), армирование подошвы на изгиб, срез у грани стены — по обеим сторонам при смещении, осадка (со сравнением с предельно допустимой S<sub>u</sub>, если задана).</p>
+    <p><b class="scope-warn">Не входит в объём расчёта:</b></p>
+    <ul>
+      <li>Внешний момент от вышележащих конструкций (учитывается только эксцентриситет самой стены)</li>
+      <li>Продавливание — актуально только под точечной нагрузкой (колонна на ленте), см. отдельный калькулятор</li>
+      <li>Трещиностойкость (ширина раскрытия трещин, SLS)</li>
+      <li>Устойчивость на сдвиг по подошве и опрокидывание</li>
+      <li>Сейсмические воздействия</li>
+      <li>Просадочные и набухающие грунты</li>
+      <li>Проверка глубины заложения на промерзание — D₁/D₂ задаются пользователем без автоматической проверки</li>
+    </ul>
+    <p><b>1. Геометрия и материалы фундамента.</b> Слева — геометрия (толщина стены, ширина подошвы B, высота фундамента, глубина заложения D₁/D₂ — отдельно для каждой стороны, защитный слой арматуры, смещение оси стены e); по центру — схема обозначений; справа — армирование фундамента (см. ниже).</p>
+    <p><b>Армирование фундамента</b> (справа в разделе 1). Три группы стержней: рабочая арматура нижней сетки (задаётся пользователем, на изгиб подошвы), поперечная арматура нижней сетки (перпендикулярно рабочей, вдоль стены — Ø/шаг подбираются автоматически под условие A<sub>s</sub> ≥ 20% от рабочей, СП РК EN 1992-1-1 §9.3.1.1(2), можно переопределить) и вертикальная (хомуты у грани стены, на срез). По умолчанию Ø хомута = 0 (без хомутов); если расчёт показывает, что среза недостаточно, задайте Ø хомута &gt; 0, число ветвей и шаг — калькулятор проверит заданную раскладку (не забудьте конструктивный анкерующий стержень сверху, хомуту нужна точка анкеровки с обеих сторон). Класс арматуры в строках Ø/шаг/класс синхронизирован между собой. Класс бетона задаётся под блоком вертикального армирования. Если и с хомутами среза недостаточно — увеличьте h<sub>f</sub>, уменьшите шаг или увеличьте Ø/число ветвей.</p>
+    <p><b>2. Загружения и эпюра давления.</b> Нагрузка N (тс/м на 1 п.м стены), полезная (временная) нагрузка сбоку q<sub>1,вр</sub>/q<sub>2,вр</sub> (тс/м², задаётся пользователем — вес автотранспорта, складируемых материалов и т.п.) и итоговая пригрузка Q₁/Q₂ слева от самой эпюры. Q₁/Q₂ калькулятор считает автоматически: Q = γ·D (вес грунта обратной засыпки над консолью, по своей стороне) + полезная нагрузка этой стороны — вручную их вводить не нужно, достаточно задать D₁/D₂ в разделе 1 и, если есть, временную нагрузку. Если с одной стороны подвал/выемка грунта — уменьшите D с этой стороны (вплоть до 0); если насыпь выше уровня земли — увеличьте. В расчёте несущей способности (раздел 3) используется меньшее из Q₁/Q₂ (менее выгодная сторона), а в эпюре давления и весе консолей пригрузка учитывается по каждой стороне отдельно. Калькулятор сам применяет два сочетания коэффициентов по DA1 (Проектный подход 1, НТП РК 07-01.4-2012): N₁=1,35·N — для расчёта конструкции (арматура, срез), N₂=1,0·N с ослабленным грунтом — для несущей способности. При e=0 стена по центру (симметрично); при e≠0 (или Q₁≠Q₂) эпюра давления становится трапециевидной, а изгиб/срез считаются отдельно для каждой стороны (берётся более нагруженная). На схеме показано валовое (реальное контактное) давление под подошвой — оно растёт при добавлении любой нагрузки; для расчёта армирования используется чистое давление (валовое минус собственный вес консоли и пригрузка непосредственно над ней) — см. «Подробности расчёта» в блоке «Армирование подошвы».</p>
+    <p><b>3. Параметры основания.</b> Два режима: по физическим характеристикам φ'/c'/γ (точный расчёт по Бринч-Хансену, НТП РК 07-01.4-2012) или по готовому табличному R0 — оба используют пригрузку Q₁/Q₂, заданную в разделе 2. Несущая способность считается по эффективной ширине B'=B-2|e| (НТП РК 07-01.4-2012) и с учётом полного веса — нагрузка от стены + собственный вес фундамента + реальная пригрузка на выступах подошвы (Q₁·c₁+Q₂·c₂, по своей стороне). Результат R<sub>d</sub> и вердикт σ ≤ R<sub>d</sub> выводится в карточке «Выводы» (шкала процента использования).</p>
+    <p><b>4. Осадка.</b> Считается послойным (компрессионным) методом — задайте толщину, модуль деформации и удельный вес каждого слоя грунта (реальные геологические слои, как есть). Если слой толще 0,4·B, калькулятор автоматически дробит его на элементарные подслои для точности суммирования (НТП РК 07-01.4-2012) — вручную дробить не нужно. Калькулятор отслеживает нижнюю границу сжимаемой толщи (НГСТ) — часть толщи (слои или подслои), где дополнительное давление от нагрузки упало до ≤20% от бытового давления грунта, в сумму осадки не включается (показана в разбивке серым/с пометкой). Если заданных слоёв не хватает, чтобы дойти до НГСТ, калькулятор выдаст предупреждение — добавьте ещё слоёв на бо́льшую глубину. Под результатом — необязательное поле «Предельная величина деформации фундамента S<sub>u</sub>»: если задать значение, калькулятор сравнит с ним расчётную осадку и выдаст вердикт (✓/✗).</p>
+    <p>Разделы с формулами и промежуточными шагами свёрнуты по умолчанию (▶ «Подробности расчёта») — раскрываются по клику, если нужно проверить выкладки вручную.</p>
+    <p><b>Сохранение и печать.</b> Введённые данные сохраняются в браузере автоматически. Кнопка «Сохранить» выгружает их в файл .json — его можно позже загрузить обратно через «Загрузить» на этом же или другом устройстве. «Расчётная записка» формирует печатный отчёт со всеми проверками и итоговым заключением.</p>
+  </div>
+</div>
+
+<script>
+// ==================== ПЕРЕКЛЮЧАТЕЛИ РЕЖИМОВ ====================
+const selectedState = { soilMode:'phi' };
+
+// Шаг распределительной арматуры — автоподстановка под условие 20%, пока не введён вручную
+let distrSpacingManual = false;
+document.getElementById('distrSpacing').addEventListener('input', ()=>{ distrSpacingManual = true; });
+document.getElementById('distrDia').addEventListener('change', ()=>{ recalcAll(); });
+
+// Класс арматуры — выбирается в строках Ø/шаг/класс, синхронизируется в скрытое поле f_yk (единственный источник для расчёта)
+function syncSteelClass(newVal){
+  document.getElementById('fyk').value = newVal;
+  document.getElementById('barClass').value = newVal;
+  document.getElementById('distrClass').value = newVal;
+  saveFormState();
+  recalcAll();
+}
+document.getElementById('barClass').addEventListener('change', e=>syncSteelClass(e.target.value));
+document.getElementById('distrClass').addEventListener('change', e=>syncSteelClass(e.target.value));
+
+document.querySelectorAll('[data-soilmode]').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-soilmode]').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    selectedState.soilMode = t.dataset.soilmode;
+    document.getElementById('soil-phi').classList.toggle('active', selectedState.soilMode==='phi');
+    document.getElementById('soil-r0').classList.toggle('active', selectedState.soilMode==='r0');
+    saveFormState();
+    recalcAll();
+  });
+});
+
+// ==================== ПОДСКАЗКА S_u (табл. предельных деформаций) ====================
+function toggleSuTooltip(e){
+  e.stopPropagation();
+  const box = document.getElementById('suTooltip');
+  const willShow = box.style.display !== 'block';
+  if(willShow){
+    const rect = e.currentTarget.getBoundingClientRect();
+    let left = rect.left;
+    if(left + 540 > window.innerWidth - 8) left = window.innerWidth - 548;
+    box.style.left = Math.max(8, left) + 'px';
+    box.style.display = 'block';
+    const boxHeight = box.offsetHeight;
+    let top = rect.bottom + 6;
+    if(top + boxHeight > window.innerHeight - 8) top = Math.max(8, window.innerHeight - boxHeight - 8);
+    box.style.top = top + 'px';
+  } else {
+    box.style.display = 'none';
+  }
+}
+document.addEventListener('click', () => { document.getElementById('suTooltip').style.display = 'none'; });
+
+// ==================== ТАБЛИЦА СЛОЁВ ГРУНТА ====================
+function addLayerRow(h=1.0, E=15, gamma=1.8){
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><input type="number" class="layer-h" value="${h}" step="0.1"></td>
+                   <td><input type="number" class="layer-E" value="${E}" step="1"></td>
+                   <td><input type="number" class="layer-gamma" value="${gamma}" step="0.05"></td>
+                   <td><button type="button" class="icon-btn" title="Удалить слой" onclick="this.closest('tr').remove();saveFormState();recalcAll();">✕</button></td>`;
+  document.getElementById('layersBody').appendChild(tr);
+}
+addLayerRow(1.0, 12, 1.8);
+addLayerRow(2.0, 18, 1.9);
+document.getElementById('addLayerBtn').addEventListener('click', ()=>{ addLayerRow(); saveFormState(); recalcAll(); });
+
+// ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+const G = 9.81; // перевод тс → кН (1 тс = 9,81 кН) — используется и в recalcAll, и в drawScheme
+const rad = deg => deg*Math.PI/180;
+const fmt = (v,d=2) => isFinite(v) ? v.toFixed(d) : '—';
+function renderMath(el){
+  if (window.renderMathInElement){
+    renderMathInElement(el, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "$", right: "$", display: false}
+      ],
+      throwOnError: false
+    });
+  }
+}
+
+// Строка сводки с процентом использования и шкалой (ok/warn/bad — 3 уровня)
+function gaugeRowHtml(label, pct, opts){
+  opts = opts || {};
+  const cls = opts.colorClass || (pct>100?'bad':(pct>90?'warn':'ok'));
+  const color = cls==='bad' ? '#ef4444' : cls==='warn' ? 'var(--warn)' : 'var(--green)';
+  const barPct = Math.min(Math.max(pct,0),100);
+  const note = opts.note ? `<div class="note">${opts.note}</div>` : '';
+  return `<div class="check-row">${label}${note}
+    <div class="gauge-row">
+      <span class="gauge-pct" style="color:${color}">${pct.toFixed(0)}%</span>
+      <div class="bar-wrap"><div class="bar" style="width:${barPct}%;background:${color}"></div></div>
+    </div>
+  </div>`;
+}
+// Строка сводки прошёл/не прошёл — без числового значения (бейдж)
+function badgeRowHtml(label, ok, text, note){
+  const noteHtml = note ? `<div class="note">${note}</div>` : '';
+  return `<div class="check-row badge-row"><span>${label}${noteHtml}</span><span class="badge ${ok?'ok':'fail'}">${text}</span></div>`;
+}
+
+// ==================== ПРОВЕРКА ВХОДНЫХ ДАННЫХ ====================
+// Список полей, которые проверяются на корректность (кроме слоёв осадки — те проверяются отдельно построчно)
+const VALIDATABLE_IDS = ['bw','B','hf','D1','D2','cover','eccW','Nk','q1_live','q2_live','phi','c','gamma','gammaBelow','R0','gammaR0','barSpacing','distrSpacing','stirLegs','stirSpacing'];
+
+function validateInputs(){
+  const errors = [];
+  VALIDATABLE_IDS.forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove('field-invalid'); });
+  document.querySelectorAll('#layersBody input').forEach(el=>el.classList.remove('field-invalid'));
+
+  function fail(id, msg){
+    errors.push(msg);
+    const el = document.getElementById(id);
+    if(el) el.classList.add('field-invalid');
+  }
+  function check(id, test, msg){
+    const el = document.getElementById(id);
+    if(!el) return NaN;
+    const v = parseFloat(el.value);
+    if(isNaN(v) || !test(v)) fail(id, msg);
+    return v;
+  }
+
+  // ---------- Геометрия ----------
+  const bwV = check('bw', v=>v>0, 'b<sub>w</sub> — толщина стены должна быть больше 0, мм');
+  const BV  = check('B',  v=>v>0, 'B — ширина подошвы должна быть больше 0, мм');
+  const hfV = check('hf', v=>v>0, 'h<sub>f</sub> — высота фундамента должна быть больше 0, мм');
+  check('D1', v=>v>=0, 'D₁ — глубина заложения (сторона 1) не может быть отрицательной');
+  check('D2', v=>v>=0, 'D₂ — глубина заложения (сторона 2) не может быть отрицательной');
+  const coverV = check('cover', v=>v>0, 'a<sub>1</sub> — защитный слой арматуры должен быть больше 0, мм');
+  const eccWEl = document.getElementById('eccW');
+  const eccWV = parseFloat(eccWEl.value)/1000; // мм → м
+  if(isNaN(eccWV)) fail('eccW', 'e — смещение оси стены: введите число (0, если стена по центру)');
+
+  if(!isNaN(bwV) && !isNaN(BV) && bwV>0 && BV>0){
+    const bwM = bwV/1000, BM = BV/1000;
+    if(BM <= bwM) fail('B', 'B — ширина подошвы должна быть больше толщины стены b<sub>w</sub>');
+    else if(!isNaN(eccWV)){
+      const c1 = BM/2 + eccWV - bwM/2, c2 = BM/2 - eccWV - bwM/2;
+      if(c1 < 0 || c2 < 0) fail('eccW', 'e — при таком смещении стена выходит за пределы подошвы (проверьте B, b<sub>w</sub>, e)');
+    }
+  }
+  if(!isNaN(coverV) && !isNaN(hfV) && coverV>0 && hfV>0 && coverV>=hfV){
+    fail('cover', 'a<sub>1</sub> — защитный слой арматуры должен быть меньше высоты фундамента h<sub>f</sub>');
+  }
+
+  // ---------- Загружения ----------
+  check('Nk', v=>v>0, 'N — нормативная нагрузка должна быть больше 0, тс/м');
+  check('q1_live', v=>v>=0, 'q<sub>1,вр</sub> — полезная (временная) нагрузка не может быть отрицательной');
+  check('q2_live', v=>v>=0, 'q<sub>2,вр</sub> — полезная (временная) нагрузка не может быть отрицательной');
+
+  // ---------- Грунт основания ----------
+  if(selectedState.soilMode==='phi'){
+    check('phi', v=>v>=0 && v<45, "φ' — угол внутреннего трения должен быть от 0 до 45°");
+    check('c', v=>v>=0, "c' — удельное сцепление не может быть отрицательным");
+    check('gamma', v=>v>0, 'γ — удельный вес грунта должен быть больше 0, т/м³');
+    check('gammaBelow', v=>v>0, "γ' (ниже подошвы) должен быть больше 0, т/м³");
+  } else {
+    check('R0', v=>v>0, 'R0 — расчётное сопротивление грунта должно быть больше 0, тс/м²');
+    check('gammaR0', v=>v>0, 'γ<sub>II</sub> должен быть больше 0, т/м³');
+  }
+
+  // ---------- Армирование ----------
+  // Мин. шаг — диаметр стержня + мин. зазор 20 мм (СП РК EN 1992-1-1 §8.2); макс. шаг — §9.3.1.1(3), min(3h/3,5h; 400 мм)
+  const hfV2 = parseFloat(document.getElementById('hf').value);
+  const barDiaV = parseFloat(document.getElementById('barDia').value);
+  const distrDiaV = parseFloat(document.getElementById('distrDia').value);
+  const barSpacingMax = isNaN(hfV2) ? 400 : Math.min(3*hfV2, 400);
+  const distrSpacingMax = isNaN(hfV2) ? 400 : Math.min(3.5*hfV2, 400);
+  check('barSpacing', v=>v>=barDiaV+20 && v<=barSpacingMax,
+    `Шаг рабочей арматуры должен быть от Ø+20 мм (${fmt(barDiaV+20,0)}) до ${fmt(barSpacingMax,0)} мм (СП РК EN 1992-1-1 §8.2, §9.3.1.1(3))`);
+  check('distrSpacing', v=>v>=distrDiaV+20 && v<=distrSpacingMax,
+    `Шаг поперечной арматуры должен быть от Ø+20 мм (${fmt(distrDiaV+20,0)}) до ${fmt(distrSpacingMax,0)} мм (СП РК EN 1992-1-1 §8.2, §9.3.1.1(3))`);
+  const stirDiaV = parseFloat(document.getElementById('stirDia').value);
+  if(stirDiaV > 0){
+    check('stirLegs', v=>v>=2, 'Число ветвей хомута должно быть не менее 2');
+    const coverV2 = parseFloat(document.getElementById('cover').value);
+    const dApprox = (isNaN(hfV2)||isNaN(coverV2)) ? null : hfV2 - coverV2 - 8; // мм, приближённая рабочая высота
+    const stirSpacingMax = dApprox && dApprox>0 ? 0.75*dApprox : 400;
+    check('stirSpacing', v=>v>=stirDiaV+20 && v<=stirSpacingMax,
+      `Шаг хомутов должен быть от Ø+20 мм (${fmt(stirDiaV+20,0)}) до ${fmt(stirSpacingMax,0)} мм (0,75d, СП РК EN 1992-1-1 §9.2.2)`);
+  }
+
+  // ---------- Слои для расчёта осадки ----------
+  document.querySelectorAll('#layersBody tr').forEach((r,i)=>{
+    const hEl = r.querySelector('.layer-h'), eEl = r.querySelector('.layer-E'), gEl = r.querySelector('.layer-gamma');
+    const hV = parseFloat(hEl.value), eV = parseFloat(eEl.value), gV = parseFloat(gEl.value);
+    if(!(hV>0)){ hEl.classList.add('field-invalid'); errors.push(`Слой ${i+1}: толщина h должна быть больше 0`); }
+    if(!(eV>0)){ eEl.classList.add('field-invalid'); errors.push(`Слой ${i+1}: модуль деформации E должен быть больше 0`); }
+    if(!(gV>0)){ gEl.classList.add('field-invalid'); errors.push(`Слой ${i+1}: удельный вес γ должен быть больше 0`); }
+  });
+
+  return errors;
+}
+
+// ==================== ОСНОВНОЙ РАСЧЁТ (живой пересчёт по каждому блоку) ====================
+function recalcAll(){
+  const Nk_t = parseFloat(document.getElementById('Nk').value); // тс/м, как введено пользователем
+  const Nk = Nk_t*G; // кН/м, для расчёта (внутренне в СИ)
+  const bw = parseFloat(document.getElementById('bw').value)/1000;
+  const B = parseFloat(document.getElementById('B').value)/1000; // мм → м
+  const hf = parseFloat(document.getElementById('hf').value)/1000;
+  const D1 = parseFloat(document.getElementById('D1').value)/1000; // мм → м
+  const D2 = parseFloat(document.getElementById('D2').value)/1000; // мм → м
+  const D = (D1+D2)/2; // средняя глубина заложения — для формул, где нужно одно значение (осадка)
+  const cover = parseFloat(document.getElementById('cover').value)/1000;
+  const eccW = (parseFloat(document.getElementById('eccW').value) || 0)/1000; // мм → м, смещение оси стены от оси подошвы
+  const fck = parseFloat(document.getElementById('fck').value);
+  const fyk = parseFloat(document.getElementById('fyk').value);
+
+  const gammaC = 1.5, gammaS = 1.15;
+  const fcd = fck/gammaC;
+  const fyd = fyk/gammaS;
+  const fctm = 0.3*Math.pow(fck,2/3); // СП РК EN 1992-1-1 табл. 3.1, для fck ≤ 50
+
+  // ---------- Два сочетания DA1 (Проектный подход 1) ----------
+  const N1 = 1.35*Nk; // используется для армирования/среза
+  const N2 = 1.0*Nk;  // используется для несущей способности грунта
+
+  // ---------- Геометрия при возможном смещении стены (e) ----------
+  const kernLimit = B/6;
+  const eccWarn = Math.abs(eccW) > kernLimit + 1e-9; // равнодействующая вне ядра сечения
+  const Bp = Math.max(0.05, B - 2*Math.abs(eccW)); // эффективная ширина B' = B-2e (НТП РК 07-01.4-2012)
+  const xWallL = eccW - bw/2, xWallR = eccW + bw/2; // грани стены, координата от оси подошвы, м
+  const c1 = B/2 + eccW - bw/2; // вылет консоли, сторона 1 (левая)
+  const c2 = B/2 - eccW - bw/2; // вылет консоли, сторона 2 (правая)
+
+  // ---------- Пригрузка сбоку Q1/Q2 на консолях подошвы — общая для эпюры давления и расчёта грунта ----------
+  // Q = вес грунта над консолью (γ·D по своей стороне) + полезная (временная) нагрузка, заданная пользователем
+  const soilMode = selectedState.soilMode;
+  const Gf = 25*B*hf; // собственный вес фундамента, кН/м (принято γ=25 кН/м³ для ж/б)
+  const gammaForQ = soilMode==='phi'
+    ? parseFloat(document.getElementById('gamma').value)*G
+    : parseFloat(document.getElementById('gammaR0').value)*G;
+  const q1Live = (parseFloat(document.getElementById('q1_live').value)||0)*G; // тс/м² → кПа
+  const q2Live = (parseFloat(document.getElementById('q2_live').value)||0)*G;
+  const Q1 = gammaForQ*D1 + q1Live; // кПа — пригрузка от грунта (по D1) + полезная нагрузка
+  const Q2 = gammaForQ*D2 + q2Live;
+  document.getElementById('q1TotalDisplay').textContent = fmt(Q1/G,2);
+  document.getElementById('q2TotalDisplay').textContent = fmt(Q2/G,2);
+  const Qmin = Math.min(Q1, Q2); // менее выгодная сторона — для несущей способности грунта
+  const qSideDesc = `Q₁=${fmt(Q1/G)} / Q₂=${fmt(Q2/G)} тс/м²`;
+
+  // ---------- Эпюра давления под подошвой (Сочетание 1, N1) — с учётом Q1/Q2 на консолях ----------
+  // Валовая эпюра уравновешивает нагрузку стены + собств. вес фундамента + пригрузку на консолях;
+  // расчётное (чистое) давление для изгиба/среза консоли = валовое минус собств. вес консоли и минус
+  // пригрузка непосредственно над ней (эти нагрузки передаются в грунт локально, момента в консоли не создают)
+  const x1c = (-B/2 + xWallL)/2; // центр тяжести площади консоли 1 относительно оси подошвы, м
+  const x2c = (xWallR + B/2)/2;  // центр тяжести площади консоли 2
+  const Q1_total = Q1*c1, Q2_total = Q2*c2; // кН/м — пригрузка на консолях (Сочетание 1)
+  const V1_total = N1 + Gf + Q1_total + Q2_total;
+  const M1_total = N1*eccW + Q1_total*x1c + Q2_total*x2c; // момент относительно оси подошвы
+  const sigma_gross = V1_total/B;
+  const selfWeightP = 25*hf; // кПа — собственный вес фундамента на 1 м² плана
+  const pGross = x => sigma_gross + 12*M1_total*x/(B*B*B); // валовая эпюра давления грунта под подошвой
+  const pAt = x => x <= eccW ? pGross(x) - selfWeightP - Q1 : pGross(x) - selfWeightP - Q2; // чистое давление
+  const p_edge1 = pAt(-B/2), p_edge2 = pAt(B/2); // давление у краёв подошвы (чистое, для армирования)
+  const p_wallL = pAt(xWallL), p_wallR = pAt(xWallR); // давление у граней стены
+  const p_edge1_gross = pGross(-B/2), p_edge2_gross = pGross(B/2); // валовое (реальное контактное) давление у краёв — для эпюры на схеме
+
+  document.getElementById('loadResult').innerHTML = eccWarn
+    ? `<div class="card fail"><div class="verdict fail">⚠ |e| = ${fmt(Math.abs(eccW))} м &gt; B/6 = ${fmt(kernLimit)} м — равнодействующая выходит за пределы ядра сечения, линейная эпюра давления некорректна (возможен отрыв части подошвы). Уменьшите e или увеличьте B.</div></div>`
+    : '';
+
+  // Расчётные сочетания (DA1) и материалы — не показываются отдельными карточками на экране,
+  // полная выкладка приводится только в расчётной записке (см. lastReportHTML ниже)
+  const combosReportHtml = `<table class="summary-table">
+      <tr><th>Величина</th><th>Значение</th></tr>
+      <tr><td>N<sub>k</sub> (нормативная нагрузка)</td><td>${fmt(Nk_t)} тс/м = ${fmt(Nk)} кН/м</td></tr>
+      <tr><td>N₁ = 1,35·N<sub>k</sub> — для конструкции (армирование, срез)</td><td>${fmt(N1/G)} тс/м = ${fmt(N1)} кН/м</td></tr>
+      <tr><td>N₂ = 1,0·N<sub>k</sub>, грунт ослаблен γ<sub>φ'</sub>=γ<sub>c'</sub>=1,25 — для несущей способности грунта</td><td>${fmt(N2/G)} тс/м = ${fmt(N2)} кН/м</td></tr>
+    </table>
+    <p>Применены два сочетания коэффициентов надёжности по Проектному подходу 1 (DA1, НТП РК 07-01.4-2012, Прил. А/Б): сочетание 1 (γ<sub>G</sub>=1,35) — для расчёта конструкции фундамента; сочетание 2 (γ<sub>G</sub>=1,0, грунт ослаблен коэффициентами γ<sub>φ'</sub>=γ<sub>c'</sub>=1,25) — для проверки несущей способности основания.</p>
+    ${eccWarn? `<p><b style="color:#c0392b;">⚠ |e| = ${fmt(Math.abs(eccW))} м &gt; B/6 = ${fmt(kernLimit)} м — равнодействующая выходит за пределы ядра сечения, линейная эпюра давления некорректна (возможен отрыв части подошвы). Уменьшите e или увеличьте B.</b></p>` : ''}`;
+
+  const materialsReportHtml = `<table class="summary-table">
+      <tr><th>Величина</th><th>Значение</th></tr>
+      <tr><td>f<sub>ck</sub> — класс бетона</td><td>${fmt(fck,0)} МПа</td></tr>
+      <tr><td>f<sub>cd</sub> = f<sub>ck</sub> / γ<sub>c</sub></td><td>${fmt(fcd,2)} МПа</td></tr>
+      <tr><td>f<sub>ctm</sub> = 0,3·f<sub>ck</sub><sup>2/3</sup></td><td>${fmt(fctm,2)} МПа</td></tr>
+      <tr><td>f<sub>yk</sub> — класс арматуры</td><td>${fmt(fyk,0)} МПа</td></tr>
+      <tr><td>f<sub>yd</sub> = f<sub>yk</sub> / γ<sub>s</sub></td><td>${fmt(fyd,1)} МПа</td></tr>
+      <tr><td>γ<sub>c</sub> / γ<sub>s</sub> — частные коэффициенты материалов</td><td>${fmt(gammaC,2)} / ${fmt(gammaS,2)}</td></tr>
+    </table>`;
+
+  // ---------- Несущая способность грунта (Сочетание 2, γR = 1,0) ----------
+  let Rd, sigma_design, bearingOK, bearingReportHtml, soilDesc;
+
+  if(soilMode==='phi'){
+    const phi = parseFloat(document.getElementById('phi').value);
+    const c = parseFloat(document.getElementById('c').value)*G; // тс/м² → кПа
+    const gamma = parseFloat(document.getElementById('gamma').value)*G; // т/м³ → кН/м³
+    const gammaBelow = (parseFloat(document.getElementById('gammaBelow').value)||parseFloat(document.getElementById('gamma').value))*G;
+    const q = Qmin; // менее выгодная сторона — определяет несущую способность
+
+    // Сочетание 2: γφ'=γc'=1,25 (группа M2, Табл. А.4 НТП РК)
+    const gammaPhi=1.25, gammaCc=1.25;
+    const phiD = Math.atan(Math.tan(rad(phi))/gammaPhi); // расчётный tanφ'
+    const cD = c/gammaCc;
+
+    // Коэффициенты несущей способности (НТП РК 07-01.4-2012, ф. 6.9)
+    const Nq = Math.exp(Math.PI*Math.tan(phiD)) * Math.pow(Math.tan(Math.PI/4+phiD/2),2);
+    const Nc = phi>0.01 ? (Nq-1)/Math.tan(phiD) : 5.14;
+    const Ngamma = 2*(Nq-1)*Math.tan(phiD);
+    // Форм-факторы для ленточного фундамента (L→∞): sq=sc=sγ=1, наклона нагрузки нет (H=0)
+
+    const Vtotal = N2 + Gf + Q1*c1 + Q2*c2; // полная вертикальная нагрузка на уровне подошвы (вес фундамента + реальная пригрузка на консолях)
+
+    const R_ult = cD*Nc + q*Nq + 0.5*gammaBelow*Bp*Ngamma; // B' вместо B — эффективная ширина
+    const gammaR = 1.0; // γR = 1,0 для группы R1 (DA1, НТП РК Табл. А.5)
+    Rd = R_ult / gammaR;
+    sigma_design = Vtotal/Bp;
+    bearingOK = sigma_design <= Rd;
+    soilDesc = `φ'=${fmt(phi,1)}° c'=${fmt(c/G)} тс/м² γ=${fmt(gamma/G)} т/м³`;
+
+    bearingReportHtml = `
+      <p>Основание проверено по несущей способности методом Бринч-Хансена (НТП РК 07-01.4-2012, ф. 6.9) при расчётном сочетании 2 (грунт ослаблен γ<sub>φ'</sub>=γ<sub>c'</sub>=1,25):</p>
+      $$R/A = c'_d\\cdot N_c + q\\cdot N_q + 0{,}5\\cdot\\gamma'\\cdot B'\\cdot N_\\gamma$$
+      <p class="ref-note">НТП РК 07-01.4-2012, ф. 6.9 (эффективная ширина B'=B-2e)</p>
+      <table class="summary-table">
+        <tr><th>Величина</th><th>Значение</th></tr>
+        <tr><td>φ'<sub>d</sub> = arctg(tgφ' / γ<sub>φ'</sub>)</td><td>${fmt(phiD*180/Math.PI,1)}°</td></tr>
+        <tr><td>c'<sub>d</sub> = c' / γ<sub>c'</sub></td><td>${fmt(cD/G)} тс/м²</td></tr>
+        <tr><td>N<sub>q</sub></td><td>${fmt(Nq)}</td></tr>
+        <tr><td>N<sub>c</sub></td><td>${fmt(Nc)}</td></tr>
+        <tr><td>N<sub>γ</sub></td><td>${fmt(Ngamma)}</td></tr>
+        <tr><td>B' = B - 2|e|</td><td>${fmt(Bp)} м</td></tr>
+        <tr><td>q₁ / q₂ (принято меньшее из сторон)</td><td>${fmt(Q1/G)} / ${fmt(Q2/G)} тс/м² → ${fmt(q/G)} тс/м²</td></tr>
+        <tr><td>G<sub>f</sub> = 25·B·h<sub>f</sub> (вес фундамента)</td><td>${fmt(Gf)} кН/м</td></tr>
+        <tr><td>Q₁·c₁ + Q₂·c₂ (пригрузка на консолях)</td><td>${fmt(Q1*c1)} + ${fmt(Q2*c2)} = ${fmt(Q1*c1+Q2*c2)} кН/м</td></tr>
+        <tr><td>V<sub>total</sub> = N₂ + G<sub>f</sub> + Q₁c₁ + Q₂c₂</td><td>${fmt(Vtotal)} кН/м</td></tr>
+        <tr><td>R<sub>ult</sub></td><td>${fmt(R_ult/G)} тс/м²</td></tr>
+        <tr><td>R<sub>d</sub> = R<sub>ult</sub> / γ<sub>R</sub> (γ<sub>R</sub>=1,0)</td><td>${fmt(Rd/G)} тс/м²</td></tr>
+        <tr><td>Расчётное давление σ = V<sub>total</sub> / B'</td><td class="${bearingOK?'v-ok':'v-fail'}">${fmt(sigma_design/G)} тс/м²</td></tr>
+      </table>
+      <p><b class="${bearingOK?'v-ok':'v-fail'}">${bearingOK? '✓ Условие σ ≤ Rd выполняется.':'✗ Условие σ ≤ Rd НЕ выполняется — требуется увеличить ширину подошвы B.'}</b></p>`;
+  } else {
+    const R0 = parseFloat(document.getElementById('R0').value)*G; // тс/м² → кПа
+    const gammaR0 = parseFloat(document.getElementById('gammaR0').value)*G; // т/м³ → кН/м³
+    const Vtotal = N2 + Gf + Q1*c1 + Q2*c2;
+    // Упрощённая корректировка табличного R0 на глубину и ширину (аналог ф. 5.7 СП 22.13330 / СН РК);
+    // глубинный член γII·(D-d0) заменён на (q-γII·d0) — так же, как в режиме φ'/c'/γ, позволяет
+    // задать пригрузку сбоку вручную при подвале (уменьшить) или насыпи (увеличить) с одной стороны
+    const k1=0.125, k2=0.25, b0=1, d0=2;
+    const R = R0*(1 + k1*(Bp-b0)/b0) + k2*(Qmin - gammaR0*d0);
+    Rd = R;
+    sigma_design = Vtotal/Bp;
+    bearingOK = sigma_design <= Rd;
+    soilDesc = `R0=${fmt(R0/G,1)} тс/м² γ<sub>II</sub>=${fmt(gammaR0/G)} т/м³`;
+
+    bearingReportHtml = `
+      <p>Расчётное сопротивление грунта основания принято по табличному значению R0 и скорректировано на глубину заложения (с учётом пригрузки сбоку по менее выгодной стороне) и ширину подошвы (аналог ф. 5.7 СП 22.13330 / НТП РК 07-01.4-2012):</p>
+      $$R = R_0\\cdot\\left(1 + k_1\\cdot\\frac{B'-b_0}{b_0}\\right) + k_2\\cdot(q-\\gamma_{II}\\cdot d_0)$$
+      <table class="summary-table">
+        <tr><th>Величина</th><th>Значение</th></tr>
+        <tr><td>R0 (табличное)</td><td>${fmt(R0/G,1)} тс/м²</td></tr>
+        <tr><td>B' = B - 2|e|</td><td>${fmt(Bp)} м</td></tr>
+        <tr><td>q₁ / q₂ (принято меньшее из сторон)</td><td>${fmt(Q1/G)} / ${fmt(Q2/G)} тс/м² → ${fmt(Qmin/G)} тс/м²</td></tr>
+        <tr><td>G<sub>f</sub> = 25·B·h<sub>f</sub> (вес фундамента)</td><td>${fmt(Gf)} кН/м</td></tr>
+        <tr><td>Q₁·c₁ + Q₂·c₂ (пригрузка на консолях)</td><td>${fmt(Q1*c1)} + ${fmt(Q2*c2)} = ${fmt(Q1*c1+Q2*c2)} кН/м</td></tr>
+        <tr><td>V<sub>total</sub> = N₂ + G<sub>f</sub> + Q₁c₁ + Q₂c₂</td><td>${fmt(Vtotal)} кН/м</td></tr>
+        <tr><td>R (расчётное сопротивление)</td><td>${fmt(Rd/G)} тс/м²</td></tr>
+        <tr><td>Расчётное давление σ = V<sub>total</sub> / B'</td><td class="${bearingOK?'v-ok':'v-fail'}">${fmt(sigma_design/G)} тс/м²</td></tr>
+      </table>
+      <p><b class="${bearingOK?'v-ok':'v-fail'}">${bearingOK? '✓ Условие σ ≤ R выполняется.':'✗ Условие σ ≤ R НЕ выполняется — требуется увеличить ширину подошвы B.'}</b></p>`;
+  }
+  const bearingLabel = soilMode==='phi' ? 'R<sub>d</sub>' : 'R';
+  const bearingRowHtml = gaugeRowHtml(`Несущая способность основания (σ/${bearingLabel})`, sigma_design/Rd*100);
+
+  drawScheme(B, bw, eccW, p_edge1_gross, p_edge2_gross, Q1, Q2);
+
+  // ---------- Осадка (по характеристической Nk) ----------
+  // Давление, вызывающее осадку — не валовое N/B, а «нетто»: валовая нагрузка на подошву
+  // (стена + собств. вес фундамента + пригрузка на консолях, все — характеристические)
+  // минус природное (бытовое) давление грунта на глубине D, существовавшее до отрывки котлована —
+  // это оно уже уплотнило грунт ниже подошвы, доп. осадку вызывает только избыток сверх него
+  // (НТП РК 07-01.4-2012)
+  const Vk_total = Nk + Gf + Q1*c1 + Q2*c2;
+  const sigmaZg0 = gammaForQ*D; // = γ·D (D — средняя из D1/D2), природное давление на глубине подошвы
+  const p0_settle = Vk_total/B - sigmaZg0;
+  let settleHtml, settleReportHtml, sSettleFinal, ngstIncomplete = false;
+  {
+    const rows = document.querySelectorAll('#layersBody tr');
+    const p0 = p0_settle; // нетто-давление на уровне подошвы (см. выше)
+    const gammaAboveFooting = (parseFloat(document.getElementById('gamma').value)||1.8)*G; // кН/м³, для оценки бытового давления
+    let z=0, s_total=0, detailRowsReport='';
+    let sigmaZg = gammaAboveFooting*D; // бытовое (природное) давление на уровне подошвы, кПа
+    let ngstReached = false;
+    let lastPLayer = 0, lastSigmaZgMid = 0, lastZ = 0; // для предупреждения, если слоёв не хватило до НГСТ
+    const maxSub = 0.4*B; // НТП РК 07-01.4-2012 — макс. толщина элементарного слоя для точности суммирования
+    rows.forEach(r=>{
+      const h = parseFloat(r.querySelector('.layer-h').value);
+      const E = parseFloat(r.querySelector('.layer-E').value);
+      const gammaLayer = (parseFloat(r.querySelector('.layer-gamma').value)||1.8)*G;
+      if(ngstReached){
+        detailRowsReport += `<tr style="color:#888;"><td>Слой h=${fmt(h,1)} м — ниже НГСТ, не учтён</td><td>—</td></tr>`;
+        z += h; sigmaZg += gammaLayer*h;
+        return;
+      }
+      // Введённый слой автоматически дробится на элементарные подслои ≤0,4·B — точность суммирования
+      // не зависит от того, как крупно пользователь задал реальные геологические слои
+      const zLayerStart = z;
+      const n = Math.max(1, Math.ceil(h/maxSub));
+      const subH = h/n;
+      let sLayerSum = 0, countedH = 0;
+      for(let i=0;i<n;i++){
+        const subZmid = z + subH/2;
+        const subSigmaZgMid = sigmaZg + gammaLayer*subH/2;
+        const alpha = 1/(1+ (subZmid/B)); // коэфф. затухания давления по глубине (метод угла жёсткости 2:1 для полосы)
+        const p_layer = p0*alpha; // доп. давление от нагрузки (σzp) в середине подслоя
+        lastPLayer = p_layer; lastSigmaZgMid = subSigmaZgMid;
+        if(p_layer <= 0.2*subSigmaZgMid){
+          ngstReached = true;
+          sigmaZg += gammaLayer*subH; z += subH; lastZ = z;
+          break;
+        }
+        sLayerSum += 0.8*p_layer*subH/E; // мм (β=0.8 — НТП РК 07-01.4-2012, компрессионная модель)
+        countedH += subH;
+        sigmaZg += gammaLayer*subH; z += subH; lastZ = z;
+      }
+      s_total += sLayerSum;
+      const subNote = n>1 ? `, ÷${n} подслоя по ${fmt(subH,2)} м` : '';
+      if(ngstReached && countedH < h-1e-9){
+        const rangeLabel = `Слой h=${fmt(h,1)} м${subNote} — учтено ${fmt(zLayerStart,2)}–${fmt(zLayerStart+countedH,2)} м, ниже НГСТ`;
+        detailRowsReport += `<tr><td>${rangeLabel}</td><td>Δs=${fmt(sLayerSum,2)} мм</td></tr>`;
+      } else {
+        const rowLabel = `Слой h=${fmt(h,1)} м, E=${fmt(E,0)} МПа${subNote} (${fmt(zLayerStart,2)}–${fmt(z,2)} м от подошвы)`;
+        detailRowsReport += `<tr><td>${rowLabel}</td><td>Δs=${fmt(sLayerSum,2)} мм</td></tr>`;
+      }
+    });
+    sSettleFinal = s_total;
+    ngstIncomplete = !ngstReached && rows.length>0; // заданных слоёв не хватило, чтобы дойти до НГСТ
+    const ngstWarnMsg = `⚠ НГСТ не достигнута в пределах заданных слоёв (на глубине ${fmt(lastZ,2)} м σzp=${fmt(lastPLayer/G,2)} тс/м² всё ещё &gt; 0,2·σzg=${fmt(0.2*lastSigmaZgMid/G,2)} тс/м²) — суммарная осадка ниже занижена. Добавьте ещё слоёв на бо́льшую глубину.`;
+    settleHtml = ngstIncomplete ? `<div class="verdict fail">${ngstWarnMsg}</div>` : '';
+
+    settleReportHtml = `
+      <p>Осадка вычислена послойным (компрессионным) методом с накоплением природного давления и остановкой на нижней границе сжимаемой толщи (НГСТ). p₀ — нетто-давление на уровне подошвы (за вычетом собственного веса фундамента, пригрузки Q₁/Q₂ и природного давления грунта):</p>
+      $$s = \\sum \\beta\\cdot p_i\\cdot h_i / E_i,\\quad p_i = p_0 / (1+z_i/B)$$
+      <p class="ref-note">НТП РК 07-01.4-2012 (компрессионный метод, β=0,8) · остановка на НГСТ</p>
+      <table class="summary-table">
+        <tr><th>Величина</th><th>Значение</th></tr>
+        <tr><td>V<sub>k,total</sub> = N<sub>k</sub> + G<sub>f</sub> + Q₁·c₁ + Q₂·c₂</td><td>${fmt(Vk_total)} кН/м</td></tr>
+        <tr><td>p₀ = V<sub>k,total</sub>/B − σ<sub>zg,0</sub></td><td>${fmt(p0/G)} тс/м²</td></tr>
+      </table>
+      <table class="summary-table">
+        <tr><th>Слой</th><th>Приращение осадки</th></tr>
+        ${detailRowsReport}
+      </table>
+      ${ngstReached? `<p>Достигнута нижняя граница сжимаемой толщи (НГСТ) — более глубокие слои (серым выше) в сумму осадки не включены: σzp ≤ 0,2·σzg (НТП РК 07-01.4-2012).</p>` : ''}
+      ${ngstIncomplete? `<p><b style="color:#c0392b;">${ngstWarnMsg}</b></p>` : ''}
+      <table class="summary-table">
+        <tr><td><b>Суммарная осадка s</b></td><td><b>${fmt(s_total)} мм</b></td></tr>
+      </table>`;
+  }
+  const suVal = parseFloat(document.getElementById('suLimit').value);
+  let suOk = true, settleRowHtml = '';
+  if(!isNaN(suVal) && suVal>0){
+    suOk = sSettleFinal <= suVal;
+    settleRowHtml = gaugeRowHtml(`Осадка (${fmt(sSettleFinal)} мм из допустимых ${fmt(suVal,0)} мм)`, sSettleFinal/suVal*100);
+    settleReportHtml += `<p><b class="${suOk?'v-ok':'v-fail'}">${suOk
+      ? `✓ Осадка в пределах предельно допустимой (s = ${fmt(sSettleFinal)} мм ≤ S<sub>u</sub> = ${fmt(suVal,0)} мм)`
+      : `✗ Осадка превышает предельно допустимую (s = ${fmt(sSettleFinal)} мм &gt; S<sub>u</sub> = ${fmt(suVal,0)} мм)`}</b></p>`;
+  }
+  document.getElementById('settleCard').classList.toggle('fail', ngstIncomplete);
+  document.getElementById('settleResult').innerHTML = settleHtml;
+  renderMath(document.getElementById('settleResult'));
+
+  // ---------- Армирование подошвы на изгиб (Сочетание 1, N1) ----------
+  const d = hf - cover - 0.008; // рабочая высота (минус защитный слой и половина диаметра ~ Ø16)
+  // Момент у каждой грани стены — трапециевидная эпюра давления (с учётом смещения e):
+  // M = (c²/6)·(p_near + 2·p_far), p_near — у грани стены, p_far — у края подошвы
+  const Med1 = (c1*c1/6)*(p_wallL + 2*p_edge1); // сторона 1
+  const Med2 = (c2*c2/6)*(p_wallR + 2*p_edge2); // сторона 2
+  const Med = Math.max(Med1, Med2); // расчётная арматура — по более нагруженной стороне
+  const flexSide = Med1>=Med2 ? 1 : 2;
+
+  const MedSI = Med; // кН·м на 1 м.п.
+  // Прямой расчёт по СП РК EN 1992-1-1 §6.1 (упрощённый прямоугольный блок, без сжатой арматуры)
+  const b_=1.0; // м, расчёт на 1 п.м.
+  const MEd_MNm = Med/1000; // МН·м на 1 м
+  const mu = MEd_MNm/(b_*d*d*fcd); // безразмерный момент (fcd в МПа=МН/м²)
+  let As, z_lever, warn6_1='';
+  if(mu>0.167){
+    warn6_1 = '⚠ μ &gt; 0,167 — требуется увеличить h<sub>f</sub> либо сжатая арматура (СП РК EN 1992-1-1 §5.6/§6.1)';
+    As = 0;
+  } else {
+    const zx = d*(0.5+Math.sqrt(0.25-mu/1.134));
+    z_lever = Math.min(zx, 0.95*d);
+    As = MEd_MNm/(z_lever*fyd) *1e6; // мм²/м (fyd в МПа=Н/мм², MEd в Н·м)
+  }
+  // As,min (СП РК EN 1992-1-1 §9.3.1.1 / §9.2.1.1)
+  const As_min1 = 0.26*(fctm/fyk)*b_*1000*d*1000; // мм²/м
+  const As_min2 = 0.0013*b_*1000*d*1000;
+  const As_min = Math.max(As_min1, As_min2);
+  const As_req = Math.max(As, As_min);
+
+  // Фактически заданное армирование подошвы
+  const barDia = parseFloat(document.getElementById('barDia').value);
+  const barSpacing = parseFloat(document.getElementById('barSpacing').value);
+  const As_prov = (Math.PI/4*barDia*barDia)*(1000/barSpacing); // мм²/м
+  const flexOK = warn6_1==='' && As_prov >= As_req;
+
+  // Распределительная арматура (перпендикулярно рабочей, вдоль стены) — не менее 20% от рабочей, СП РК EN 1992-1-1 §9.3.1.1(2)
+  const distrDiaEl = document.getElementById('distrDia');
+  const distrSpacingEl = document.getElementById('distrSpacing');
+  const distrDia = parseFloat(distrDiaEl.value);
+  const As_distrMin = 0.2*As_prov; // мм²/м
+  const distrSpacingLimit = Math.floor(Math.min(3.5*hf*1000, 400)/50)*50; // мм, §9.3.1.1(3)
+  let distrSpacing = parseFloat(distrSpacingEl.value);
+  if(!distrSpacingManual || isNaN(distrSpacing)){
+    distrSpacing = Math.max(50, Math.min(Math.floor(((Math.PI/4*distrDia*distrDia)*1000/As_distrMin)/50)*50, distrSpacingLimit));
+    distrSpacingEl.value = distrSpacing;
+    distrSpacingManual = false;
+  }
+  const As_distrProv = (Math.PI/4*distrDia*distrDia)*(1000/distrSpacing); // мм²/м
+  const distrOK = As_distrProv >= As_distrMin;
+
+  const flexRowHtml = warn6_1
+    ? badgeRowHtml('Армирование подошвы на изгиб', false, 'НЕ ДОСТАТОЧНО', warn6_1.replace(/^⚠\s*/, ''))
+    : gaugeRowHtml('Армирование подошвы на изгиб (A<sub>s,факт</sub>/A<sub>s,треб</sub>)', As_req/As_prov*100);
+  const distrRowHtml = gaugeRowHtml('Поперечная арматура нижней сетки (≥20% от рабочей)', As_distrMin/As_distrProv*100);
+  const flexReportHtml = `
+    <p>Момент у грани стены вычислен по чистой эпюре давления (валовое давление под подошвой за вычетом собственного веса консоли и пригрузки Q₁/Q₂ над ней, с учётом смещения e); расчётная арматура — по стороне ${flexSide} (более нагруженной):</p>
+    $$M_{Ed} = \\frac{c^2}{6}\\cdot(p_{near} + 2\\cdot p_{far})$$
+    <table class="summary-table">
+      <tr><th>Величина</th><th>Значение</th></tr>
+      <tr><td>Вылет консоли c₁ / c₂</td><td>${fmt(c1,3)} / ${fmt(c2,3)} м</td></tr>
+      <tr><td>Пригрузка на консоли Q₁ / Q₂</td><td>${fmt(Q1/G)} / ${fmt(Q2/G)} тс/м²</td></tr>
+      <tr><td>Давление у грани стены (сторона 1/2)</td><td>${fmt(p_wallL/G)} / ${fmt(p_wallR/G)} тс/м²</td></tr>
+      <tr><td>Давление у края подошвы (сторона 1/2)</td><td>${fmt(p_edge1/G)} / ${fmt(p_edge2/G)} тс/м²</td></tr>
+      <tr><td>M<sub>Ed,1</sub> / M<sub>Ed,2</sub></td><td>${fmt(Med1)} / ${fmt(Med2)} кН·м/м</td></tr>
+      <tr><td>M<sub>Ed</sub> (governing, сторона ${flexSide})</td><td>${fmt(MedSI)} кН·м/м</td></tr>
+      <tr><td>Рабочая высота d ≈ h<sub>f</sub> − a<sub>1</sub> − Ø/2</td><td>${fmt(d,3)} м</td></tr>
+      <tr><td>μ = M<sub>Ed</sub> / (b·d²·f<sub>cd</sub>)</td><td>${fmt(mu,3)}</td></tr>
+      ${warn6_1? '' : `<tr><td>Плечо внутренней пары z</td><td>${fmt(z_lever,3)} м</td></tr>
+      <tr><td>A<sub>s,расч</sub> = M<sub>Ed</sub> / (z·f<sub>yd</sub>)</td><td>${fmt(As)} мм²/м</td></tr>`}
+      <tr><td>A<sub>s,min</sub> (§9.3.1.1 / §9.2.1.1)</td><td>${fmt(As_min)} мм²/м</td></tr>
+      <tr><td>A<sub>s,треб</sub> = max(A<sub>s,расч</sub>; A<sub>s,min</sub>)</td><td>${fmt(As_req)} мм²/м</td></tr>
+      <tr><td>A<sub>s,факт</sub> = Ø${fmt(barDia,0)} шаг ${fmt(barSpacing,0)} мм</td><td class="${flexOK?'v-ok':'v-fail'}">${fmt(As_prov)} мм²/м</td></tr>
+    </table>
+    <p>${warn6_1? `<b class="v-fail">${warn6_1}</b>` : `<b class="${flexOK?'v-ok':'v-fail'}">${flexOK? '✓ Заданной арматуры достаточно (A' + '<sub>s,факт</sub>' + ' ≥ A' + '<sub>s,треб</sub>' + ').' : `✗ Заданной арматуры недостаточно — уменьшите шаг или увеличьте Ø (нужно ≥ ${fmt(As_req)} мм²/м).`}</b>`}</p>
+    <p>Распределительная (поперечная) арматура нижней сетки принята не менее 20% от рабочей (СП РК EN 1992-1-1 §9.3.1.1(2)):</p>
+    <table class="summary-table">
+      <tr><th>Величина</th><th>Значение</th></tr>
+      <tr><td>Поперечная A<sub>s,треб</sub> ≥ 20% от рабочей</td><td>${fmt(As_distrMin)} мм²/м</td></tr>
+      <tr><td>Поперечная A<sub>s,факт</sub> = Ø${fmt(distrDia,0)} шаг ${fmt(distrSpacing,0)} мм</td><td class="${distrOK?'v-ok':'v-fail'}">${fmt(As_distrProv)} мм²/м</td></tr>
+    </table>
+    <p><b class="${distrOK?'v-ok':'v-fail'}">${distrOK? '✓ Поперечной арматуры нижней сетки достаточно.' : '✗ Поперечной арматуры нижней сетки недостаточно — уменьшите шаг или увеличьте Ø.'}</b></p>`;
+
+  // ---------- Срез (у грани стены, на расстоянии d) ----------
+  // Сечение на расстоянии d от грани стены; поперечная сила = площадь трапеции давления до края подошвы
+  const cShear1 = Math.max(c1-d, 0);
+  const p_sec1 = pAt(xWallL - Math.min(d,c1));
+  const VEd1 = cShear1>0 ? cShear1*(p_sec1+p_edge1)/2 : 0;
+  const cShear2 = Math.max(c2-d, 0);
+  const p_sec2 = pAt(xWallR + Math.min(d,c2));
+  const VEd2 = cShear2>0 ? cShear2*(p_sec2+p_edge2)/2 : 0;
+  const VEd = Math.max(VEd1, VEd2); // расчёт — по более нагруженной стороне
+  const shearSide = VEd1>=VEd2 ? 1 : 2;
+  const c_shear = shearSide===1 ? cShear1 : cShear2;
+  const rho_l = Math.min(As_req/(b_*1000*d*1000), 0.02);
+  const k_shear = Math.min(1+Math.sqrt(200/(d*1000)), 2.0);
+  const CRdc = 0.18/1.5;
+  const vmin = 0.035*Math.pow(k_shear,1.5)*Math.sqrt(fck);
+  const VRdc_MPa = Math.max(CRdc*k_shear*Math.pow(100*rho_l*fck,1/3), vmin);
+  const VRdc = VRdc_MPa*b_*1000*d*1000/1000; // кН/м (МПа·мм·мм /1000 = кН на м.п.)
+  const shearOK = VEd <= VRdc;
+  const stirDia = parseFloat(document.getElementById('stirDia').value);
+
+  let shearReinfReportHtml = '';
+  let shearFinalOK = shearOK;
+  let shearGoverningVRd = VRdc;
+  let stirMinOk = true;
+  const hasStir = !shearOK && stirDia > 0;
+  if(hasStir){
+    // Хомуты у грани стены — ферменная модель, СП РК EN 1992-1-1 §6.2.3
+    const stirLegs = parseFloat(document.getElementById('stirLegs').value);
+    const stirSpacing = parseFloat(document.getElementById('stirSpacing').value);
+    const Asw = stirLegs*(Math.PI/4*stirDia*stirDia); // мм², площадь хомутов в одном ряду
+    const Asw_s = Asw/stirSpacing; // мм²/мм
+    const z = 0.9*d; // м, плечо внутренней пары (стандартное упрощение)
+    const cotTheta = 2.5; // принят пологий угол наклона наклонных трещин (min по §6.2.3(2))
+    const fywd = fyk/gammaS;
+
+    // Несущая способность по арматуре (форм. 6.8): (Asw/s)[мм²/мм]·z[мм]·fywd[Н/мм²]·cotθ = Н, /1000 = кН
+    const VRds_kNm = (Asw_s*(z*1000)*fywd*cotTheta)/1000;
+
+    // Предельное сопротивление по бетонной наклонной полосе (форм. 6.9), αcw=1, tanθ=1/cotθ
+    const nu1 = 0.6*(1-fck/250);
+    const tanTheta = 1/cotTheta;
+    const VRdmax_MPa = (1*(z)*nu1*fcd)/(cotTheta+tanTheta); // МН/м (z в м, fcd в МН/м²=МПа)
+    const VRdmax = VRdmax_MPa*1000; // кН/м
+
+    // Минимальное армирование (§9.2.2(5))
+    const rhow_min = 0.08*Math.sqrt(fck)/fyk;
+    const Asw_s_min = rhow_min*b_*1000; // мм²/мм (b_=1м=1000мм, sinα=1)
+    stirMinOk = Asw_s >= Asw_s_min;
+
+    const stirOk = VEd <= VRds_kNm && VEd <= VRdmax && stirMinOk;
+    shearFinalOK = stirOk;
+    shearGoverningVRd = Math.min(VRds_kNm, VRdmax);
+
+    shearReinfReportHtml = `
+    <p>Хомуты у грани стены рассчитаны по ферменной модели (СП РК EN 1992-1-1 §6.2.3):</p>
+    $$V_{Rd,s} = \\frac{A_{sw}}{s}\\cdot z\\cdot f_{ywd}\\cdot \\cot\\theta \\qquad V_{Rd,max} = \\frac{\\alpha_{cw}\\cdot z\\cdot \\nu_1\\cdot f_{cd}}{\\cot\\theta+\\tan\\theta}$$
+    <p class="ref-note">СП РК EN 1992-1-1, ф. 6.8 / 6.9 (принято cotθ = 2,5, наиболее пологий угол)</p>
+    <table class="summary-table">
+      <tr><th>Величина</th><th>Значение</th></tr>
+      <tr><td>Заданная раскладка хомутов</td><td>Ø${fmt(stirDia,0)} шаг ${fmt(stirSpacing,0)} мм, ${fmt(stirLegs,0)} ветви(ей)</td></tr>
+      <tr><td>A<sub>sw</sub>/s = n·(π/4·Ø²) / s</td><td>${fmt(Asw_s,3)} мм²/мм</td></tr>
+      <tr><td>z ≈ 0,9d</td><td>${fmt(z,3)} м</td></tr>
+      <tr><td>V<sub>Rd,s</sub></td><td>${fmt(VRds_kNm)} кН/м</td></tr>
+      <tr><td>V<sub>Rd,max</sub> (раздавливание наклонной полосы)</td><td>${fmt(VRdmax)} кН/м</td></tr>
+      <tr><td>A<sub>sw</sub>/s мин (§9.2.2(5))</td><td>${fmt(Asw_s_min,3)} мм²/мм</td></tr>
+    </table>
+    <p><b class="${stirOk?'v-ok':'v-fail'}">${stirOk? '✓ Заданных хомутов достаточно.' : '✗ Заданных хомутов недостаточно — уменьшите шаг, увеличьте Ø или число ветвей.'}</b> Хомуту нужна точка анкеровки с обеих сторон: снизу он цепляется за рабочую арматуру нижней сетки, сверху — в подошве нет верхней сетки по расчёту, поэтому предусмотрен конструктивный анкерующий стержень (минимального диаметра, не по расчёту).</p>`;
+  }
+
+  const shearPct = hasStir ? (VEd/shearGoverningVRd*100) : (VEd/VRdc*100);
+  const shearRowHtml = gaugeRowHtml(
+    hasStir ? 'Срез у грани стены — с хомутами (V<sub>Ed</sub>/V<sub>Rd</sub>)' : 'Срез у грани стены (V<sub>Ed</sub>/V<sub>Rd,c</sub>)',
+    shearPct,
+    (!hasStir && !shearOK) ? {note:'требуются хомуты — задайте Ø в блоке «5. Армирование фундамента»'} : {}
+  );
+  const stirMinRowHtml = hasStir ? badgeRowHtml('Минимальное армирование хомутов (§9.2.2(5))', stirMinOk, stirMinOk?'ДОСТАТОЧНО':'НЕ ДОСТАТОЧНО') : '';
+
+  const reinfShearOK = bearingOK && suOk && flexOK && distrOK && shearFinalOK;
+  document.getElementById('reinfShearResult').innerHTML = `<div class="card ${reinfShearOK?'':'fail'}">
+    <div class="card-header"><span class="title">Выводы</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="export-btn" onclick="exportDataFile()">💾 Сохранить</button>
+        <button class="export-btn secondary" onclick="document.getElementById('importFileInput').click()">📂 Загрузить</button>
+        <button class="export-btn secondary" onclick="openHelpModal()">📖 Справка</button>
+        <button class="export-btn secondary" onclick="printReport()">🖨️ Расчётная записка</button>
+      </div>
+    </div>
+    <div class="checks">
+      ${bearingRowHtml}
+      ${settleRowHtml}
+      ${flexRowHtml}
+      ${distrRowHtml}
+      ${shearRowHtml}
+      ${stirMinRowHtml}
+    </div>
+    <div style="height:12px;"></div>
+  </div>`;
+  renderMath(document.getElementById('reinfShearResult'));
+
+  const shearReportHtml = `
+    <p>Поперечная сила определена в расчётном сечении на расстоянии d от грани стены (governing — сторона ${shearSide}):</p>
+    $$v_{Rd,c} = \\max\\left(C_{Rd,c}\\cdot k\\cdot(100\\cdot\\rho_l\\cdot f_{ck})^{1/3};\\ v_{min}\\right)\\cdot b\\cdot d$$
+    <p class="ref-note">СП РК EN 1992-1-1, ф. 6.2.a / 6.2.b</p>
+    <table class="summary-table">
+      <tr><th>Величина</th><th>Значение</th></tr>
+      <tr><td>V<sub>Ed,1</sub> / V<sub>Ed,2</sub></td><td>${fmt(VEd1)} / ${fmt(VEd2)} кН/м</td></tr>
+      <tr><td>V<sub>Ed</sub> (governing, сторона ${shearSide})</td><td>${fmt(VEd)} кН/м</td></tr>
+      <tr><td>Расчётное сечение на расстоянии d от грани стены</td><td>${fmt(c_shear,3)} м</td></tr>
+      <tr><td>k = 1+√(200/d[мм])</td><td>${fmt(k_shear,3)}</td></tr>
+      <tr><td>ρ<sub>l</sub> = A<sub>s</sub>/(b·d)</td><td>${fmt(rho_l,4)}</td></tr>
+      <tr><td>V<sub>Rd,c</sub></td><td class="${shearOK?'v-ok':'v-fail'}">${fmt(VRdc)} кН/м</td></tr>
+    </table>
+    <p><b class="${shearOK?'v-ok':'v-fail'}">${shearOK? '✓ Хомуты по расчёту не требуются (V' + '<sub>Ed</sub>' + ' ≤ V' + '<sub>Rd,c</sub>' + ').' : `✗ V<sub>Ed</sub> &gt; V<sub>Rd,c</sub> — по расчёту требуются хомуты.`}</b></p>
+    ${shearReinfReportHtml}
+    <p>Продавливание (§6.4) для непрерывного ленточного фундамента под стеной не проверяется — актуально только в местах опирания колонн на ленту (локальные утолщения).</p>`;
+
+  // ---------- Расчётная записка (печатный отчёт) ----------
+  const allOK = bearingOK && flexOK && shearFinalOK && suOk;
+  const inputsReportHtml = `<table class="summary-table">
+      <tr><th>Параметр</th><th>Значение</th></tr>
+      <tr><td>N — нормативная нагрузка</td><td>${fmt(Nk_t)} тс/м</td></tr>
+      <tr><td>b<sub>w</sub> — толщина стены</td><td>${fmt(bw*1000,0)} мм</td></tr>
+      <tr><td>B — ширина подошвы</td><td>${fmt(B*1000,0)} мм</td></tr>
+      <tr><td>h<sub>f</sub> — высота фундамента</td><td>${fmt(hf*1000,0)} мм</td></tr>
+      <tr><td>D<sub>1</sub> / D<sub>2</sub> — глубина заложения (сторона 1/2)</td><td>${fmt(D1*1000,0)} / ${fmt(D2*1000,0)} мм</td></tr>
+      <tr><td>a<sub>1</sub> — защитный слой арматуры</td><td>${fmt(cover*1000,0)} мм</td></tr>
+      <tr><td>e — смещение оси стены от оси подошвы</td><td>${fmt(eccW*1000,0)} мм</td></tr>
+      <tr><td>Полезная (временная) нагрузка, сторона 1/2</td><td>${fmt(q1Live/G)} / ${fmt(q2Live/G)} тс/м²</td></tr>
+      <tr><td>Пригрузка сбоку Q₁/Q₂ (грунт+временная)</td><td>${qSideDesc}</td></tr>
+      <tr><td>Грунт основания</td><td>${soilDesc}</td></tr>
+      <tr><td>Рабочая арматура нижней сетки</td><td>Ø${fmt(barDia,0)} шаг ${fmt(barSpacing,0)} мм, A${fmt(fyk,0)}</td></tr>
+      <tr><td>Поперечная арматура нижней сетки</td><td>Ø${fmt(distrDia,0)} шаг ${fmt(distrSpacing,0)} мм, A${fmt(fyk,0)}</td></tr>
+      <tr><td>Вертикальная арматура (хомуты)</td><td>${stirDia > 0 ? `Ø${fmt(stirDia,0)} шаг ${fmt(parseFloat(document.getElementById('stirSpacing').value),0)} мм` : 'не заданы (по расчёту не требуются)'}</td></tr>
+    </table>`;
+  const bearingPctReport = sigma_design/Rd*100;
+  const settlePctReport = (!isNaN(suVal) && suVal>0) ? sSettleFinal/suVal*100 : null;
+  const flexPctReport = As_req/As_prov*100;
+  const distrPctReport = As_distrMin/As_distrProv*100;
+  const shearPctReport = hasStir ? VEd/shearGoverningVRd*100 : VEd/VRdc*100;
+  const summaryRows = [
+    ['Несущая способность основания', bearingPctReport, bearingOK],
+    ...(settlePctReport!==null ? [['Осадка', settlePctReport, suOk]] : []),
+    ['Армирование подошвы на изгиб', flexPctReport, flexOK],
+    ['Поперечная арматура нижней сетки', distrPctReport, distrOK],
+    ['Срез у грани стены', shearPctReport, shearFinalOK],
+  ];
+  const summaryReportHtml = `<table class="summary-table">
+      <tr><th>Проверка</th><th>Использование</th></tr>
+      ${summaryRows.map(([name,pct,ok])=>`<tr><td>${name}</td><td class="${ok?'v-ok':'v-fail'}">${pct.toFixed(0)}% ${ok?'🟢':'🔴'}</td></tr>`).join('')}
+    </table>`;
+  const qrShareUrl = buildShareUrl();
+  lastReportHTML = `
+    <div class="print-header">
+      <h1>РАСЧЁТ ЛЕНТОЧНОГО ФУНДАМЕНТА</h1>
+      <div class="print-subtitle">По НТП РК 07-01.4-2012 и СП РК EN 1992-1-1</div>
+      <div class="print-date">составлено ${new Date().toLocaleDateString('ru-RU')}</div>
+    </div>
+    <div class="print-section">
+      <h2>Нормативные документы</h2>
+      <ul>
+        <li>НТП РК 07-01.4-2012 — несущая способность основания, осадка</li>
+        <li>СП РК EN 1992-1-1 — армирование подошвы, срез у грани стены</li>
+      </ul>
+    </div>
+    <div class="print-section">
+      <h2>Исходные данные</h2>
+      ${inputsReportHtml}
+    </div>
+    <div class="print-section">
+      <h2>Расчётные сочетания</h2>
+      ${combosReportHtml}
+    </div>
+    <div class="print-section">
+      <h2>Материалы</h2>
+      ${materialsReportHtml}
+    </div>
+    <div class="print-section" style="text-align:center;">
+      <h2 style="text-align:left;">Расчётная схема и эпюра давления</h2>
+      <img src="Картинки/Ленточный-фундамент.png" style="max-width:300px;width:100%;height:auto;">
+      ${document.getElementById('schemeWrap').innerHTML}
+    </div>
+    <div class="print-section">
+      <h2 style="text-align:center;">Несущая способность основания</h2>
+      ${bearingReportHtml}
+    </div>
+    <div class="print-section">
+      <h2 style="text-align:center;">Осадка</h2>
+      ${settleReportHtml}
+    </div>
+    <div class="print-section">
+      <h2 style="text-align:center;">Армирование подошвы (на изгиб)</h2>
+      ${flexReportHtml}
+    </div>
+    <div class="print-section">
+      <h2 style="text-align:center;">Срез у грани стены</h2>
+      ${shearReportHtml}
+    </div>
+    <div class="print-section" style="page-break-before:always;">
+      <h2>Итоговая проверка</h2>
+      ${summaryReportHtml}
+    </div>
+    <div class="verdict-banner ${allOK?'ok':'fail'}">${allOK? '✓ Все проверки выполняются' : '✗ Не все проверки выполняются — см. разделы выше'}</div>
+    <div class="print-section qr-section" style="text-align:center;page-break-inside:avoid;">
+      <h2 style="text-align:center;">Проверка расчёта</h2>
+      <a href="${qrShareUrl}" target="_blank" rel="noopener" title="Открыть калькулятор с этими же исходными данными">
+        <img src="${generateQrDataUrl(qrShareUrl)}" width="120" height="120" alt="QR-код проверки расчёта" style="cursor:pointer;">
+      </a>
+      <p style="max-width:320px;margin:8px auto 0;">Отсканируйте QR (или кликните по нему), чтобы открыть этот калькулятор с теми же исходными данными и сверить результат живым пересчётом.</p>
+    </div>
+    <div class="print-footer">Документ сформирован автоматически в «Электронном справочнике конструктора» · esk-kz.vercel.app</div>
+  `;
+
+  // Валидация — в самом конце, когда все поля (в т.ч. автоподбираемые вроде шага поперечной арматуры) уже заполнены
+  const validationErrors = validateInputs();
+  document.getElementById('validationResult').innerHTML = validationErrors.length ? `
+    <div class="card fail">
+      <div class="verdict fail validation-banner">⚠ Обнаружены некорректные значения (${validationErrors.length}) — поля отмечены красным, результаты ниже могут быть недостоверны:
+        <ul>${validationErrors.map(e=>`<li>${e}</li>`).join('')}</ul>
+      </div>
+    </div>` : '';
+}
+
+// ==================== СХЕМА СЕЧЕНИЯ (эпюра давления под подошвой + пригрузка Q1/Q2 сбоку) ====================
+function drawScheme(B, bw, eccW, p1, p2, q1, q2){
+  q1 = q1||0; q2 = q2||0;
+  const padTop = 26; // место сверху под стрелки/подпись пригрузки Q1/Q2
+  const w=380, h=210+padTop;
+  const scale = 260/B;
+  const x0 = w/2 - (B*scale)/2;
+  const yFooting = 40+padTop;
+  const footH = 22;
+  const barHmax = 50;
+  const pMax = Math.max(p1, p2, 1);
+  const h1 = barHmax*Math.max(p1,0)/pMax, h2 = barHmax*Math.max(p2,0)/pMax;
+  const xWallC = w/2 + eccW*scale; // центр стены со смещением
+  const wallXL = xWallC - bw*scale/2, wallXR = xWallC + bw*scale/2; // грани стены
+  const groundY = yFooting-30; // условный уровень поверхности грунта (верх стены на схеме)
+
+  // Стрелки пригрузки Q1 (слева от стены) / Q2 (справа от стены) на консолях подошвы
+  function ledgeArrows(xa, xb, q, label, anchor){
+    const width = xb-xa;
+    if(width < 12) return ''; // консоль слишком узкая для отображения
+    const n = Math.max(1, Math.min(4, Math.round(width/26)));
+    let arrows = '';
+    if(q > 0.5){
+      for(let i=0;i<n;i++){
+        const xi = xa + (i+0.5)*width/n;
+        arrows += `<line x1="${xi}" y1="${groundY-16}" x2="${xi}" y2="${groundY-1}" stroke="#f4b942" stroke-width="1.3"/>
+        <path d="M${xi-3},${groundY-6} L${xi},${groundY-1} L${xi+3},${groundY-6}" fill="none" stroke="#f4b942" stroke-width="1.3"/>`;
+      }
+    }
+    const labelX = anchor==='start' ? xa+2 : anchor==='end' ? xb-2 : (xa+xb)/2;
+    return `${arrows}
+    <line x1="${xa}" y1="${groundY}" x2="${xb}" y2="${groundY}" stroke="#f4b942" stroke-width="1"/>
+    <text x="${labelX}" y="${groundY-19}" fill="#f4b942" font-size="10" text-anchor="${anchor}">${label}=${(q/G).toFixed(1)}</text>`;
+  }
+
+  const svg = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="font-family:var(--sans);">
+    <rect class="scheme-bg" width="${w}" height="${h}" fill="#0e1019" rx="8"/>
+    <!-- ось подошвы (для наглядности смещения) -->
+    <line x1="${w/2}" y1="${groundY}" x2="${w/2}" y2="${yFooting+footH+barHmax+30}" stroke="#6b7099" stroke-width="1" stroke-dasharray="2,3"/>
+    <!-- пригрузка сбоку Q1 / Q2 -->
+    ${ledgeArrows(x0, wallXL, q1, 'Q₁', 'start')}
+    ${ledgeArrows(wallXR, x0+B*scale, q2, 'Q₂', 'end')}
+    <!-- фундамент -->
+    <rect class="scheme-elem" x="${x0}" y="${yFooting}" width="${B*scale}" height="${footH}" fill="#22263a" stroke="#4f8ef7"/>
+    <!-- стена (со смещением eccW) -->
+    <rect class="scheme-elem" x="${wallXL}" y="${groundY}" width="${bw*scale}" height="30" fill="#22263a" stroke="#4f8ef7"/>
+    <!-- эпюра давления (трапеция при смещении) -->
+    <polygon points="${x0},${yFooting+footH} ${x0+B*scale},${yFooting+footH} ${x0+B*scale},${yFooting+footH+h2} ${x0},${yFooting+footH+h1}" fill="rgba(192,54,44,0.15)" stroke="#c0362c"/>
+    ${Array.from({length:7},(_,i)=>{const t=i/6; const xi=x0+t*(B*scale); const hi=h1+t*(h2-h1); return `<line x1="${xi}" y1="${yFooting+footH}" x2="${xi}" y2="${yFooting+footH+hi}" stroke="#c0362c" stroke-width="1"/>`;}).join('')}
+    <text x="${x0+8}" y="${yFooting+footH+h1+14}" fill="#c0362c" font-size="10" text-anchor="start">σ₁=${(p1/G).toFixed(1)}</text>
+    <text x="${x0+B*scale-8}" y="${yFooting+footH+h2+14}" fill="#c0362c" font-size="10" text-anchor="end">σ₂=${(p2/G).toFixed(1)}</text>
+    <!-- размер B -->
+    <line x1="${x0}" y1="${yFooting+footH+barHmax+34}" x2="${x0+B*scale}" y2="${yFooting+footH+barHmax+34}" stroke="#6b7099" stroke-width="1"/>
+    <text x="${x0+B*scale/2}" y="${yFooting+footH+barHmax+48}" fill="#6b7099" font-size="11" text-anchor="middle">B = ${B.toFixed(2)} м${Math.abs(eccW)>0.001? `, e = ${eccW.toFixed(2)} м`:''}</text>
+  </svg>`;
+  document.getElementById('schemeWrap').innerHTML = svg;
+}
+
+// === Сохранение введённых данных (localStorage) + экспорт/импорт .json ===
+const FORM_STORAGE_KEY = 'esk-lentochny-fundament-v1';
+const FORM_DATA_FORMAT = 'esk-lentochny-fundament-data';
+const FORM_FIELD_IDS = ['Nk','bw','B','hf','D1','D2','cover','eccW','phi','c','gamma','gammaBelow','q1_live','q2_live','R0','gammaR0','fck','fyk','barDia','barSpacing','distrDia','distrSpacing','stirDia','stirLegs','stirSpacing','suLimit'];
+
+function buildState(){
+  const state = { fields:{}, soilMode: selectedState.soilMode, layers: [], distrSpacingManual };
+  FORM_FIELD_IDS.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    state.fields[id] = el.value;
+  });
+  document.querySelectorAll('#layersBody tr').forEach(r=>{
+    state.layers.push({ h: r.querySelector('.layer-h').value, E: r.querySelector('.layer-E').value, gamma: r.querySelector('.layer-gamma').value });
+  });
+  return state;
+}
+function applyState(state){
+  FORM_FIELD_IDS.forEach(id=>{
+    if(!(id in (state.fields||{}))) return;
+    // suLimit: пустая сохранённая строка (из старых сессий, до появления дефолта 100)
+    // не должна затирать HTML-дефолт — иначе поле навсегда останется «не задано».
+    if(id==='suLimit' && state.fields[id]==='') return;
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.value = state.fields[id];
+  });
+  if(typeof state.distrSpacingManual === 'boolean') distrSpacingManual = state.distrSpacingManual;
+  const fykRestored = document.getElementById('fyk').value;
+  ['barClass','distrClass'].forEach(id=>{
+    const el = document.getElementById(id);
+    if([...el.options].some(o=>o.value===fykRestored)) el.value = fykRestored;
+  });
+  if(state.soilMode){
+    const btn = document.querySelector(`[data-soilmode="${state.soilMode}"]`);
+    if(btn) btn.click();
+  }
+  if(Array.isArray(state.layers) && state.layers.length){
+    document.getElementById('layersBody').innerHTML = '';
+    state.layers.forEach(l => addLayerRow(l.h, l.E, l.gamma||1.8));
+  }
+}
+function saveFormState(){
+  try{ localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(buildState())); }catch(e){}
+}
+function loadFormState(){
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if(!raw) return;
+    applyState(JSON.parse(raw));
+  }catch(e){}
+}
+function onFormChange(){ saveFormState(); recalcAll(); }
+['geomCard','settleCard'].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener('input', onFormChange);
+  el.addEventListener('change', onFormChange);
+});
+
+function exportDataFile(){
+  const state = buildState();
+  state.format = FORM_DATA_FORMAT;
+  state.version = 1;
+  state.savedAt = new Date().toISOString();
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `lentochny-fundament-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importDataFile(inputEl){
+  const file = inputEl.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      if(data.format !== FORM_DATA_FORMAT){
+        alert('Этот файл не подходит для калькулятора «Ленточный фундамент» (сохранён другим калькулятором).');
+        return;
+      }
+      applyState(data);
+      saveFormState();
+      recalcAll();
+    }catch(e){
+      alert('Не удалось прочитать файл — проверьте, что это .json, сохранённый кнопкой «Сохранить» на этой странице.');
+    }
+  };
+  reader.readAsText(file);
+  inputEl.value = '';
+}
+
+// === QR-проверка расчёта (кодирует исходные данные в ссылку — сканирование открывает калькулятор с теми же значениями) ===
+function buildShareUrl(){
+  const json = JSON.stringify(buildState());
+  const encoded = btoa(unescape(encodeURIComponent(json)));
+  const url = new URL(window.location.href);
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set('d', encoded);
+  return url.toString();
+}
+function applyShareStateFromUrl(){
+  try{
+    const encoded = new URLSearchParams(window.location.search).get('d');
+    if(!encoded) return false;
+    const json = decodeURIComponent(escape(atob(encoded)));
+    applyState(JSON.parse(json));
+    return true;
+  }catch(e){ return false; }
+}
+function generateQrDataUrl(text){
+  if(typeof QRCode === 'undefined') return '';
+  const tempDiv = document.createElement('div');
+  tempDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+  document.body.appendChild(tempDiv);
+  try{
+    new QRCode(tempDiv, { text, width:120, height:120, correctLevel: QRCode.CorrectLevel.M });
+    const canvas = tempDiv.querySelector('canvas');
+    return canvas ? canvas.toDataURL('image/png') : '';
+  }catch(e){
+    return '';
+  }finally{
+    document.body.removeChild(tempDiv);
+  }
+}
+
+// === Справка ===
+function openHelpModal(){
+  document.getElementById('helpModal').style.display = 'flex';
+}
+function closeHelpModal(){
+  document.getElementById('helpModal').style.display = 'none';
+}
+
+// === Расчётная записка (печать) ===
+let lastReportHTML = '';
+function printReport(){
+  const area = document.getElementById('printArea');
+  area.innerHTML = lastReportHTML;
+  renderMath(area);
+  window.print();
+}
+
+// --- Хомуты: поля числа ветвей/шага показываются только если задан Ø хомута > 0 ---
+const stirDiaEl = document.getElementById('stirDia');
+const shearRowsFieldsEl = document.getElementById('shearRowsFields');
+function applyShearModeVisibility(){
+  shearRowsFieldsEl.style.display = parseFloat(stirDiaEl.value) > 0 ? '' : 'none';
+}
+stirDiaEl.addEventListener('change', applyShearModeVisibility);
+applyShearModeVisibility();
+
+// Ссылка из QR-кода (?d=...) имеет приоритет над сохранённым в браузере состоянием
+if(applyShareStateFromUrl()) saveFormState();
+else loadFormState();
+applyShearModeVisibility();
+// первый расчёт при загрузке
+recalcAll();
+</script>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+</body>
+</html>
