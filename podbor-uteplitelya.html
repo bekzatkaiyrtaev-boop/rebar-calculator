@@ -220,6 +220,7 @@ details[open] > summary.card-header .details-arrow{transform:rotate(90deg);}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="stylesheet" href="site-header.css">
 <link rel="stylesheet" href="site-footer.css">
 </head>
@@ -1085,6 +1086,8 @@ function buildReport(d){
   const verdictHtml = d.ok
     ? `<div class="verdict-banner verdict-ok">✓ Условие R факт. ≥ R норм. выполнено — теплозащита соответствует требованиям</div>`
     : `<div class="verdict-banner verdict-fail">✗ Условие R факт. ≥ R норм. НЕ выполняется — требуется увеличить толщину утеплителя</div>`;
+  const qrShareUrl = buildShareUrl();
+  const qrSize = computeQrPixelSize(qrShareUrl);
 
   lastReportHTML = `
     <div class="print-header">
@@ -1122,6 +1125,13 @@ function buildReport(d){
       <h2>Вывод</h2>
       ${summaryTableHtml}
       ${verdictHtml}
+    </div>
+    <div class="print-section qr-section" style="text-align:center;page-break-inside:avoid;">
+      <h2 style="text-align:center;">Проверка расчёта</h2>
+      <a href="${qrShareUrl}" target="_blank" rel="noopener" title="Открыть калькулятор с этими же исходными данными">
+        <img src="${generateQrDataUrl(qrShareUrl, qrSize)}" width="${qrSize}" height="${qrSize}" alt="QR-код проверки расчёта" style="cursor:pointer;">
+      </a>
+      <p style="max-width:320px;margin:8px auto 0;">Отсканируйте QR (или кликните по нему), чтобы открыть этот калькулятор с теми же исходными данными и сверить результат живым пересчётом.</p>
     </div>
     <div class="print-footer">Документ сформирован автоматически в «Электронном справочнике конструктора» · автор проекта — Кайыртаев Б.Б.</div>
   `;
@@ -1647,38 +1657,106 @@ function openHelpModal(){
    ══════════════════════════════════════════════════════ */
 const FORM_STORAGE_KEY = 'esk-podbor-uteplitelya-v1';
 let appReady = false; /* пока false — saveFormState() не пишет поверх ещё не восстановленных данных */
+function buildStateData(){
+  return {
+    objName: document.getElementById('objName').value.trim(),
+    city: currentCity ? currentCity.name : '',
+    buildingCategory: document.getElementById('buildingCategory').value,
+    constructionType: document.getElementById('constructionType').value,
+    tInt: document.getElementById('tInt').value,
+    phiInt: document.getElementById('phiInt').value,
+    ventGap: document.getElementById('ventGap').checked,
+    layers: layers.map(l => ({
+      material: l.material,
+      lambda: l.lambda,
+      thickness: l.thickness,
+      isInsulation: l.isInsulation,
+      materialName: l.materialRef ? l.materialRef.name : null
+    }))
+  };
+}
 function saveFormState(){
   if (!appReady) return;
   try{
-    const data = {
-      objName: document.getElementById('objName').value.trim(),
-      city: currentCity ? currentCity.name : '',
-      buildingCategory: document.getElementById('buildingCategory').value,
-      constructionType: document.getElementById('constructionType').value,
-      tInt: document.getElementById('tInt').value,
-      phiInt: document.getElementById('phiInt').value,
-      ventGap: document.getElementById('ventGap').checked,
-      layers: layers.map(l => ({
-        material: l.material,
-        lambda: l.lambda,
-        thickness: l.thickness,
-        isInsulation: l.isInsulation,
-        materialName: l.materialRef ? l.materialRef.name : null
-      }))
-    };
-    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(buildStateData()));
   }catch(e){}
 }
 document.getElementById('objName').addEventListener('input', saveFormState);
 
+/* === QR-проверка расчёта (кодирует исходные данные в ссылку — сканирование открывает калькулятор с теми же значениями) === */
+function buildShareUrl(){
+  const state = buildStateData();
+  const compact = [
+    state.objName, state.city, state.buildingCategory, state.constructionType,
+    state.tInt, state.phiInt, state.ventGap ? 1 : 0,
+    state.layers.map(l => [l.material, l.lambda, l.thickness, l.isInsulation?1:0, l.materialName])
+  ];
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(compact))));
+  const url = new URL(window.location.href);
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set('d', encoded);
+  return url.toString();
+}
+function getShareStateFromUrl(){
+  try{
+    const encoded = new URLSearchParams(window.location.search).get('d');
+    if(!encoded) return null;
+    const compact = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    const [objName, city, buildingCategory, constructionType, tInt, phiInt, ventGap, layersArr] = compact;
+    return {
+      objName, city, buildingCategory, constructionType, tInt, phiInt,
+      ventGap: !!ventGap,
+      layers: (layersArr||[]).map(([material,lambda,thickness,isInsulation,materialName])=>({material,lambda,thickness,isInsulation:!!isInsulation,materialName}))
+    };
+  }catch(e){ return null; }
+}
+// Payload здесь переменной длины (названия города/материалов — свободный текст),
+// поэтому фиксированный размер картинки не гарантирует читаемость QR камерой
+// телефона — подбираем физический размер под фактическое число модулей (цель ≥5 px/модуль).
+function computeQrPixelSize(text){
+  const tempDiv = document.createElement('div');
+  tempDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+  document.body.appendChild(tempDiv);
+  let moduleCount = 45;
+  try{
+    const probe = new QRCode(tempDiv, { text, width:10, height:10, correctLevel: QRCode.CorrectLevel.L });
+    moduleCount = probe._oQRCode.getModuleCount();
+  }catch(e){}
+  document.body.removeChild(tempDiv);
+  return Math.min(600, Math.max(260, moduleCount * 5));
+}
+function generateQrDataUrl(text, size){
+  if(typeof QRCode === 'undefined') return '';
+  const tempDiv = document.createElement('div');
+  tempDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+  document.body.appendChild(tempDiv);
+  try{
+    new QRCode(tempDiv, { text, width:size, height:size, correctLevel: QRCode.CorrectLevel.L });
+    const canvas = tempDiv.querySelector('canvas');
+    return canvas ? canvas.toDataURL('image/png') : '';
+  }catch(e){
+    return '';
+  }finally{
+    document.body.removeChild(tempDiv);
+  }
+}
+
 /* ── Запуск ── */
 renderLayers();
 Promise.all([loadCities(), loadMaterials()]).then(()=>{
+  // Ссылка из QR-кода (?d=...) имеет приоритет над сохранённым в браузере состоянием
+  const sharedData = getShareStateFromUrl();
   try{
-    const raw = localStorage.getItem(FORM_STORAGE_KEY);
-    if (raw) applyImportedData(JSON.parse(raw));
+    if (sharedData){
+      applyImportedData(sharedData);
+    } else {
+      const raw = localStorage.getItem(FORM_STORAGE_KEY);
+      if (raw) applyImportedData(JSON.parse(raw));
+    }
   }catch(e){}
   appReady = true;
+  if (sharedData) saveFormState();
 });
 </script>
 
