@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Перемычка из пары уголков — расчёт по EN 1993-1-1 — Электронный справочник конструктора</title>
+<title>Перемычка из пары уголков — расчёт по СП РК EN 1993-1-1 — Электронный справочник конструктора</title>
 <style>
   :root{
     --bg:#0f1117;
@@ -203,6 +203,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="stylesheet" href="site-header.css">
 <link rel="stylesheet" href="site-footer.css">
 </head>
@@ -512,6 +513,53 @@ function loadFormState(){
 document.getElementById('inputsCard').addEventListener('input', saveFormState);
 document.getElementById('inputsCard').addEventListener('change', saveFormState);
 
+// === QR-проверка расчёта (кодирует исходные данные в ссылку — сканирование открывает калькулятор с теми же значениями) ===
+function buildShareUrl(){
+  const values = FORM_FIELD_IDS.map(id=>{
+    const el = document.getElementById(id);
+    if(!el) return '';
+    return (el.type === 'checkbox') ? (el.checked ? 1 : 0) : el.value;
+  });
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(values))));
+  const url = new URL(window.location.href);
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set('d', encoded);
+  return url.toString();
+}
+function applyShareStateFromUrl(){
+  try{
+    const encoded = new URLSearchParams(window.location.search).get('d');
+    if(!encoded) return false;
+    const values = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    FORM_FIELD_IDS.forEach((id,i)=>{
+      const el = document.getElementById(id);
+      if(!el || i>=values.length) return;
+      if(el.type === 'checkbox') el.checked = !!values[i];
+      else el.value = values[i];
+      el.dispatchEvent(new Event('change', {bubbles:true}));
+    });
+    return true;
+  }catch(e){ return false; }
+}
+// Печатный размер (мм) должен давать ≥5 px на модуль QR, иначе камера телефона код не распознаёт.
+function generateQrDataUrl(text){
+  if(typeof QRCode === 'undefined') return '';
+  const tempDiv = document.createElement('div');
+  tempDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+  document.body.appendChild(tempDiv);
+  try{
+    const size = 300;
+    new QRCode(tempDiv, { text, width:size, height:size, correctLevel: QRCode.CorrectLevel.L });
+    const canvas = tempDiv.querySelector('canvas');
+    return canvas ? canvas.toDataURL('image/png') : '';
+  }catch(e){
+    return '';
+  }finally{
+    document.body.removeChild(tempDiv);
+  }
+}
+
 // Ограничения по толщине стены: минимум — зависит от типа раствора (тонкий шов = газоблок →
 // 100мм, иначе кирпич/камень → 65мм), максимум задан пользователем (510мм) — при большой толщине
 // стены проверка на коллизию уголков (2*(b-t) <= t_стены) может не выполняться ни одним профилем
@@ -552,7 +600,7 @@ document.getElementById('unitType').addEventListener('change', updateWallThickne
 document.getElementById('loadMode').addEventListener('change', updateWallThicknessConstraints);
 updateWallThicknessConstraints();
 
-// Тип кладочного элемента → K, α, β, тип раствора (EN 1996-1-1, Табл. НП.2.4)
+// Тип кладочного элемента → K, α, β, тип раствора (СП РК EN 1996-1-1, Табл. НП.2.4)
 // Видимость блока "свои показатели" — зависит и от вида кирпича/камня (custom), и от того,
 // не выбран ли ввод fk напрямую (тогда весь блок марок камня/раствора скрыт родительским tbody)
 function updateUnitTypeCustomVisibility(){
@@ -603,7 +651,7 @@ function updateMortarVisibility(){
   bField.closest('tr').style.display = isThin ? 'none' : '';
 }
 
-// Прочность кладки fk: по маркам камня/раствора (EN 1996-1-1 §3.6.1.2, формула 3.2) либо напрямую
+// Прочность кладки fk: по маркам камня/раствора (СП РК EN 1996-1-1 §3.6.1.2, формула 3.2) либо напрямую
 function updateMaterialSummary(){
   const el = document.getElementById('materialSummary');
   if(document.getElementById('fkDirect').checked){
@@ -660,13 +708,13 @@ function updateFk(){
       const fk = K*Math.pow(fb,a);
       fkInput.value = fk.toFixed(2);
       document.getElementById('fkFormulaHint').textContent =
-        `fk = K·fb^${a} = ${K}·${fb}^${a} = ${fk.toFixed(2)} МПа (раствор тонкого слоя, fm не учитывается — EN 1996-1-1 §3.6.1.2, формула 3.3; Табл. НП.2.4)`;
+        `fk = K·fb^${a} = ${K}·${fb}^${a} = ${fk.toFixed(2)} МПа (раствор тонкого слоя, fm не учитывается — СП РК EN 1996-1-1 §3.6.1.2, формула 3.3; Табл. НП.2.4)`;
     }
   } else if(!isNaN(fb) && !isNaN(fmVal) && !isNaN(K) && !isNaN(a) && !isNaN(b) && fb>0 && fmVal>0){
     const fk = K*Math.pow(fb,a)*Math.pow(fmVal,b);
     fkInput.value = fk.toFixed(2);
     document.getElementById('fkFormulaHint').textContent =
-      `fk = K·fb^${a}·fm^${b} = ${K}·${fb}^${a}·${fmVal}^${b} = ${fk.toFixed(2)} МПа (раствор общего назначения — EN 1996-1-1 §3.6.1.2, формула 3.2; Табл. НП.2.4)`;
+      `fk = K·fb^${a}·fm^${b} = ${K}·${fb}^${a}·${fmVal}^${b} = ${fk.toFixed(2)} МПа (раствор общего назначения — СП РК EN 1996-1-1 §3.6.1.2, формула 3.2; Табл. НП.2.4)`;
   }
   updateMaterialSummary();
 }
@@ -852,7 +900,7 @@ function calc(){
       V_Ed = Wd/2;
 
       loadSteps =
-`<p>Поскольку перекрытие не передаёт нагрузку на перегородку, расчёт выполнен только от собственного веса кладки в пределах расчётного клина согласно EN 1996-1-1. Кладка выше треугольника с углом распространения 60° (эквивалентно линиям под 30° к вертикали от краёв проёма) передаёт вес не на перемычку, а в стороны, на простенки за счёт естественного арочного эффекта — поэтому в расчёт идёт только объём кладки в пределах этого клина, а не весь массив до перекрытия. Полная нагрузка от кладки воспринимается парой уголков совместно (не делится по числу уголков).</p>
+`<p>Поскольку перекрытие не передаёт нагрузку на перегородку, расчёт выполнен только от собственного веса кладки в пределах расчётного клина согласно СП РК EN 1996-1-1. Кладка выше треугольника с углом распространения 60° (эквивалентно линиям под 30° к вертикали от краёв проёма) передаёт вес не на перемычку, а в стороны, на простенки за счёт естественного арочного эффекта — поэтому в расчёт идёт только объём кладки в пределах этого клина, а не весь массив до перекрытия. Полная нагрузка от кладки воспринимается парой уголков совместно (не делится по числу уголков).</p>
 <p><b>Высота клина</b> (арочный распор, ограничена L<sub>пр</sub>/2):</p>
 $$h = \\min(H;\\ L_{пр}/2) = ${h_calc_mm.toFixed(0)}\\text{ мм} = ${h_calc.toFixed(3)}\\text{ м}$$
 <p><b>Площадь клина:</b></p>
@@ -898,7 +946,7 @@ $$V_{Ed} = \\frac{q_d\\cdot L_{расч}}{2} = ${V_Ed.toFixed(3)}\\text{ кН}$$
   const fd = fk/gammaM_m;
   while(true){
     const Ab = Lbear*twall;
-    const N_Rd = Ab*fd/1000; // EN 1996-1-1 §6.1.3(3), формула (6.9)-(6.10), β=1,0 консервативно
+    const N_Rd = Ab*fd/1000; // СП РК EN 1996-1-1 §6.1.3(3), формула (6.9)-(6.10), β=1,0 консервативно
     if(load.V_Ed <= N_Rd) break;
     if(Lbear >= LBEAR_MAX){
       bearingWarning = `Смятие кладки под опорой не проходит даже при глубине опирания ${LBEAR_MAX} мм — нужна кладка большей прочности (f_k) или другое конструктивное решение (распределительная подушка/пилястра).`;
@@ -920,7 +968,7 @@ $$V_{Ed} = \\frac{q_d\\cdot L_{расч}}{2} = ${V_Ed.toFixed(3)}\\text{ кН}$$
     const Av = 2*t*b; // мм2, консервативно (§6.2.6(3)) — сумма двух полок
     const V_Rd = Av*fy/(Math.sqrt(3)*gammaM0)/1000; // кН
     const util_shear = V_Ed/V_Rd;
-    // проверка смятия кладки под опорой (EN 1996-1-1 §6.1.3(3), β=1,0 консервативно) —
+    // проверка смятия кладки под опорой (СП РК EN 1996-1-1 §6.1.3(3), β=1,0 консервативно) —
     // площадь смятия та же, что у одиночного уголка (пара вместе перекрывает ту же толщину стены)
     const Ab = Lbear*twall; // мм2
     const fd = fk/gammaM_m;
@@ -946,7 +994,7 @@ $$V_{Ed} = \\frac{q_d\\cdot L_{расч}}{2} = ${V_Ed.toFixed(3)}\\text{ кН}$$
     const util_defl = delta/delta_limit;
     const passDefl = util_defl<=1;
 
-    // местная устойчивость — EN 1993-1-1 Табл. 5.2, «Уголковые профили», Класс 3 (свойства одного
+    // местная устойчивость — СП РК EN 1993-1-1 Табл. 5.2, «Уголковые профили», Класс 3 (свойства одного
     // уголка сечения, не зависят от числа уголков в паре)
     const epsilon = Math.sqrt(235/fy);
     // критерий 1: свес полки (та же логика, что «Свесы полок») c/t ≤ 14ε
@@ -1043,7 +1091,7 @@ $$2\\,(b_{полки} - t_{полки}) \\le t_{стены} = ${twall}\\text{ м
   document.getElementById('lintelSummary').textContent = `${steelShortLabel} · ${schemeAngleLabel}`;
 
   // Соединительные планки пары (без длины — она зависит от толщины стены, показана в шагах расчёта):
-  // шаг — по аналогии с гибкостью одной ветви между планками λ1=a/iv≤40 (EN 1993-1-1 §6.4.3(4) /
+  // шаг — по аналогии с гибкостью одной ветви между планками λ1=a/iv≤40 (СП РК EN 1993-1-1 §6.4.3(4) /
   // SP 16.13330 п.7.2.7, для сжатых составных стержней — здесь применено как консервативная оценка
   // против кручения); сечение — конструктивный минимум, не расчётное: раскрепляющее усилие (~2,5%
   // от условного усилия в поясе) во всём диапазоне калькулятора на 1-2 порядка меньше несущей
@@ -1087,12 +1135,12 @@ $$2\\,(b_{полки} - t_{полки}) \\le t_{стены} = ${twall}\\text{ м
     ? `fk задан напрямую = ${fk} МПа, γM = ${gammaM_m}`
     : `${document.getElementById('unitType').selectedOptions[0].text}, марка ${document.getElementById('brickGrade').selectedOptions[0].text}${document.getElementById('mortarTypeSelect').value==='thin' ? ', раствор тонкого слоя (клей, fm не учитывается)' : ', раствор '+document.getElementById('mortarGrade').selectedOptions[0].text}, fk = ${fk} МПа, γM = ${gammaM_m}`;
   const fkFormulaNote = document.getElementById('fkDirect').checked ? '' : (document.getElementById('mortarTypeSelect').value==='thin'
-    ? `Формула fk (EN 1996-1-1 §3.6.1.2, формула 3.3, раствор тонкого слоя): fk = K·fb^α = ${document.getElementById('Kfactor').value}·fb^${document.getElementById('alphaExp').value} = ${fk} МПа`
-    : `Формула fk (EN 1996-1-1 §3.6.1.2, формула 3.2, раствор общего назначения): fk = K·fb^α·fm^β = ${document.getElementById('Kfactor').value}·fb^${document.getElementById('alphaExp').value}·fm^${document.getElementById('betaExp').value} = ${fk} МПа`);
-  const battenNote = `Планки: шаг — по аналогии с λ1=a/iv≤40 для составных стержней на планках (EN 1993-1-1 §6.4.3(4) / SP 16.13330 п.7.2.7); сечение — конструктивный минимум: раскрепляющее усилие (~2,5% от условного усилия в поясе) на 1-2 порядка меньше несущей способности такой планки во всём диапазоне калькулятора, поэтому отдельно не подбиралось.`;
+    ? `Формула fk (СП РК EN 1996-1-1 §3.6.1.2, формула 3.3, раствор тонкого слоя): fk = K·fb^α = ${document.getElementById('Kfactor').value}·fb^${document.getElementById('alphaExp').value} = ${fk} МПа`
+    : `Формула fk (СП РК EN 1996-1-1 §3.6.1.2, формула 3.2, раствор общего назначения): fk = K·fb^α·fm^β = ${document.getElementById('Kfactor').value}·fb^${document.getElementById('alphaExp').value}·fm^${document.getElementById('betaExp').value} = ${fk} МПа`);
+  const battenNote = `Планки: шаг — по аналогии с λ1=a/iv≤40 для составных стержней на планках (СП РК EN 1993-1-1 §6.4.3(4) / SP 16.13330 п.7.2.7); сечение — конструктивный минимум: раскрепляющее усилие (~2,5% от условного усилия в поясе) на 1-2 порядка меньше несущей способности такой планки во всём диапазоне калькулятора, поэтому отдельно не подбиралось.`;
 
   const inputRows = [
-    ['Нормы', 'EN 1993-1-1 (СП РК EN 1993-1-1:2005/2011) — сталь; EN 1996-1-1 (СП РК EN 1996-1-1:2005/2011) — кладка'],
+    ['Нормы', 'СП РК EN 1993-1-1:2005/2011 — сталь; СП РК EN 1996-1-1:2005/2011 — кладка'],
     ['Сталь', steelLabel],
     ['Профиль', profileLabel],
     ['Количество уголков', '2 шт. (симметричная пара по обеим граням стены, полки навстречу друг другу, стянуты планками)'],
@@ -1126,24 +1174,24 @@ $$A_1 = ${r.A1.toFixed(2)}\\text{ см}^2 \\quad\\Rightarrow\\quad A = 2A_1 = ${
 $$W_{min,1} = ${r.Wmin1.toFixed(2)}\\text{ см}^3 \\quad\\Rightarrow\\quad W_{min} = 2W_{min,1} = ${r.Wmin.toFixed(2)}\\text{ см}^3$$
 <p><b>Момент инерции</b> (ось v-v, минимальный, одного уголка / пары):</p>
 $$I_{v,1} = ${r.Iv1.toFixed(2)}\\text{ см}^4 \\quad\\Rightarrow\\quad I_v = 2I_{v,1} = ${r.Iv.toFixed(2)}\\text{ см}^4$$
-<p><b>Несущая способность по изгибу</b> (EN 1993-1-1 §6.2.5, по суммарному W<sub>min</sub> пары):</p>
+<p><b>Несущая способность по изгибу</b> (СП РК EN 1993-1-1 §6.2.5, по суммарному W<sub>min</sub> пары):</p>
 $$M_{c,Rd} = \\frac{W_{min}\\cdot f_y}{\\gamma_{M0}} = \\frac{${r.Wmin.toFixed(2)}\\times ${fy}}{1000\\times 1{,}0} = ${r.M_Rd.toFixed(3)}\\text{ кН}{\\cdot}\\text{м}$$
 <p><b>Напряжение от изгиба:</b></p>
 $$\\sigma_{Ed} = \\frac{1000\\cdot M_{Ed}}{W_{min}} = \\frac{1000\\times ${M_Ed.toFixed(3)}}{${r.Wmin.toFixed(2)}} = ${r.sigma_Ed.toFixed(1)}\\text{ МПа}$$
 <p><b>Коэффициент использования</b> (изгиб):</p>
 $$\\eta = \\frac{M_{Ed}}{M_{c,Rd}} = \\frac{${M_Ed.toFixed(3)}}{${r.M_Rd.toFixed(3)}} = ${r.util_bend.toFixed(3)} \\ \\rightarrow\\ \\mathbf{${(r.util_bend*100).toFixed(1)}\\%}$$
-<p><b>Несущая способность по сдвигу</b> (EN 1993-1-1 §6.2.6, суммарно по двум полкам):</p>
+<p><b>Несущая способность по сдвигу</b> (СП РК EN 1993-1-1 §6.2.6, суммарно по двум полкам):</p>
 $$V_{c,Rd} = ${r.V_Rd.toFixed(2)}\\text{ кН} \\quad \\text{использование} = ${(r.util_shear*100).toFixed(1)}\\%$$
-<p><b>Проверка прогиба</b> (EN 1993-1-1 §7.2.1, предел L/${document.getElementById('deflLimit').value} принят проектом, по суммарному I<sub>v</sub> пары):</p>
+<p><b>Проверка прогиба</b> (СП РК EN 1993-1-1 §7.2.1, предел L/${document.getElementById('deflLimit').value} принят проектом, по суммарному I<sub>v</sub> пары):</p>
 $$\\delta_{Ed} = ${r.delta.toFixed(2)}\\text{ мм} \\le \\delta_{lim} = ${r.delta_limit.toFixed(2)}\\text{ мм} \\ \\rightarrow\\ \\text{использование } ${(r.util_defl*100).toFixed(1)}\\%$$
-<p><b>Проверка смятия кладки под опорой</b> (EN 1996-1-1 §6.1.3(3), площадь смятия не зависит от числа уголков — пара перекрывает ту же толщину стены, что и один уголок в одиночной схеме):</p>
+<p><b>Проверка смятия кладки под опорой</b> (СП РК EN 1996-1-1 §6.1.3(3), площадь смятия не зависит от числа уголков — пара перекрывает ту же толщину стены, что и один уголок в одиночной схеме):</p>
 $$N_{Ed} = V_{Ed} = ${V_Ed.toFixed(3)}\\text{ кН} \\le N_{Rd} = A_b\\cdot f_d = ${r.N_Rd.toFixed(2)}\\text{ кН} \\ \\rightarrow\\ \\text{использование } ${(r.util_masonry*100).toFixed(1)}\\%$$
 <p><b>Проверка на коллизию уголков</b> (2×(bполки − tполки) ≤ tстены): ${r.fitOK ? 'проходит' : 'НЕ проходит'}</p>`;
 
     const maxUtil = Math.max(r.util_bend, r.util_shear, r.util_defl, r.util_masonry);
     const reserve = maxUtil>0 ? (1/maxUtil).toFixed(1) : '—';
     conclusionHtml =
-`<p>Стальная перемычка из пары уголков <b>${profileLabel}</b> из стали <b>${steelLabel}</b> при пролёте в свету ${Lpr} мм и глубине опирания ${Lbear} мм ${r.passAll ? '<b>удовлетворяет</b>' : '<b>НЕ удовлетворяет</b>'} требованиям EN 1993-1-1 и EN 1996-1-1 по:</p>
+`<p>Стальная перемычка из пары уголков <b>${profileLabel}</b> из стали <b>${steelLabel}</b> при пролёте в свету ${Lpr} мм и глубине опирания ${Lbear} мм ${r.passAll ? '<b>удовлетворяет</b>' : '<b>НЕ удовлетворяет</b>'} требованиям СП РК EN 1993-1-1 и СП РК EN 1996-1-1 по:</p>
 <ul>
 <li>прочности (изгиб, сдвиг);</li>
 <li>жёсткости (прогиб);</li>
@@ -1163,26 +1211,27 @@ $$N_{Ed} = V_{Ed} = ${V_Ed.toFixed(3)}\\text{ кН} \\le N_{Rd} = A_b\\cdot f_d 
       <tr><td>Коллизия уголков</td><td class="${r.fitOK?'v-ok':'v-fail'}">${r.fitOK?'ПРОХОДИТ 🟢':'НЕ ПРОХОДИТ 🔴'}</td></tr>
     </table>`;
     var verdictHtml = r.passAll
-      ? `<div class="verdict-banner verdict-ok">✓ Конструкция удовлетворяет требованиям EN&nbsp;1993-1-1 и EN&nbsp;1996-1-1</div>`
-      : `<div class="verdict-banner verdict-fail">✗ Конструкция НЕ удовлетворяет требованиям EN&nbsp;1993-1-1 и EN&nbsp;1996-1-1</div>`;
+      ? `<div class="verdict-banner verdict-ok">✓ Конструкция удовлетворяет требованиям СП&nbsp;РК&nbsp;EN&nbsp;1993-1-1 и СП&nbsp;РК&nbsp;EN&nbsp;1996-1-1</div>`
+      : `<div class="verdict-banner verdict-fail">✗ Конструкция НЕ удовлетворяет требованиям СП&nbsp;РК&nbsp;EN&nbsp;1993-1-1 и СП&nbsp;РК&nbsp;EN&nbsp;1996-1-1</div>`;
   } else {
     var summaryTableHtml = '';
     var verdictHtml = `<div class="verdict-banner verdict-fail">✗ Сечение не подобрано — проверка не выполнена</div>`;
   }
 
   const angleKindLabel = isUnequalAngle ? 'НЕРАВНОПОЛОЧНЫХ' : 'РАВНОПОЛОЧНЫХ';
+  const qrShareUrl = buildShareUrl();
 
   lastReportHTML = `
     <div class="print-header">
       <h1>РАСЧЁТ СТАЛЬНОЙ ПЕРЕМЫЧКИ ИЗ ПАРЫ ${angleKindLabel} УГОЛКОВ</h1>
-      <div class="print-subtitle">По EN 1993-1-1 и EN 1996-1-1</div>
+      <div class="print-subtitle">По СП РК EN 1993-1-1 и СП РК EN 1996-1-1</div>
       <div class="print-date">составлено ${new Date().toLocaleDateString('ru-RU')}</div>
     </div>
     <div class="print-section">
       <h2>Нормативные документы</h2>
       <ul>
-        <li>EN 1993-1-1</li>
-        <li>EN 1996-1-1</li>
+        <li>СП РК EN 1993-1-1</li>
+        <li>СП РК EN 1996-1-1</li>
       </ul>
       ${gostLabel ? `<p>Профиль принят по ${gostLabel}.</p>` : ''}
     </div>
@@ -1207,6 +1256,13 @@ $$N_{Ed} = V_{Ed} = ${V_Ed.toFixed(3)}\\text{ кН} \\le N_{Rd} = A_b\\cdot f_d 
       <h2>Итоговая проверка</h2>
       ${summaryTableHtml}
       ${verdictHtml}
+    </div>
+    <div class="print-section qr-section" style="text-align:center;page-break-inside:avoid;">
+      <h2 style="text-align:center;">Проверка расчёта</h2>
+      <a href="${qrShareUrl}" target="_blank" rel="noopener" title="Открыть калькулятор с этими же исходными данными">
+        <img src="${generateQrDataUrl(qrShareUrl)}" width="300" height="300" alt="QR-код проверки расчёта" style="cursor:pointer;">
+      </a>
+      <p style="max-width:320px;margin:8px auto 0;">Отсканируйте QR (или кликните по нему), чтобы открыть этот калькулятор с теми же исходными данными и сверить результат живым пересчётом.</p>
     </div>
     <div class="print-footer">Документ сформирован автоматически в «Электронном справочнике конструктора» · автор проекта — Кайыртаев Б.Б.</div>
   `;
@@ -1245,17 +1301,19 @@ function renderResult(r, Lcalc_mm){
       <div class="result-title">2L ${r.dispLabel}${gostRef?' '+gostRef:''}, L=${Lcalc_mm.toFixed(0)}мм, m=${totalMass.toFixed(2)}кг</div>
       <div class="result-sub">${typeLabel} (2 шт.) · ${r.mass.toFixed(2)} кг/м суммарно</div>
       <div class="checks">
-        ${gaugeRow('Изгиб — EN 1993-1-1 §6.2.5', r.util_bend)}
-        ${gaugeRow('Сдвиг — EN 1993-1-1 §6.2.6', r.util_shear)}
-        ${gaugeRow(`Прогиб — EN 1993-1-1 §7.2.1 (предел L/${document.getElementById('deflLimit').value} принят проектом)`, r.util_defl)}
-        ${gaugeRow('Смятие кладки — EN 1996-1-1 §6.1.3(3)', r.util_masonry)}
+        ${gaugeRow('Изгиб — СП РК EN 1993-1-1 §6.2.5', r.util_bend)}
+        ${gaugeRow('Сдвиг — СП РК EN 1993-1-1 §6.2.6', r.util_shear)}
+        ${gaugeRow(`Прогиб — СП РК EN 1993-1-1 §7.2.1 (предел L/${document.getElementById('deflLimit').value} принят проектом)`, r.util_defl)}
+        ${gaugeRow('Смятие кладки — СП РК EN 1996-1-1 §6.1.3(3)', r.util_masonry)}
         <div class="check-row" style="display:flex;justify-content:space-between;align-items:center;gap:10px;">Проверка на коллизию уголков (не сталкиваются ли полки пары в толще стены)<span class="badge ${r.fitOK?'ok':'fail'}">${r.fitOK?'ПРОХОДИТ':'НЕ ПРОХОДИТ'}</span></div>
       </div>
     </div>
   </div>`;
 }
 
-loadFormState();
+// Ссылка из QR-кода (?d=...) имеет приоритет над сохранённым в браузере состоянием
+if(applyShareStateFromUrl()) saveFormState();
+else loadFormState();
 calc();
 </script>
 <div id="helpModal" onclick="if(event.target===this) this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:20px;">
@@ -1291,7 +1349,7 @@ calc();
       <b style="color:var(--accent2);">Материал кладки</b><br>
       • Марка камня: М50…М200; марка раствора: М10…М150<br>
       • Виды: кирпич керамический/силикатный (полнотелый и пустотелый), газоблок D600/D700, ракушечник — либо свои показатели K, α, β<br>
-      • Формула прочности кладки f<sub>k</sub> — по EN 1996-1-1 §3.6.1.2, коэффициенты K/α/β для группы 1 — из Национального приложения РК (точные), для группы 2 и ракушечника — по базовой таблице EN с обобщёнными показателями степени (ориентировочно)<br>
+      • Формула прочности кладки f<sub>k</sub> — по СП РК EN 1996-1-1 §3.6.1.2, коэффициенты K/α/β для группы 1 — из Национального приложения РК (точные), для группы 2 и ракушечника — по базовой таблице EN с обобщёнными показателями степени (ориентировочно)<br>
       • Плотность штукатурки учитывается только в весе кладки (доп. нагрузка) — на f<sub>k</sub> и смятие не влияет; 1800 кг/м³ — типовое значение для цементно-песчаной штукатурки, откорректируйте под фактический состав<br><br>
 
       <b style="color:var(--bad);">Что НЕ учитывается (ограничения модели)</b><br>
@@ -1302,7 +1360,7 @@ calc();
       • Совместная работа пары уголков принята идеальной (простое суммирование W<sub>min</sub> и I<sub>v</sub>) — фактическая жёсткость соединительных планок, их шаг и деформативность связей не моделируются<br>
       • Двухосный (косой) изгиб уголка — учтён консервативно через W<sub>min</sub> (ось v-v) каждого уголка, без точного разложения по осям u-u/v-v<br>
       • Сейсмические, ударные и особые (аварийные) воздействия — не учитываются<br>
-      • Предельный прогиб — не задан Еврокодом жёстко (EN 1993-1-1 §7.2.1 отсылает к проекту), выбирается пользователем<br><br>
+      • Предельный прогиб — не задан Еврокодом жёстко (СП РК EN 1993-1-1 §7.2.1 отсылает к проекту), выбирается пользователем<br><br>
 
       <b style="color:var(--muted);">Если условия объекта выходят за эти рамки — расчёт носит ориентировочный характер, требуется проверка вручную или по другому профилю (одиночный уголок, швеллер и т.п.).</b>
     </div>
