@@ -135,8 +135,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 
 ## 6. Репозиторий и деплой
 
-- GitHub: `bekzatkaiyrtaev-boop/rebar-calculator` (публичный), деплой на
-  `esk-kz.vercel.app` через Vercel.
+- GitHub: `bekzatkaiyrtaev-boop/rebar-calculator` (публичный), деплой через
+  Vercel (проект «эск»). Основной домен — `www.psdpro.kz` (куплен на
+  Hoster.kz, DNS настроен там же). Старый `esk-kz.vercel.app` настроен
+  на 301-редирект на `www.psdpro.kz` через `vercel.json` — новые ссылки
+  и `sitemap.xml`/`robots.txt` использовать только с `www.psdpro.kz`.
 - `git push` через Bash зависает молча (проблема с всплывающим окном
   входа) — пушить через **PowerShell**, там Git Credential Manager
   нормально открывает окно авторизации в браузере.

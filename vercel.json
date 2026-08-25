@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "esk-kz.vercel.app" }],
+      "destination": "https://www.psdpro.kz/$1",
+      "permanent": true
+    }
+  ]
+}

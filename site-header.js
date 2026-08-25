@@ -18,13 +18,20 @@
      всегда автоматически. Файл site-structure.js должен быть
      подключён на странице ДО этого скрипта. ── */
   const SITE_PAGES = [];
+  // Разделы с openAccess: true (см. site-structure.js) доступны без входа —
+  // собираем их страницы в отдельный набор для гейта авторизации ниже.
+  const FREE_ACCESS_PAGES = new Set();
   if (typeof SECTIONS !== 'undefined'){
     SECTIONS.forEach(section => {
       section.items.forEach(entry => {
         if (entry.group){
-          entry.items.forEach(it => SITE_PAGES.push({ href: it.href, title: it.title }));
+          entry.items.forEach(it => {
+            SITE_PAGES.push({ href: it.href, title: it.title });
+            if (section.openAccess) FREE_ACCESS_PAGES.add(it.href);
+          });
         } else {
           SITE_PAGES.push({ href: entry.href, title: entry.title });
+          if (section.openAccess) FREE_ACCESS_PAGES.add(entry.href);
         }
       });
     });
@@ -43,6 +50,8 @@
     { href: "index.html",  label: "Содержание" },
     { href: "#", label: "← Назад",   dynamic: "prev" },
     { href: "#", label: "Вперёд →",  dynamic: "next" },
+    // Форум временно заглушён (тестируем перед публикацией) — раскомментировать, когда решим открыть
+    // { href: "forum.html",  label: "Форум" },
     { href: "about.html",  label: "Об авторе" }
   ];
 
@@ -124,6 +133,7 @@
 
   const authMount = document.getElementById('siteAuth');
   const isCalculatorPage = current !== 'index.html' && current !== 'about.html';
+  const requiresAuth = isCalculatorPage && !FREE_ACCESS_PAGES.has(current);
   let authGateEl = null;
   let pageViewLogged = false; // чтобы не логировать один и тот же просмотр повторно
 
@@ -359,7 +369,7 @@
           if (isCalculatorPage) logPageView(user);
         } else {
           renderSignedOut();
-          if (isCalculatorPage) showAuthGate();
+          if (requiresAuth) showAuthGate();
         }
       });
     }).catch(function(err){
