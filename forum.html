@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Форум конструкторов — Электронный справочник конструктора</title>
+<style>
+:root {
+  --bg:       #0f1117;
+  --surface:  #1a1d27;
+  --surface2: #22263a;
+  --border:   #2e3347;
+  --accent:   #4f8ef7;
+  --green:    #7dd3a8;
+  --warn:     #f4b942;
+  --red:      #ef4444;
+  --text:     #d6daf0;
+  --muted:    #6b7099;
+  --mono:     'JetBrains Mono','Courier New',monospace;
+  --sans:     'Inter','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;padding:24px 16px 48px;}
+.page-wrap{max-width:1100px;margin:0 auto;}
+.page-title{text-align:center;margin-bottom:6px;font-size:22px;font-weight:700;color:#fff;}
+.page-sub{text-align:center;color:var(--muted);font-size:12px;margin-bottom:24px;}
+
+.breadcrumb{font-size:12px;color:var(--muted);margin-bottom:16px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.breadcrumb a{color:var(--accent);text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+.breadcrumb .sep{color:var(--muted);}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.card-header{background:var(--surface2);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.card-header .title{font-size:13px;font-weight:700;color:#fff;}
+.card-body{padding:16px;}
+
+.topic-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+@media(max-width:640px){.topic-grid{grid-template-columns:1fr;}}
+.topic-card{display:block;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-decoration:none;transition:border-color .15s,background .15s;}
+.topic-card:hover{border-color:var(--accent);background:var(--surface2);}
+.topic-card .t-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;}
+.topic-card .t-desc{font-size:12px;color:var(--muted);line-height:1.5;}
+
+.order-cta{display:block;margin-top:20px;background:var(--surface);border:2px solid var(--accent);border-radius:10px;padding:20px;text-decoration:none;text-align:center;transition:background .15s;}
+.order-cta:hover{background:var(--surface2);}
+.order-cta .order-cta-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;}
+.order-cta .order-cta-desc{font-size:12px;color:var(--muted);}
+
+.chat-card{display:flex;flex-direction:column;height:640px;}
+.chat-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+.chat-bubble{max-width:72%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.5;}
+.chat-bubble.own{align-self:flex-end;background:rgba(79,142,247,.18);border:1px solid rgba(79,142,247,.32);border-bottom-right-radius:3px;}
+.chat-bubble.other{align-self:flex-start;background:var(--surface2);border:1px solid var(--border);border-bottom-left-radius:3px;}
+.chat-bubble .cb-author{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:2px;}
+.chat-bubble .cb-text{color:var(--text);white-space:pre-wrap;word-break:break-word;}
+.chat-bubble .cb-time{font-size:10px;color:var(--muted);margin-top:4px;text-align:right;}
+.chat-inputrow{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border);background:var(--surface2);flex-shrink:0;align-items:center;}
+.chat-inputrow input{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--green);font-family:var(--sans);font-size:13px;padding:9px 14px;border-radius:20px;outline:none;transition:border-color .15s;}
+.chat-inputrow input::placeholder{color:var(--muted);}
+.chat-inputrow input:focus{border-color:var(--accent);}
+.chat-inputrow .btn{border-radius:20px;padding:9px 20px;white-space:nowrap;flex-shrink:0;}
+.chat-inputrow .emoji-btn{width:36px;height:36px;flex-shrink:0;font-size:17px;border-radius:50%;background:var(--bg);border:1px solid var(--border);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.chat-inputrow .emoji-btn:hover{border-color:var(--accent);background:var(--surface2);}
+.chat-hint{font-size:10.5px;color:var(--muted);padding:0 12px 8px;}
+.chat-bubble .cb-text a{color:var(--accent);word-break:break-all;}
+.emoji-picker{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;box-shadow:0 6px 20px rgba(0,0,0,.4);z-index:50;max-width:296px;max-height:260px;overflow-y:auto;}
+.emoji-item{background:transparent;border:none;font-size:18px;padding:5px;border-radius:5px;cursor:pointer;line-height:1;}
+.emoji-item:hover{background:var(--surface2);}
+
+.calc-section-title{padding:10px 16px 6px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);background:var(--surface2);border-top:1px solid var(--border);}
+.calc-section-title:first-child{border-top:none;}
+.filter-input{width:100%;background:transparent;border:1px solid var(--border);color:var(--green);font-family:var(--sans);font-size:13px;padding:9px 12px;border-radius:7px;outline:none;transition:background .15s,border-color .15s;}
+.filter-input::placeholder{color:var(--muted);}
+.filter-input:hover{background:var(--surface2);}
+.filter-input:focus{background:var(--surface2);border-color:var(--accent);}
+
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;}
+.field input[type=text],.field textarea{
+  width:100%;background:transparent;border:1px solid var(--border);color:var(--green);
+  font-family:var(--sans);font-size:14px;padding:10px 12px;border-radius:7px;outline:none;resize:vertical;
+  transition:background .15s,border-color .15s;
+}
+.field textarea{min-height:90px;}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted);}
+.field input:hover,.field textarea:hover{background:var(--surface2);}
+.field input:focus,.field textarea:focus{background:var(--surface2);border-color:var(--accent);}
+.field .hint{font-size:11px;color:var(--muted);margin-top:5px;}
+
+.btn{background:var(--accent);border:1px solid var(--accent);color:#fff;font-family:var(--sans);font-size:13px;font-weight:700;padding:9px 18px;border-radius:7px;cursor:pointer;transition:opacity .15s;}
+.btn:hover{opacity:.88;}
+.btn:disabled{opacity:.5;cursor:default;}
+
+.icon-btn{background:transparent;border:1px solid transparent;color:var(--muted);width:22px;height:22px;border-radius:5px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.icon-btn:hover,.icon-btn:focus-visible{background:var(--surface2);color:var(--accent);border-color:var(--border);outline:none;}
+.icon-btn.del:hover,.icon-btn.del:focus-visible{color:var(--red);}
+
+.q-list-item{display:block;padding:12px 16px;border-bottom:1px solid var(--border);text-decoration:none;transition:background .15s;}
+.q-list-item:last-child{border-bottom:none;}
+.q-list-item:hover{background:var(--surface2);}
+.q-list-item .q-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;}
+.q-list-item .q-meta{font-size:11px;color:var(--muted);}
+
+.q-body{padding:16px;}
+.q-body .q-title-full{font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;}
+.q-body .q-meta{font-size:11px;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.q-body .q-text{font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;}
+
+.answer{padding:14px 16px;border-top:1px solid var(--border);}
+.answer.best{background:rgba(125,211,168,.06);}
+.answer-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+.answer-author{font-size:12px;font-weight:700;color:var(--text);}
+.answer-date{font-size:11px;color:var(--muted);}
+.best-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--green);background:rgba(125,211,168,.14);padding:2px 8px;border-radius:10px;}
+.answer-text{font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;margin-bottom:8px;}
+.answer-actions{display:flex;align-items:center;gap:10px;}
+.vote-btn{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--sans);font-size:12px;font-weight:700;padding:5px 10px;border-radius:7px;cursor:pointer;transition:.15s;}
+.vote-btn:hover{border-color:var(--accent);color:var(--accent);}
+.vote-btn.voted{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,.1);}
+
+.privacy-note{font-size:11px;color:var(--muted);margin-bottom:14px;}
+.empty-state{padding:24px 16px;text-align:center;color:var(--muted);font-size:13px;}
+.loading{padding:24px 16px;text-align:center;color:var(--muted);font-size:12px;}
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+<div class="page-wrap">
+
+<div id="site-header"></div>
+
+<div class="page-title">Форум конструкторов</div>
+<div class="page-sub">Вопросы по калькуляторам, найденные ошибки, идеи — задавайте и отвечайте</div>
+
+<div id="forumRoot">
+  <div class="loading">Загрузка…</div>
+</div>
+
+<div id="site-footer"></div>
+</div>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+
+<script>
+(function(){
+  const ADMIN_EMAIL = 'bekzat.kaiyrtaev@gmail.com';
+  const FB_VER = '10.14.1';
+  const FORUM_TOPICS = [
+    { id: 'calc',  title: 'Вопрос по калькулятору', desc: 'Как посчитать что-то конкретное — выберите калькулятор из списка.', needsCalc: true },
+    { id: 'bug',   title: 'Нашёл ошибку',           desc: 'Что-то считает неправильно или не работает — выберите калькулятор. Вопрос увидите только вы и администратор.', needsCalc: true, private: true },
+    { id: 'idea',  title: 'Предложение/идея',        desc: 'Чего не хватает в конкретном калькуляторе — выберите его из списка.', needsCalc: true },
+    { id: 'other', title: 'Другое',                  desc: 'Всё, что не привязано к конкретному калькулятору.', needsCalc: false }
+  ];
+
+  let db = null;
+  let currentUser = null;
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function isValidId(s){ return /^[A-Za-z0-9_-]{1,64}$/.test(s || ''); }
+
+  const PROFANITY_STEMS = ['хуй','хуе','пизд','ебан','ебал','ебло','ебуч','въеб','приеб','разъеб','наеб','заеб','отъеб','выеб','сука','сучар','мудак','мудил','гандон','пидор','пидар','залуп','ублюдок','шлюх','бля'];
+  // легитимные инженерные термины, ложно совпадающие с корнями выше (колебание/колебательный и т.п.)
+  const PROFANITY_WHITELIST = ['колебан','поколеб'];
+  function containsProfanity(text){
+    const tokens = String(text || '').toLowerCase().replace(/ё/g, 'е').split(/[^а-яa-z]+/);
+    return tokens.some(function(tok){
+      if (!tok) return false;
+      if (PROFANITY_WHITELIST.some(function(w){ return tok.indexOf(w) !== -1; })) return false;
+      return PROFANITY_STEMS.some(function(stem){ return tok.indexOf(stem) !== -1; });
+    });
+  }
+  function fmtDate(ts){
+    if (!ts || !ts.toDate) return 'только что';
+    return ts.toDate().toLocaleString('ru-RU', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  }
+  function loadScript(src){
+    return new Promise(function(resolve, reject){
+      const s = document.createElement('script');
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  function getCalcPages(){
+    const out = [];
+    const seen = {};
+    function addPage(href, title, section){
+      if (!href || href === 'forum.html' || seen[href]) return;
+      seen[href] = true;
+      out.push({ href: href, title: title, section: section });
+    }
+    (SECTIONS || []).forEach(function(sec){
+      (sec.items || []).forEach(function(it){
+        if (it.group){
+          if (it.href) addPage(it.href, it.group, sec.title);
+          (it.items || []).forEach(function(sub){ addPage(sub.href, sub.title, sec.title); });
+        } else {
+          addPage(it.href, it.title, sec.title);
+        }
+      });
+    });
+    return out;
+  }
+  function isValidCalcHref(href){
+    return !!href && getCalcPages().some(function(p){ return p.href === href; });
+  }
+  function calcTitleFor(href){
+    const p = getCalcPages().find(function(p){ return p.href === href; });
+    return p ? p.title : href;
+  }
+  function breadcrumbHtml(parts){
+    return '<div class="breadcrumb">' + parts.map(function(p, i){
+      const seg = p.href ? ('<a href="' + p.href + '">' + esc(p.label) + '</a>') : ('<span>' + esc(p.label) + '</span>');
+      return (i > 0 ? '<span class="sep">›</span>' : '') + seg;
+    }).join('') + '</div>';
+  }
+
+  function linkify(escapedText){
+    return escapedText.replace(/(https?:\/\/[^\s<]+)/g, function(url){
+      return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + '</a>';
+    });
+  }
+
+  const EMOJI_LIST = [
+    '😀','😁','😂','🤣','😊','🙂','😉','😍','🥰','😘','😎','🤔','🙄','😴','😭',
+    '😢','😡','🤬','😱','😨','😰','🥺','😅','😬','🙃','🤗','🤩','😏','🥳','😷',
+    '👍','👎','👌','🤞','✌️','🤝','🙏','👏','💪','🤘','👋','✋','🤙','👊','🖐️',
+    '❤️','🧡','💛','💚','💙','💜',
+    '✅','❌','⚠️','❗','❓','💯','🔥','⭐','💡','📌','📎','🔔','🚀','⏰','🕐',
+    '🏗️','🧱','📐','📏','🔧','🔨','⚙️','🏢','🏠','📊','📈','📁','📄','🖊️','💬'
+  ];
+
+  function toggleEmojiPicker(e){
+    e.stopPropagation();
+    const existing = document.getElementById('emojiPicker');
+    if (existing){ existing.remove(); return; }
+    const box = document.createElement('div');
+    box.id = 'emojiPicker';
+    box.className = 'emoji-picker';
+    box.innerHTML = EMOJI_LIST.map(function(em){ return '<button type="button" class="emoji-item">' + em + '</button>'; }).join('');
+    document.body.appendChild(box);
+    const r = e.currentTarget.getBoundingClientRect();
+    box.style.left = Math.max(8, r.left) + 'px';
+    box.style.top = (r.top - box.offsetHeight - 6) + 'px';
+    box.querySelectorAll('.emoji-item').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        const input = document.getElementById('chatInput');
+        input.value += btn.textContent;
+        input.focus();
+        box.remove();
+      });
+    });
+    setTimeout(function(){
+      document.addEventListener('click', function closeOnce(ev){
+        if (!box.contains(ev.target)){ box.remove(); document.removeEventListener('click', closeOnce); }
+      });
+    }, 0);
+  }
+
+  function chatHtml(){
+    return '<div class="card chat-card">' +
+      '<div class="chat-messages" id="chatMessages"><div class="loading">Загрузка…</div></div>' +
+      '<div class="chat-hint">Ссылки на файлы (Google Диск и т.п.) в сообщениях становятся кликабельными.</div>' +
+      '<div class="chat-inputrow">' +
+        '<button type="button" class="emoji-btn" id="emojiBtn" title="Смайлики">🙂</button>' +
+        '<input type="text" id="chatInput" placeholder="Написать сообщение всем..." maxlength="1000">' +
+        '<button class="btn" id="chatSendBtn">Отправить</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function initChat(){
+    const input = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('chatSendBtn');
+    const emojiBtn = document.getElementById('emojiBtn');
+    if (sendBtn) sendBtn.addEventListener('click', sendChatMessage);
+    if (emojiBtn) emojiBtn.addEventListener('click', toggleEmojiPicker);
+    if (input) input.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChatMessage(); }
+    });
+
+    db.collection('forum_chat')
+      .orderBy('createdAt', 'desc')
+      .limit(200)
+      .onSnapshot(function(snap){
+        const box = document.getElementById('chatMessages');
+        if (!box) return;
+        const msgs = snap.docs.map(function(doc){ return doc.data(); }).reverse();
+        if (!msgs.length){
+          box.innerHTML = '<div class="empty-state">Пока нет сообщений — напишите первым.</div>';
+          return;
+        }
+        box.innerHTML = msgs.map(function(d){
+          const own = currentUser && d.authorUid === currentUser.uid;
+          return '<div class="chat-bubble ' + (own ? 'own' : 'other') + '">' +
+            '<div class="cb-author">' + esc(d.authorName || d.authorEmail || '') + '</div>' +
+            '<div class="cb-text">' + linkify(esc(d.text)) + '</div>' +
+            '<div class="cb-time">' + fmtDate(d.createdAt) + '</div>' +
+          '</div>';
+        }).join('');
+        box.scrollTop = box.scrollHeight;
+      }, function(err){
+        console.error(err);
+        const box2 = document.getElementById('chatMessages');
+        if (box2) box2.innerHTML = '<div class="empty-state">Не удалось загрузить сообщения.</div>';
+      });
+  }
+
+  function sendChatMessage(){
+    if (!currentUser) return;
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    if (containsProfanity(text)){ alert('Сообщение похоже на нецензурную брань — уберите её, пожалуйста.'); return; }
+    const btn = document.getElementById('chatSendBtn');
+    btn.disabled = true;
+    db.collection('forum_chat').add({
+      text: text,
+      authorUid: currentUser.uid,
+      authorName: currentUser.displayName || currentUser.email,
+      authorEmail: currentUser.email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function(){
+      input.value = '';
+      btn.disabled = false;
+      input.focus();
+    }).catch(function(err){
+      console.error(err);
+      alert('Не удалось отправить сообщение.');
+      btn.disabled = false;
+    });
+  }
+
+  function renderTopics(){
+    const root = document.getElementById('forumRoot');
+    root.innerHTML =
+      breadcrumbHtml([{ label: 'Форум' }]) +
+      chatHtml();
+
+    initChat();
+  }
+
+  function fileToBase64(file){
+    return new Promise(function(resolve, reject){
+      const reader = new FileReader();
+      reader.onload = function(){ resolve(String(reader.result).split(',')[1] || ''); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderOrderForm(){
+    const root = document.getElementById('forumRoot');
+    root.innerHTML =
+      breadcrumbHtml([{ label: 'Форум', href: 'forum.html' }, { label: 'Заказать расчёт или проект' }]) +
+      '<div class="card">' +
+        '<div class="card-header"><span class="title">Заявка на расчёт или проект</span></div>' +
+        '<div class="card-body">' +
+          '<div class="field"><label>Ваше имя</label><input type="text" id="ordName" maxlength="150"></div>' +
+          '<div class="field"><label>E-mail для связи</label><input type="text" id="ordEmail" maxlength="150"></div>' +
+          '<div class="field"><label>Телефон</label><input type="text" id="ordPhone" placeholder="+7 ..." maxlength="50"></div>' +
+          '<div class="field"><label>Сроки выполнения (необязательно)</label><input type="text" id="ordDeadline" placeholder="Например: до 15 сентября" maxlength="200"></div>' +
+          '<div class="field"><label>Стоимость (необязательно)</label><input type="text" id="ordBudget" placeholder="Ваше предложение по бюджету" maxlength="200"></div>' +
+          '<div class="field"><label>Описание задачи / исходные данные</label><textarea id="ordDesc" style="min-height:120px;" placeholder="Опишите, что нужно посчитать/спроектировать. Если файлы большие — оставьте здесь ссылку на облако."></textarea></div>' +
+          '<div class="field"><label>Файлы (до ~3 МБ суммарно)</label><input type="file" id="ordFiles" multiple>' +
+            '<div class="hint" id="ordFilesHint"></div>' +
+          '</div>' +
+          '<button class="btn" id="ordSubmitBtn">Отправить заявку</button>' +
+          '<div id="ordStatus" style="margin-top:10px;font-size:12px;"></div>' +
+        '</div>' +
+      '</div>';
+
+    if (currentUser){
+      document.getElementById('ordName').value = currentUser.displayName || '';
+      document.getElementById('ordEmail').value = currentUser.email || '';
+    }
+
+    document.getElementById('ordFiles').addEventListener('change', function(e){
+      const files = Array.from(e.target.files || []);
+      const total = files.reduce(function(s, f){ return s + f.size; }, 0);
+      const hint = document.getElementById('ordFilesHint');
+      hint.textContent = files.length ? ('Выбрано файлов: ' + files.length + ', суммарно ' + (total / 1024 / 1024).toFixed(2) + ' МБ') : '';
+      hint.style.color = total > 3 * 1024 * 1024 ? 'var(--red)' : 'var(--muted)';
+    });
+
+    document.getElementById('ordSubmitBtn').addEventListener('click', submitOrder);
+  }
+
+  function submitOrder(){
+    const name = document.getElementById('ordName').value.trim();
+    const email = document.getElementById('ordEmail').value.trim();
+    const phone = document.getElementById('ordPhone').value.trim();
+    const deadline = document.getElementById('ordDeadline').value.trim();
+    const budget = document.getElementById('ordBudget').value.trim();
+    const description = document.getElementById('ordDesc').value.trim();
+    const files = Array.from(document.getElementById('ordFiles').files || []);
+    const statusEl = document.getElementById('ordStatus');
+
+    if (!name || !email || !phone || !description){
+      statusEl.textContent = 'Заполните все обязательные поля.';
+      statusEl.style.color = 'var(--red)';
+      return;
+    }
+    const totalSize = files.reduce(function(s, f){ return s + f.size; }, 0);
+    if (totalSize > 3 * 1024 * 1024){
+      statusEl.textContent = 'Суммарный размер файлов больше 3 МБ — оставьте ссылку на облако в описании вместо файла.';
+      statusEl.style.color = 'var(--red)';
+      return;
+    }
+
+    const btn = document.getElementById('ordSubmitBtn');
+    btn.disabled = true;
+    statusEl.textContent = 'Отправка…';
+    statusEl.style.color = 'var(--muted)';
+
+    Promise.all(files.map(function(f){
+      return fileToBase64(f).then(function(b64){ return { filename: f.name, contentBase64: b64 }; });
+    })).then(function(attachments){
+      return fetch('https://rebar-backend-henna.vercel.app/api/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, email: email, phone: phone, deadline: deadline, budget: budget, description: description, attachments: attachments })
+      });
+    }).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(data){ return { ok: r.ok, data: data }; });
+    }).then(function(res){
+      if (!res.ok){
+        statusEl.textContent = (res.data && res.data.error) || 'Не удалось отправить заявку.';
+        statusEl.style.color = 'var(--red)';
+        btn.disabled = false;
+        return;
+      }
+      statusEl.textContent = 'Заявка отправлена — мы свяжемся с вами по телефону или почте.';
+      statusEl.style.color = 'var(--green)';
+      btn.textContent = 'Отправлено';
+    }).catch(function(err){
+      console.error(err);
+      statusEl.textContent = 'Не удалось отправить заявку.';
+      statusEl.style.color = 'var(--red)';
+      btn.disabled = false;
+    });
+  }
+
+  function renderCalcPicker(topicId){
+    const topic = FORUM_TOPICS.find(function(t){ return t.id === topicId; });
+    const root = document.getElementById('forumRoot');
+    if (!topic){
+      root.innerHTML = breadcrumbHtml([{ label: 'Форум', href: 'forum.html' }]) + '<div class="empty-state">Тема не найдена.</div>';
+      return;
+    }
+    const pages = getCalcPages();
+    const bySection = {};
+    const order = [];
+    pages.forEach(function(p){
+      if (!bySection[p.section]){ bySection[p.section] = []; order.push(p.section); }
+      bySection[p.section].push(p);
+    });
+    let listHtml = '';
+    order.forEach(function(section){
+      listHtml += '<div class="calc-section-title">' + esc(section) + '</div>';
+      bySection[section].forEach(function(p){
+        listHtml += '<a class="q-list-item calc-pick-item" data-t="' + esc(p.title.toLowerCase()) + '" href="forum.html?topic=' + topicId + '&calc=' + encodeURIComponent(p.href) + '">' +
+          '<div class="q-title">' + esc(p.title) + '</div>' +
+        '</a>';
+      });
+    });
+    root.innerHTML =
+      breadcrumbHtml([{ label: 'Форум', href: 'forum.html' }, { label: topic.title }]) +
+      '<div class="field"><input type="text" class="filter-input" id="calcFilter" placeholder="Поиск калькулятора…"></div>' +
+      '<div class="card"><div id="calcPickerList">' + listHtml + '</div></div>';
+
+    document.getElementById('calcFilter').addEventListener('input', function(e){
+      const q = e.target.value.trim().toLowerCase();
+      document.querySelectorAll('.calc-pick-item').forEach(function(el){
+        el.style.display = el.getAttribute('data-t').indexOf(q) === -1 ? 'none' : '';
+      });
+      document.querySelectorAll('.calc-section-title').forEach(function(el){
+        let sib = el.nextElementSibling;
+        let anyVisible = false;
+        while (sib && sib.classList.contains('calc-pick-item')){
+          if (sib.style.display !== 'none') anyVisible = true;
+          sib = sib.nextElementSibling;
+        }
+        el.style.display = anyVisible ? '' : 'none';
+      });
+    });
+  }
+
+  function renderQuestionList(topicId, calcPage){
+    const topic = FORUM_TOPICS.find(function(t){ return t.id === topicId; });
+    const root = document.getElementById('forumRoot');
+    if (!topic){
+      root.innerHTML = breadcrumbHtml([{ label: 'Форум', href: 'forum.html' }]) + '<div class="empty-state">Тема не найдена.</div>';
+      return;
+    }
+    const crumbs = [{ label: 'Форум', href: 'forum.html' }, { label: topic.title, href: 'forum.html?topic=' + topicId }];
+    if (topic.needsCalc) crumbs.push({ label: calcTitleFor(calcPage) });
+
+    const privacyNote = topic.private ? '<div class="privacy-note">Вопросы в этой теме видят только их автор и администратор.</div>' : '';
+
+    root.innerHTML =
+      breadcrumbHtml(crumbs) +
+      privacyNote +
+      '<div class="card">' +
+        '<div class="card-header"><span class="title">Задать вопрос</span></div>' +
+        '<div class="card-body">' +
+          '<div class="field"><label>Заголовок</label><input type="text" id="newQTitle" placeholder="Коротко, о чём вопрос" maxlength="150"></div>' +
+          '<div class="field"><label>Текст вопроса</label><textarea id="newQText" placeholder="Опишите подробнее"></textarea></div>' +
+          '<button class="btn" id="submitQBtn">Опубликовать</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card">' +
+        '<div class="card-header"><span class="title">Вопросы</span></div>' +
+        '<div id="qListBody"><div class="loading">Загрузка…</div></div>' +
+      '</div>';
+
+    document.getElementById('submitQBtn').addEventListener('click', function(){ submitQuestion(topicId, calcPage); });
+
+    let query = db.collection('forum_questions').where('topic', '==', topicId);
+    if (topic.needsCalc) query = query.where('calcPage', '==', calcPage);
+    query = query.where('hidden', '==', false).orderBy('createdAt', 'desc');
+
+    query.onSnapshot(function(snap){
+        const body = document.getElementById('qListBody');
+        if (!body) return;
+        if (snap.empty){
+          body.innerHTML = '<div class="empty-state">Пока нет вопросов — станьте первым.</div>';
+          return;
+        }
+        body.innerHTML = snap.docs.map(function(doc){
+          const d = doc.data();
+          const qs = 'topic=' + topicId + (topic.needsCalc ? '&calc=' + encodeURIComponent(calcPage) : '') + '&q=' + doc.id;
+          return '<a class="q-list-item" href="forum.html?' + qs + '">' +
+            '<div class="q-title">' + esc(d.title) + '</div>' +
+            '<div class="q-meta">' + esc(d.authorName || d.authorEmail || '') + ' · ' + fmtDate(d.createdAt) + ' · ответов: ' + (d.answerCount || 0) + '</div>' +
+          '</a>';
+        }).join('');
+      }, function(err){
+        console.error(err);
+        const body = document.getElementById('qListBody');
+        if (body) body.innerHTML = '<div class="empty-state">Не удалось загрузить вопросы.</div>';
+      });
+  }
+
+  function submitQuestion(topicId, calcPage){
+    if (!currentUser) return;
+    const titleEl = document.getElementById('newQTitle');
+    const textEl = document.getElementById('newQText');
+    const title = titleEl.value.trim();
+    const text = textEl.value.trim();
+    if (!title || !text){ alert('Заполните заголовок и текст вопроса.'); return; }
+    if (containsProfanity(title) || containsProfanity(text)){ alert('В тексте похоже есть нецензурная брань — уберите её, пожалуйста.'); return; }
+    const btn = document.getElementById('submitQBtn');
+    btn.disabled = true;
+    const payload = {
+      topic: topicId,
+      title: title,
+      text: text,
+      authorUid: currentUser.uid,
+      authorName: currentUser.displayName || currentUser.email,
+      authorEmail: currentUser.email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      answerCount: 0,
+      hidden: false
+    };
+    if (calcPage) payload.calcPage = calcPage;
+    db.collection('forum_questions').add(payload).then(function(docRef){
+      const qs = 'topic=' + topicId + (calcPage ? '&calc=' + encodeURIComponent(calcPage) : '') + '&q=' + docRef.id;
+      location.href = 'forum.html?' + qs;
+    }).catch(function(err){
+      console.error(err);
+      alert('Не удалось опубликовать вопрос.');
+      btn.disabled = false;
+    });
+  }
+
+  function renderThread(topicId, questionId){
+    const topic = FORUM_TOPICS.find(function(t){ return t.id === topicId; });
+    const root = document.getElementById('forumRoot');
+    if (!topic || !isValidId(questionId)){
+      root.innerHTML = breadcrumbHtml([{ label: 'Форум', href: 'forum.html' }]) + '<div class="empty-state">Вопрос не найден.</div>';
+      return;
+    }
+    root.innerHTML =
+      breadcrumbHtml([{ label: 'Форум', href: 'forum.html' }, { label: topic.title, href: 'forum.html?topic=' + topicId }, { label: '…' }]) +
+      '<div class="card" id="qCard"><div class="loading">Загрузка…</div></div>' +
+      '<div class="card">' +
+        '<div class="card-header"><span class="title">Ответы</span></div>' +
+        '<div id="answersBody"><div class="loading">Загрузка…</div></div>' +
+        '<div class="card-body" style="border-top:1px solid var(--border);">' +
+          '<div class="field"><label>Ваш ответ</label><textarea id="newAText" placeholder="Напишите ответ"></textarea></div>' +
+          '<button class="btn" id="submitABtn">Ответить</button>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById('submitABtn').addEventListener('click', function(){ submitAnswer(questionId); });
+
+    const qRef = db.collection('forum_questions').doc(questionId);
+
+    qRef.onSnapshot(function(doc){
+      const qCard = document.getElementById('qCard');
+      if (!qCard) return;
+      if (!doc.exists || doc.data().hidden){
+        qCard.innerHTML = '<div class="empty-state">Вопрос скрыт или удалён.</div>';
+        return;
+      }
+      const d = doc.data();
+      const bcParts = [{ label: 'Форум', href: 'forum.html' }, { label: topic.title, href: 'forum.html?topic=' + topicId }];
+      if (d.calcPage) bcParts.push({ label: calcTitleFor(d.calcPage), href: 'forum.html?topic=' + topicId + '&calc=' + encodeURIComponent(d.calcPage) });
+      bcParts.push({ label: d.title });
+      const bcEl = root.querySelector(':scope > .breadcrumb');
+      if (bcEl) bcEl.outerHTML = breadcrumbHtml(bcParts);
+      const canModerate = currentUser && (currentUser.uid === d.authorUid || currentUser.email === ADMIN_EMAIL);
+      qCard.innerHTML =
+        '<div class="q-body">' +
+          '<div class="q-title-full">' + esc(d.title) + '</div>' +
+          '<div class="q-meta"><span>' + esc(d.authorName || d.authorEmail || '') + ' · ' + fmtDate(d.createdAt) + '</span>' +
+            (canModerate ? '<button class="icon-btn del" id="hideQBtn" title="Скрыть вопрос">✕</button>' : '') +
+          '</div>' +
+          '<div class="q-text">' + esc(d.text) + '</div>' +
+        '</div>';
+      const hideQBtn = document.getElementById('hideQBtn');
+      if (hideQBtn) hideQBtn.addEventListener('click', function(){ hideQuestion(questionId); });
+    }, function(err){
+      console.error(err);
+      const qCard2 = document.getElementById('qCard');
+      if (qCard2) qCard2.innerHTML = '<div class="empty-state">Не удалось загрузить вопрос.</div>';
+    });
+
+    loadAnswers(questionId, qRef);
+  }
+
+  function loadAnswers(questionId, qRef){
+    qRef.collection('answers')
+      .where('hidden', '==', false)
+      .onSnapshot(function(snap){
+        const body = document.getElementById('answersBody');
+        if (!body) return;
+        const answers = snap.docs.map(function(doc){ return { id: doc.id, ref: doc.ref, data: doc.data() }; });
+        answers.sort(function(a, b){ return (b.data.voteCount || 0) - (a.data.voteCount || 0); });
+        if (!answers.length){
+          body.innerHTML = '<div class="empty-state">Пока нет ответов.</div>';
+          return;
+        }
+        Promise.all(answers.map(function(a){
+          return currentUser
+            ? a.ref.collection('votes').doc(currentUser.uid).get().then(function(v){ return v.exists; })
+            : Promise.resolve(false);
+        })).then(function(votedFlags){
+          body.innerHTML = answers.map(function(a, idx){
+            const d = a.data;
+            const isBest = idx === 0 && (d.voteCount || 0) > 0;
+            const voted = votedFlags[idx];
+            const canModerate = currentUser && (currentUser.uid === d.authorUid || currentUser.email === ADMIN_EMAIL);
+            return '<div class="answer' + (isBest ? ' best' : '') + '">' +
+              '<div class="answer-head"><span class="answer-author">' + esc(d.authorName || d.authorEmail || '') + '</span>' +
+                '<span class="answer-date">' + fmtDate(d.createdAt) + '</span>' +
+                (isBest ? '<span class="best-badge">Лучший ответ</span>' : '') +
+              '</div>' +
+              '<div class="answer-text">' + esc(d.text) + '</div>' +
+              '<div class="answer-actions">' +
+                '<button class="vote-btn' + (voted ? ' voted' : '') + '" data-answer-id="' + a.id + '">▲ ' + (d.voteCount || 0) + '</button>' +
+                (canModerate ? '<button class="icon-btn del" data-hide-answer-id="' + a.id + '" title="Скрыть ответ">✕</button>' : '') +
+              '</div>' +
+            '</div>';
+          }).join('');
+          body.querySelectorAll('[data-answer-id]').forEach(function(btn){
+            btn.addEventListener('click', function(){ toggleVote(questionId, btn.getAttribute('data-answer-id')); });
+          });
+          body.querySelectorAll('[data-hide-answer-id]').forEach(function(btn){
+            btn.addEventListener('click', function(){ hideAnswer(questionId, btn.getAttribute('data-hide-answer-id')); });
+          });
+        });
+      }, function(err){
+        console.error(err);
+        const body2 = document.getElementById('answersBody');
+        if (body2) body2.innerHTML = '<div class="empty-state">Не удалось загрузить ответы.</div>';
+      });
+  }
+
+  function submitAnswer(questionId){
+    if (!currentUser) return;
+    const textEl = document.getElementById('newAText');
+    const text = textEl.value.trim();
+    if (!text){ alert('Введите текст ответа.'); return; }
+    if (containsProfanity(text)){ alert('В тексте похоже есть нецензурная брань — уберите её, пожалуйста.'); return; }
+    const btn = document.getElementById('submitABtn');
+    btn.disabled = true;
+    const qRef = db.collection('forum_questions').doc(questionId);
+    const aRef = qRef.collection('answers').doc();
+    db.runTransaction(function(tx){
+      return tx.get(qRef).then(function(qSnap){
+        const qData = qSnap.data() || {};
+        const cur = qData.answerCount || 0;
+        tx.set(aRef, {
+          text: text,
+          authorUid: currentUser.uid,
+          authorName: currentUser.displayName || currentUser.email,
+          authorEmail: currentUser.email,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          voteCount: 0,
+          hidden: false,
+          topic: qData.topic || null,
+          questionAuthorUid: qData.authorUid || null
+        });
+        tx.update(qRef, { answerCount: cur + 1 });
+      });
+    }).then(function(){
+      textEl.value = '';
+      btn.disabled = false;
+    }).catch(function(err){
+      console.error(err);
+      alert('Не удалось отправить ответ.');
+      btn.disabled = false;
+    });
+  }
+
+  function toggleVote(questionId, answerId){
+    if (!currentUser) return;
+    const aRef = db.collection('forum_questions').doc(questionId).collection('answers').doc(answerId);
+    const vRef = aRef.collection('votes').doc(currentUser.uid);
+    db.runTransaction(function(tx){
+      return tx.get(vRef).then(function(vSnap){
+        return tx.get(aRef).then(function(aSnap){
+          const cur = (aSnap.data() && aSnap.data().voteCount) || 0;
+          if (vSnap.exists){
+            tx.delete(vRef);
+            tx.update(aRef, { voteCount: cur - 1 });
+          } else {
+            tx.set(vRef, { createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            tx.update(aRef, { voteCount: cur + 1 });
+          }
+        });
+      });
+    }).catch(function(err){ console.error(err); });
+  }
+
+  function hideQuestion(questionId){
+    if (!confirm('Скрыть вопрос?')) return;
+    db.collection('forum_questions').doc(questionId).update({ hidden: true })
+      .catch(function(err){ console.error(err); alert('Не удалось скрыть.'); });
+  }
+
+  function hideAnswer(questionId, answerId){
+    if (!confirm('Скрыть ответ?')) return;
+    db.collection('forum_questions').doc(questionId).collection('answers').doc(answerId).update({ hidden: true })
+      .catch(function(err){ console.error(err); alert('Не удалось скрыть.'); });
+  }
+
+  function route(){
+    const params = new URLSearchParams(location.search);
+    if (params.get('order')){ renderOrderForm(); return; }
+    const topicId = params.get('topic');
+    let questionId = params.get('q');
+    let calcPage = params.get('calc');
+    if (questionId && !isValidId(questionId)) questionId = null;
+
+    if (!topicId){ renderTopics(); return; }
+    const topic = FORUM_TOPICS.find(function(t){ return t.id === topicId; });
+    if (!topic){ renderQuestionList(topicId, null); return; }
+
+    if (questionId){ renderThread(topicId, questionId); return; }
+    if (topic.needsCalc){
+      if (!isValidCalcHref(calcPage)){ renderCalcPicker(topicId); return; }
+      renderQuestionList(topicId, calcPage);
+      return;
+    }
+    renderQuestionList(topicId, null);
+  }
+
+  function initForum(){
+    db = firebase.firestore();
+    firebase.auth().onAuthStateChanged(function(user){
+      currentUser = user;
+      route();
+    });
+  }
+
+  if (window.__firebaseSdkLoading){
+    window.__firebaseSdkLoading
+      .then(function(){ return loadScript('https://www.gstatic.com/firebasejs/' + FB_VER + '/firebase-firestore-compat.js'); })
+      .then(initForum)
+      .catch(function(err){
+        console.error('Не удалось загрузить Firestore SDK:', err);
+        document.getElementById('forumRoot').innerHTML = '<div class="empty-state">Не удалось загрузить форум.</div>';
+      });
+  } else {
+    document.getElementById('forumRoot').innerHTML = '<div class="empty-state">Не удалось загрузить форум.</div>';
+  }
+})();
+</script>
+
+</body>
+</html>
