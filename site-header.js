@@ -50,8 +50,7 @@
     { href: "index.html",  label: "Содержание" },
     { href: "#", label: "← Назад",   dynamic: "prev" },
     { href: "#", label: "Вперёд →",  dynamic: "next" },
-    // Форум временно заглушён (тестируем перед публикацией) — раскомментировать, когда решим открыть
-    // { href: "forum.html",  label: "Форум" },
+    { href: "forum.html",  label: "Форум" },
     { href: "about.html",  label: "Об авторе" }
   ];
 
