@@ -50,6 +50,23 @@
     margin: 0 0 20px;
     font-size: 13px;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .series-download {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 12px;
+    opacity: .85;
+    transition: opacity .15s;
+  }
+
+  .series-download:hover {
+    opacity: 1;
+    text-decoration: underline;
   }
 
   .combined-card {
@@ -384,7 +401,10 @@
     <button class="method-tab" data-series="6x15" onclick="selectSeries('6x15')">Плиты 6х1,5м</button>
     <button class="method-tab" data-series="12x3" onclick="selectSeries('12x3')">Плиты 12х3м</button>
   </div>
-  <p class="subtitle" id="seriesLabel">Серия 1.465.1-17</p>
+  <p class="subtitle">
+    <span id="seriesLabel">Серия 1.465.1-17</span>
+    <a id="seriesPdfLink" class="series-download" href="normativy/seria-1.465.1-17.pdf" download title="Скачать серию целиком (PDF)">⭳ Скачать серию</a>
+  </p>
 
   <div class="combined-card">
     <div class="filters-grid">
@@ -743,6 +763,13 @@ seismicSelect.addEventListener('change', render);
 // Листы Google Таблицы с живыми данными по сериям (6х1,5м — статичный массив выше, не отсюда)
 var SERIES_SHEETS = { '6x3': 'Plity_rebr_6x3', '12x3': 'Plity_rebr_12x3' };
 
+// PDF серии целиком — для кнопки "Скачать серию"
+var SERIES_PDF = {
+  '6x3': 'normativy/seria-1.465.1-17.pdf',
+  '6x15': 'normativy/seria-1.465.1-20.pdf',
+  '12x3': 'normativy/seria-1.465.1-15.pdf'
+};
+
 async function loadRebrData(seriesKey) {
   var sheetName = SERIES_SHEETS[seriesKey];
   if (!sheetName) return;
@@ -813,6 +840,7 @@ async function selectSeries(key) {
     document.getElementById('seriesLabel').textContent = 'Серия 1.465.1-20';
     document.getElementById('footnoteText').textContent = 'Данные — серия 1.465.1-20, таблица «Плиты из тяжелого/легкого бетона без проёмов / с проёмами». Признак сейсмостойкости — наличие буквы «С» в марке плиты (по вашему подтверждению).';
   }
+  document.getElementById('seriesPdfLink').href = SERIES_PDF[key];
   buildSelectors();
   render();
 }
