@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /statistika.html
 
 Sitemap: https://www.psdpro.kz/sitemap.xml
