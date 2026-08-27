@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расчёт стоимости обмерных работ и обследования зданий и сооружений — Электронный справочник конструктора</title>
+<meta name="description" content="Калькулятор стоимости обмерных работ, инженерного обследования, определения прочности бетона и кладки, контрольных испытаний, расчёта несущей способности и заключений по усилению — по СЦИ РК 8.03-04-2025.">
+<style>
+:root{
+  --bg:#0f1117;
+  --surface:#1a1d27;
+  --surface2:#22263a;
+  --border:#2e3347;
+  --border-strong:#3a4060;
+  --accent:#4f8ef7;
+  --accent-soft:rgba(79,142,247,.12);
+  --green:#7dd3a8;
+  --warn:#f4b942;
+  --red:#ef4444;
+  --red-soft:rgba(239,68,68,.12);
+  --text:#d6daf0;
+  --muted:#6b7099;
+  --mono:'JetBrains Mono','Courier New',monospace;
+  --sans:'Inter','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;padding:24px 16px 48px;}
+h1,h2,h3,h4{font-family:var(--sans);font-weight:600;}
+.mono,.num,input[type=number],select,.price{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+a{color:var(--accent);}
+
+.page-wrap{max-width:1100px;margin:0 auto;}
+
+header.top{
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  padding-bottom:18px;border-bottom:2px solid var(--border-strong);margin-bottom:20px;
+}
+.title-block h1{font-size:22px;color:#fff;}
+.title-block .sub{color:var(--muted);font-size:13px;margin-top:4px;max-width:56ch;margin-left:auto;margin-right:auto;}
+
+.vat-toggle{display:inline-flex;align-items:center;gap:5px;margin-left:10px;font-size:11px;text-transform:none;letter-spacing:normal;}
+.vat-toggle .vt-opt{color:var(--muted);cursor:pointer;}
+.vat-toggle .vt-opt:hover{color:var(--green);opacity:.85;}
+.vat-toggle .vt-opt.active{color:var(--green);font-weight:600;}
+.vat-toggle .vt-sep{color:var(--border-strong);}
+
+nav.tabs{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:22px;border-bottom:1px solid var(--border);scrollbar-width:thin;}
+nav.tabs button{
+  font-family:var(--sans);font-weight:600;font-size:12.5px;background:none;border:1px solid transparent;border-bottom:none;
+  color:var(--muted);padding:10px 12px;border-radius:8px 8px 0 0;cursor:pointer;transition:color .15s,background .15s;
+  white-space:nowrap;flex:0 0 auto;
+}
+nav.tabs button:hover{color:var(--text);background:var(--surface2);}
+nav.tabs button.active{color:var(--accent);background:var(--surface);border-color:var(--border);box-shadow:0 -1px 0 var(--surface) inset;}
+
+section.module{display:none;}
+section.module.active{display:block;animation:fade .18s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(2px);}to{opacity:1;transform:none;}}
+
+.module-head{margin-bottom:16px;}
+.module-head h2{font-size:18px;color:#fff;}
+.module-head p{color:var(--muted);font-size:13px;margin-top:4px;max-width:70ch;}
+.code{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--accent);opacity:.85;margin-left:6px;}
+.code.info-ref{cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;}
+.code.info-ref:hover{opacity:1;}
+
+.tooltip-box{display:none;position:fixed;z-index:200;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.5);width:360px;max-width:calc(100vw - 16px);max-height:calc(100vh - 32px);overflow-y:auto;}
+.tooltip-box.wide{width:480px;}
+.tooltip-box .tt-title{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:600;margin-bottom:8px;}
+.tooltip-box .tt-sub{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:10px 0 4px;}
+.tooltip-box .tt-sub:first-of-type{margin-top:0;}
+.tooltip-box .tt-row{font-size:12px;color:var(--text);line-height:1.5;margin-bottom:7px;}
+.tooltip-box .tt-row:last-child{margin-bottom:0;}
+.tooltip-box .tt-row b{color:var(--accent);margin-right:5px;}
+.tooltip-box table{width:100%;border-collapse:collapse;font-size:11px;margin-top:2px;}
+.tooltip-box th,.tooltip-box td{padding:5px 6px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap;}
+.tooltip-box th{color:var(--accent);font-weight:600;}
+.tooltip-box td:first-child,.tooltip-box th:first-child{text-align:left;color:var(--muted);}
+.tooltip-box .tt-note{font-size:10px;color:var(--muted);margin-top:9px;line-height:1.45;}
+
+.layout{display:grid;grid-template-columns:1.35fr 1fr;gap:20px;align-items:start;}
+@media(max-width:880px){.layout{grid-template-columns:1fr;}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+.card + .card{margin-top:16px;}
+.card h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:12px;}
+
+.card-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.card-toolbar h3{margin-bottom:0;}
+.toolbar-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.tb-btn{width:auto;padding:7px 12px;font-size:12px;font-family:var(--sans);font-weight:600;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;}
+.tb-btn:hover{background:var(--bg);border-color:var(--accent);color:var(--accent);}
+
+#finalSummaryCard summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:12px;user-select:none;}
+#finalSummaryCard summary::-webkit-details-marker{display:none;}
+#finalSummaryCard .details-arrow{display:inline-block;margin-right:8px;font-size:10px;color:var(--accent);transition:transform .15s ease;}
+#finalSummaryCard details[open] .details-arrow{transform:rotate(90deg);}
+#finalSummaryCard .fs-total{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--warn);text-transform:none;letter-spacing:normal;}
+
+.field{margin-bottom:14px;min-width:0;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:560px){.row2,.row3{grid-template-columns:1fr;}}
+
+select,input[type=text],input[type=number]{
+  width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--green);border-radius:7px;
+  padding:8px 10px;font-size:13.5px;font-family:var(--sans);
+}
+select{font-family:var(--sans);}
+select:focus,input:focus{outline:none;border-color:var(--accent);}
+.hint{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.45;}
+.hint b{color:var(--text);}
+
+.check-row{display:flex;align-items:flex-start;gap:9px;padding:7px 0;cursor:pointer;font-size:13px;}
+.check-row input{margin-top:3px;flex:none;width:15px;height:15px;accent-color:var(--accent);cursor:pointer;}
+.check-row .label{flex:1;}
+.check-row .coef{font-family:var(--mono);font-size:12px;color:var(--warn);white-space:nowrap;}
+.check-list{border-top:1px solid var(--border);margin-top:4px;}
+.check-list .check-row{border-bottom:1px solid var(--border);}
+
+details.spec{margin-top:6px;}
+details.spec summary{cursor:pointer;font-size:12px;color:var(--accent);list-style:none;}
+details.spec summary::-webkit-details-marker{display:none;}
+details.spec summary:before{content:"▸ ";}
+details.spec[open] summary:before{content:"▾ ";}
+details.spec .txt{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.55;padding-left:10px;border-left:2px solid var(--border);}
+
+.result{position:sticky;top:16px;background:var(--surface);border:1px solid var(--border-strong);border-radius:10px;overflow:hidden;}
+.result .head{background:var(--accent-soft);padding:14px 18px;border-bottom:1px solid var(--border);}
+.result .head .lbl{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);}
+.result .head .val{font-family:var(--mono);font-size:24px;font-weight:600;color:#fff;margin-top:3px;font-variant-numeric:tabular-nums;}
+.result .head .val small{font-size:13px;font-weight:500;color:var(--muted);}
+.result .breakdown{padding:14px 18px;}
+.bline{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:5px 0;border-bottom:1px dashed var(--border);}
+.bline:last-child{border-bottom:none;}
+.bline .k{color:var(--muted);}
+.bline .v{font-family:var(--mono);color:var(--text);white-space:nowrap;}
+.bline.total{border-top:1px solid var(--border-strong);margin-top:4px;padding-top:9px;font-weight:600;}
+.bline.total .v{color:var(--warn);font-size:14px;}
+.bline.clickable{cursor:pointer;border-radius:6px;padding:7px 8px;margin:0 -8px;}
+.bline.clickable:hover{background:var(--surface2);}
+.result .foot{padding:10px 18px 16px;font-size:11px;color:var(--muted);}
+
+.warn{background:var(--red-soft);border:1px solid var(--red);color:var(--red);border-radius:8px;padding:10px 12px;font-size:12.5px;margin-top:10px;line-height:1.5;}
+
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;}
+table.items{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px;}
+table.items th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:var(--surface2);padding:9px 10px;border-bottom:1px solid var(--border);position:sticky;top:0;}
+table.items td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+table.items tr:last-child td{border-bottom:none;}
+table.items input[type=number]{width:70px;padding:5px 7px;text-align:right;}
+table.items .price{text-align:right;color:var(--muted);}
+table.items .sub{text-align:right;font-weight:600;color:var(--warn);}
+table.items tr.nonzero td{background:var(--accent-soft);}
+
+.page-foot{margin-top:40px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;line-height:1.6;}
+
+#printArea{display:none;}
+.print-header{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #printArea, #printArea *{visibility:visible;}
+  #printArea{display:block;position:absolute;top:0;left:0;width:100%;background:#fff;color:#111;padding:0;}
+  .print-header{display:block;margin-bottom:16px;text-align:center;}
+  .print-brand{font-size:11px;letter-spacing:.14em;color:#888;text-transform:uppercase;font-weight:700;margin-bottom:8px;}
+  .print-header h1{font-size:19px;margin:0 0 6px;color:#111;letter-spacing:.01em;}
+  .print-subtitle{font-size:12px;color:#555;margin-bottom:6px;}
+  .print-meta{font-size:11px;color:#555;font-family:var(--mono);margin-top:4px;}
+  .print-date{font-size:11px;color:#555;}
+  .print-footer{margin-top:24px;padding-top:10px;border-top:1px solid #ccc;font-size:10px;color:#777;text-align:center;}
+  .print-section{margin-bottom:18px;page-break-inside:avoid;}
+  .print-section h2{font-size:14px;color:#111;border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:8px;}
+  #printArea .print-section p{margin:4px 0 10px;font-size:12px;color:#222;line-height:1.5;}
+  #printArea .print-section ul{margin:4px 0;padding-left:20px;font-size:12px;color:#222;}
+  .summary-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;}
+  .summary-table th{text-align:left;padding:10px 14px;background:#eee;color:#111;border-bottom:2px solid #999;font-size:13px;text-transform:uppercase;letter-spacing:.02em;}
+  .summary-table td{padding:8px 14px;border-bottom:1px solid #ddd;color:#111;}
+  .summary-table tr:nth-child(even) td{background:#f5f6f8;}
+  .print-pre{white-space:pre-wrap;font-family:var(--mono);font-size:11px;color:#222;background:#f4f4f4;padding:8px 10px;border-radius:4px;margin-top:4px;}
+  .module-empty{padding:4px 0;}
+  .module-empty .me-title{font-size:12.5px;font-weight:700;color:#888;}
+  .module-empty .me-sub{font-size:11px;color:#999;margin-top:2px;}
+  .grand-total-block{margin:16px 0 4px;padding:22px;text-align:center;border:2px solid #111;border-radius:10px;background:#f7f7f7;page-break-inside:avoid;}
+  .grand-total-block .gt-label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#555;margin-bottom:8px;}
+  .grand-total-block .gt-value{font-size:34px;font-weight:800;color:#111;font-family:var(--mono);}
+  .grand-total-block .gt-note{font-size:12px;color:#555;margin-top:6px;}
+  .qr-card{border:1px solid #ccc;border-radius:10px;padding:16px 20px;page-break-inside:avoid;}
+  .qr-card-title{font-size:13px;font-weight:700;color:#111;margin-bottom:12px;}
+  .qr-card-body{display:flex;align-items:center;gap:16px;}
+  .qr-card-body img{flex:none;border:1px solid #ddd;border-radius:6px;}
+  .qr-card-body p{margin:0;font-size:12px;color:#333;line-height:1.5;text-align:left;}
+}
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div id="site-header"></div>
+
+  <div id="infoTooltip" class="tooltip-box"></div>
+
+  <header class="top">
+    <div class="title-block">
+      <h1>Расчёт стоимости обмерных работ и обследования зданий и сооружений</h1>
+      <div class="sub">Цены сборника согласно СЦИ РК 8.03-04-2025 — по состоянию на 1 января 2026 г.</div>
+    </div>
+  </header>
+
+  <div class="card" id="commonCard" style="margin-bottom:20px;">
+    <div class="card-toolbar">
+      <h3>Исходные данные</h3>
+      <div class="toolbar-btns">
+        <button type="button" class="tb-btn" onclick="saveStateToFile()">💾 Сохранить</button>
+        <button type="button" class="tb-btn" onclick="document.getElementById('loadFileInput').click()">📂 Загрузить</button>
+        <button type="button" class="tb-btn" onclick="document.getElementById('helpModal').style.display='flex'">📖 Справка</button>
+        <button type="button" class="tb-btn" onclick="printReport()">🖨️ Расчётная записка</button>
+        <input type="file" id="loadFileInput" accept="application/json" style="display:none;" onchange="loadStateFromFile(event)">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Назначение</label>
+        <select id="bld_type"><option value="prom">Промышленное</option><option value="gr">Жилищно-гражданское</option></select>
+      </div>
+      <div class="field">
+        <label>Этажность</label>
+        <select id="bld_floors"><option value="one">Одноэтажное</option><option value="multi">Многоэтажное</option></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Категория сложности здания <span class="code info-ref" onclick="toggleInfoTooltip(event,'bcatTooltip')">Табл. 4</span></label>
+      <select id="bld_bcat"><option value="I">I</option><option value="II">II</option><option value="III">III</option></select>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Высота этажа/здания</label>
+        <select id="bld_height"></select>
+      </div>
+      <div class="field">
+        <label>Строительный объём, м³</label>
+        <input type="number" id="bld_volume" value="5000" min="1" max="1000000" step="10">
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="finalSummaryCard" style="margin-bottom:20px;">
+    <details>
+      <summary>
+        <span><span class="details-arrow">▶</span>Итого по всем видам работ<span class="vat-toggle" id="vatToggle">
+          <span class="vt-opt" data-vat="0" onclick="setVatMode(event,false)">без учёта НДС</span><span class="vt-sep">/</span><span class="vt-opt" data-vat="1" onclick="setVatMode(event,true)">с учётом НДС</span>
+        </span></span>
+        <span class="fs-total" id="finalSummaryTotal"></span>
+      </summary>
+      <div id="finalSummary"></div>
+    </details>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button data-m="obmery" class="active">Обмерные работы</button>
+    <button data-m="obsled">Инженерное обследование</button>
+    <button data-m="beton">Прочность бетона / кладки</button>
+    <button data-m="tests">Контрольные испытания</button>
+    <button data-m="nesush">Несущая способность</button>
+    <button data-m="zakl">Заключения по усилению</button>
+  </nav>
+
+  <!-- ================= МОДУЛЬ 1: ОБМЕРНЫЕ РАБОТЫ ================= -->
+  <section class="module active" id="mod-obmery">
+    <div class="module-head">
+      <h2>Обмерные работы<span class="code info-ref" onclick="toggleInfoTooltip(event,'obmeryPrice')">Табл. 1604‑0101…0206</span></h2>
+    </div>
+    <div class="layout" style="grid-template-columns:1fr;">
+      <div class="params">
+        <div class="card">
+          <h3>Категория сложности работ <span class="code info-ref" onclick="toggleInfoTooltip(event,'wcatTooltip')">Табл. 6</span></h3>
+          <div class="field">
+            <select id="ob_wcat"><option value="I">I</option><option value="II">II</option></select>
+            <div class="hint" id="ob_wcat_hint"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Объём работ</h3>
+          <label class="check-row"><input type="checkbox" id="ob_partial"><span class="label">Неполный объём — выполняются не все виды обмеров <span class="code info-ref" onclick="toggleInfoTooltip(event,'obpartial5')">Табл. 5</span></span></label>
+          <div id="ob_partial_list" style="display:none;"></div>
+        </div>
+
+        <div class="card">
+          <h3>Понижающие коэффициенты</h3>
+          <label class="check-row"><input type="checkbox" id="ob_drawings"><span class="label">Обмеры со сверкой имеющихся чертежей, с выдачей их заказчику</span><span class="coef">× 0,75</span></label>
+          <label class="check-row"><input type="checkbox" id="ob_estakada"><span class="label">Открытая эстакада (вместо закрытой)</span><span class="coef">× 0,70</span></label>
+        </div>
+
+        <div class="card" id="ob_step_card">
+          <h3>Шаг несущих конструкций <span class="code info-ref" onclick="toggleInfoTooltip(event,'step1')">Табл. 1</span></h3>
+          <div class="hint" style="margin-bottom:8px;">Применяется только для зданий <b>I категории сложности</b> (п. 8 Общих указаний).</div>
+          <select id="ob_step">
+            <option value="1">Не применять</option>
+            <option value="1.15">До 6 м — 1,15</option>
+            <option value="1.00">6–12 м, без подстропильных ферм и балок — 1,00</option>
+            <option value="1.10">Свыше 12 м — 1,10</option>
+            <option value="1.10b">При наличии подстропильных ферм и балок — 1,10</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <h3>Сложные условия выполнения работ <span class="code info-ref" onclick="toggleInfoTooltip(event,'complex2')">Табл. 2</span></h3>
+          <div id="ob_complex"></div>
+        </div>
+
+        <div class="card">
+          <h3>Малый строительный объём <span class="code info-ref" onclick="toggleInfoTooltip(event,'smallvol3')">Табл. 3</span></h3>
+          <label class="check-row"><input type="checkbox" id="ob_smallvol" checked><span class="label">Учитывать коэффициент по объёму автоматически (интерполяция между узлами таблицы)</span></label>
+          <div class="hint" id="ob_smallvol_hint"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= МОДУЛЬ 2: ИНЖЕНЕРНОЕ ОБСЛЕДОВАНИЕ ================= -->
+  <section class="module" id="mod-obsled">
+    <div class="module-head">
+      <h2>Инженерное обследование строительных конструкций<span class="code info-ref" onclick="toggleInfoTooltip(event,'obsledPrice')">Табл. 1604‑0301…0406</span></h2>
+    </div>
+    <div class="layout" style="grid-template-columns:1fr;">
+      <div class="params">
+        <div class="card">
+          <h3>Категория сложности работ <span class="code info-ref" onclick="toggleInfoTooltip(event,'oswcat8')">Табл. 8</span></h3>
+          <select id="os_wcat"><option value="I">I — независимо от состояния</option><option value="II">II — удовлетворительное состояние</option><option value="III">III — неудовлетворительное состояние</option></select>
+          <details class="spec" id="os_wcat_spec"><summary>Состав работ по выбранной категории</summary><div class="txt" id="os_wcat_txt"></div></details>
+        </div>
+
+        <div class="card">
+          <h3>Объём работ</h3>
+          <label class="check-row"><input type="checkbox" id="os_partial"><span class="label">Неполный объём — обследуются не все конструкции <span class="code info-ref" onclick="toggleInfoTooltip(event,'ospartial7')">Табл. 7</span></span></label>
+          <div id="os_partial_list" style="display:none;"></div>
+        </div>
+
+        <div class="card">
+          <h3>Специальные коэффициенты</h3>
+          <label class="check-row"><input type="checkbox" id="os_wholebuild"><span class="label">Дополнительно требуется расчёт несущей способности по зданию в целом (примечание к табл. 8; сам расчёт считается отдельно, гл. 3 подраздела 3)</span><span class="coef">× 0,80</span></label>
+          <label class="check-row"><input type="checkbox" id="os_estakada"><span class="label">Открытая эстакада (вместо закрытой)</span><span class="coef">× 0,70</span></label>
+          <label class="check-row"><input type="checkbox" id="os_eq"><span class="label">Оперативное обследование одноэтажного жилого здания после землетрясения, из местных стройматериалов</span><span class="coef">× 0,40</span></label>
+          <label class="check-row"><input type="checkbox" id="os_eqpub"><span class="label">То же — общественное здание</span><span class="coef">× 0,80</span></label>
+          <div class="hint">Последние два коэффициента — п. 3 Общих положений подраздела 2, применяются к таблицам 1604‑0401…0403 (одноэтажные ЖГ).</div>
+        </div>
+
+        <div class="card" id="os_step_card">
+          <h3>Шаг несущих конструкций <span class="code info-ref" onclick="toggleInfoTooltip(event,'step1')">Табл. 1</span></h3>
+          <div class="hint" style="margin-bottom:8px;">Применяется только для зданий <b>I категории сложности</b> (п. 8 Общих указаний).</div>
+          <select id="os_step">
+            <option value="1">Не применять</option>
+            <option value="1.15">До 6 м — 1,15</option>
+            <option value="1.00">6–12 м, без подстропильных ферм и балок — 1,00</option>
+            <option value="1.10">Свыше 12 м — 1,10</option>
+            <option value="1.10b">При наличии подстропильных ферм и балок — 1,10</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <h3>Сложные условия выполнения работ <span class="code info-ref" onclick="toggleInfoTooltip(event,'complex2')">Табл. 2</span></h3>
+          <div id="os_complex"></div>
+        </div>
+
+        <div class="card">
+          <h3>Малый строительный объём <span class="code info-ref" onclick="toggleInfoTooltip(event,'smallvol3')">Табл. 3</span></h3>
+          <label class="check-row"><input type="checkbox" id="os_smallvol" checked><span class="label">Учитывать коэффициент по объёму автоматически</span></label>
+          <div class="hint" id="os_smallvol_hint"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= МОДУЛЬ 3: ПРОЧНОСТЬ БЕТОНА / КЛАДКИ ================= -->
+  <section class="module" id="mod-beton">
+    <div class="module-head">
+      <h2>Определение прочности бетона и кирпичной кладки<span class="code">Табл. 1604‑0501, 0502</span></h2>
+      <p>Расценка — за одно место испытания, зависит от общего количества мест (тариф применяется ко всем местам сразу — экономия от объёма) и, для бетона, от высоты этажа.</p>
+    </div>
+    <div class="layout" style="grid-template-columns:1fr;">
+      <div class="params">
+        <div class="card">
+          <h3>Бетон <span class="code info-ref" onclick="toggleInfoTooltip(event,'betonPrice')">Табл. 1604‑0501‑01</span></h3>
+          <div class="field">
+            <label>Метод определения</label>
+            <select id="bt_method">
+              <option value="mech">Механические приборы (пластическая деформация)</option>
+              <option value="defect">Дефектоскопы (ультразвуковые и т.п.)</option>
+            </select>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label>Высота этажа</label>
+              <select id="bt_height">
+                <option value="0">до 6 м</option>
+                <option value="1">до 9 м</option>
+                <option value="2">до 12 м</option>
+                <option value="3">св. 12 м</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Количество мест испытаний</label>
+              <input type="number" id="bt_qty" value="40" min="0" max="9999" step="1">
+            </div>
+          </div>
+          <div class="hint">Многократное нанесение отпечатков / прозвучивание в районе одного сечения или участка расценивается как одно место (примечания к табл. 1604‑0501‑01).</div>
+          <div id="bt_warn"></div>
+        </div>
+
+        <div class="card">
+          <h3>Кирпичная кладка <span class="code info-ref" onclick="toggleInfoTooltip(event,'kladkaPrice')">Табл. 1604‑0502‑01</span></h3>
+          <div class="field">
+            <label>Количество мест испытаний (дефектоскопы)</label>
+            <input type="number" id="kl_qty" value="0" min="0" max="9999" step="1">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= МОДУЛЬ 4: КОНТРОЛЬНЫЕ ИСПЫТАНИЯ ================= -->
+  <section class="module" id="mod-tests">
+    <div class="module-head">
+      <h2>Контрольные испытания конструкций и изделий<span class="code">Табл. 1604‑0504‑01</span></h2>
+      <p>Фиксированная цена за 1 конструкцию/образец. Укажите количество по нужным позициям — сумма считается автоматически.</p>
+    </div>
+    <div class="layout" style="grid-template-columns:1fr;">
+      <div class="card">
+        <div class="table-wrap">
+          <table class="items" id="tests_table">
+            <thead><tr><th style="width:34px;">№</th><th>Наименование</th><th style="text-align:right;">Цена, тенге</th><th style="width:90px;">Кол-во</th><th style="text-align:right;">Сумма</th></tr></thead>
+            <tbody id="tests_tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= МОДУЛЬ 5: НЕСУЩАЯ СПОСОБНОСТЬ ================= -->
+  <section class="module" id="mod-nesush">
+    <div class="module-head">
+      <h2>Расчёт несущей способности конструкций<span class="code info-ref" onclick="toggleInfoTooltip(event,'nesushPrice')">Табл. 1604‑0601, 0602</span></h2>
+      <p>Подраздел 3, Глава 3. В стоимость включены затраты на подготовку исходных данных и эксплуатацию ПЭВМ при расчёте в специализированных программах.</p>
+    </div>
+    <div class="layout" style="grid-template-columns:1fr;">
+      <div class="params">
+        <div class="card">
+          <h3>Высота этажа/здания <span class="code info-ref" onclick="toggleInfoTooltip(event,'nesushPrice')">Табл. 1604‑0601, 0602</span></h3>
+          <div class="field">
+            <select id="ns_height"></select>
+          </div>
+          <div id="ns_height_warn"></div>
+        </div>
+
+        <div class="card">
+          <h3>Коэффициенты (примечания к табл. 1604‑0601‑01)</h3>
+          <label class="check-row"><input type="checkbox" id="ns_loads"><span class="label">Необходим сбор нагрузок к полученной величине</span><span class="coef">× 1,10</span></label>
+          <label class="check-row"><input type="checkbox" id="ns_seismic"><span class="label">Учёт сейсмического воздействия</span><span class="coef">× 1,35</span></label>
+          <label class="check-row"><input type="checkbox" id="ns_plan30"><span class="label">Размер здания в плане более 30 м</span><span class="coef">× 1,10</span></label>
+          <label class="check-row"><input type="checkbox" id="ns_h50"><span class="label">Высота здания более 50 м</span><span class="coef">× 1,20</span></label>
+          <label class="check-row"><input type="checkbox" id="ns_vert"><span class="label">Учёт вертикальных воздействий</span><span class="coef">× 1,30</span></label>
+          <label class="check-row"><input type="checkbox" id="ns_instr"><span class="label">Использование инструментальных записей ускорений основания / синтезированных акселерограмм</span><span class="coef">× 1,40</span></label>
+          <label class="check-row"><input type="checkbox" id="ns_noreinf"><span class="label">Расчёт без армирования</span><span class="coef">× 0,90</span></label>
+          <label class="check-row"><input type="checkbox" id="ns_noreinfcomb"><span class="label">Расчёт без армирования и без расчётных сочетаний усилий</span><span class="coef">× 0,80</span></label>
+          <label class="check-row"><input type="checkbox" id="ns_flat"><span class="label">Плоская расчётная схема здания</span><span class="coef">× 0,90</span></label>
+          <div class="hint">При использовании нескольких коэффициентов их значения перемножаются.</div>
+        </div>
+
+        <div class="card">
+          <h3>Малый строительный объём <span class="code info-ref" onclick="toggleInfoTooltip(event,'smallvol3')">Табл. 3</span></h3>
+          <label class="check-row"><input type="checkbox" id="ns_smallvol" checked><span class="label">Учитывать коэффициент по объёму автоматически</span></label>
+          <div class="hint" id="ns_smallvol_hint"></div>
+        </div>
+
+        <div class="card">
+          <h3>Перерасчёт по изменённым данным</h3>
+          <label class="check-row"><input type="checkbox" id="ns_recalc"><span class="label">Это повторный расчёт по изменённым исходным данным (нагрузки, решения)</span></label>
+          <div class="field" id="ns_recalc_field" style="display:none;margin-top:8px;">
+            <label>Коэффициент варианта перерасчёта (0,2–0,7 — по характеру изменений)</label>
+            <input type="number" id="ns_recalc_val" value="0.5" min="0.2" max="0.7" step="0.05">
+          </div>
+        </div>
+
+        <div class="card">
+          <label class="check-row"><input type="checkbox" id="ns_special"><span class="label"><b>Повышенная сложность конструкций</b> — стоимость определяется по договорным ценам, вне Сборника (п. 4 Общих положений главы 3)</span></label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= МОДУЛЬ 6: ЗАКЛЮЧЕНИЯ ПО УСИЛЕНИЮ ================= -->
+  <section class="module" id="mod-zakl">
+    <div class="module-head">
+      <h2>Заключения и рекомендации по усилению и восстановлению<span class="code info-ref" onclick="toggleInfoTooltip(event,'zaklPrice')">Табл. 1604‑0701, 0702</span></h2>
+      <p>Подраздел 4, Глава 1.</p>
+    </div>
+    <div class="layout" style="grid-template-columns:1fr;">
+      <div class="params">
+        <div class="card">
+          <h3>Высота этажа/здания <span class="code info-ref" onclick="toggleInfoTooltip(event,'zaklPrice')">Табл. 1604‑0701, 0702</span></h3>
+          <div class="field">
+            <select id="zk_height"></select>
+          </div>
+          <div id="zk_height_warn"></div>
+        </div>
+
+        <div class="card">
+          <h3>Сложные условия выполнения работ <span class="code info-ref" onclick="toggleInfoTooltip(event,'complex2zakl')">Табл. 2, подпункты 1, 6–10</span></h3>
+          <div id="zk_complex"></div>
+          <div class="hint">К этим ценам применяются только факторы табл. 2 п. 1 и 6–10 (примечание к табл. 1604‑0701/0702).</div>
+        </div>
+
+        <div class="card">
+          <h3>Малый строительный объём <span class="code info-ref" onclick="toggleInfoTooltip(event,'smallvol3')">Табл. 3</span></h3>
+          <label class="check-row"><input type="checkbox" id="zk_smallvol" checked><span class="label">Учитывать коэффициент по объёму автоматически</span></label>
+          <div class="hint" id="zk_smallvol_hint"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="page-foot">
+    Источник: СЦИ РК 8.03-04-2025 «Цены на инженерные изыскания для строительства. Раздел 4. Обмерные работы и обследования зданий и сооружений» (цены на 1 января 2026 г., без НДС). Не учтены: очистка поверхностей, откопка шурфов, вскрытия и их заделка, устройство лесов и подмостей, командировочные расходы при выезде за пределы населённого пункта организации-исполнителя — эти работы считаются отдельно. Калькулятор — вспомогательный инструмент для прикидочных расчётов; для договорной цены сверяйтесь с полным текстом Сборника.
+  </div>
+
+</div>
+
+<div id="printArea"></div>
+
+<div id="helpModal" onclick="if(event.target===this) this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;padding:20px;">
+  <div class="card" style="max-width:560px;max-height:80vh;overflow-y:auto;">
+    <h3 style="margin-bottom:12px;">Справка</h3>
+    <div style="font-size:13px;line-height:1.65;color:var(--text);">
+      <p style="margin-bottom:10px;">Калькулятор считает стоимость обмерных работ и инженерного обследования зданий и сооружений по расценкам Сборника СЦИ РК 8.03-04-2025 (Раздел 4).</p>
+      <p style="margin-bottom:10px;"><b style="color:#fff;">Исходные данные</b> (назначение, этажность, категория сложности здания, высота этажа/здания, строительный объём) задаются один раз и используются в модулях «Обмерные работы», «Инженерное обследование», «Несущая способность» и «Заключения по усилению». «Прочность бетона / кладки» и «Контрольные испытания» считаются независимо от них.</p>
+      <p style="margin-bottom:10px;">На каждой вкладке — свои дополнительные коэффициенты. Все ссылки вида «Табл. N» кликабельны: по клику всплывает подсказка с расшифровкой соответствующей таблицы Сборника.</p>
+      <p style="margin-bottom:10px;">Итог по всем модулям — в свёрнутой карточке «Итого по всем видам работ» сразу под исходными данными; переключатель «с учётом / без учёта НДС» — прямо в её заголовке.</p>
+      <p style="margin-bottom:0;"><b style="color:#fff;">Сохранить/Загрузить</b> — экспорт и импорт всех введённых данных в файл (например, чтобы посчитать другой объект и вернуться к текущему расчёту, или передать файл коллеге). <b style="color:#fff;">Расчётная записка</b> — печатная версия итоговой сметы.</p>
+    </div>
+    <button type="button" class="tb-btn" style="margin-top:14px;" onclick="document.getElementById('helpModal').style.display='none'">✕ Закрыть</button>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+
+<script>
+'use strict';
+/* ============================================================
+   ДАННЫЕ СБОРНИКА (извлечены и сверены из исходного .docx)
+   ============================================================ */
+
+// Табл.1 — коэффициенты по шагу несущих конструкций (только категория I)
+const STEP_COEF = {"1.15":1.15, "1.00":1.00, "1.10":1.10, "1.10b":1.10};
+
+// Табл.2 — коэффициенты сложных условий выполнения работ
+const COMPLEX_FACTORS = [
+  {id:1, label:"Вечномерзлые, просадочные, засоленные, набухающие грунты; карст, оползни; здания над горными выработками, в подтопляемых районах", coef:1.20},
+  {id:2, label:"Насыщенность оборудования (>50% площади помещений), затрудняющая обмерно-обследовательские работы", coef:1.15},
+  {id:3, label:"Работы в действующих горячих/вредных цехах, в неотапливаемых зданиях зимой", coef:1.25},
+  {id:4, label:"Здания, повреждённые землетрясением 2-й степени и выше по шкале MSK-64, а также аварийные", coef:1.20},
+  {id:5, label:"Здания — памятники архитектуры", coef:1.20},
+  {id:6, label:"Усиление конструкций", coef:1.10},
+  {id:7, label:"Сейсмичность 7 баллов", coef:1.20, group:"seismic"},
+  {id:8, label:"Сейсмичность 8 баллов", coef:1.30, group:"seismic"},
+  {id:9, label:"Сейсмичность 9 баллов", coef:1.40, group:"seismic"},
+  {id:10, label:"Сейсмичность 10 баллов", coef:1.50, group:"seismic"},
+];
+const ZAKL_ALLOWED_FACTORS = [1,6,7,8,9,10]; // допустимые для табл. 0701/0702
+
+// Табл.3 — малый строительный объём (кусочно-линейная интерполяция по узлам)
+function table3Coef(v){
+  if (!(v>0)) return 1;
+  const nodes=[[1000,2.8],[2000,2.0],[3000,1.4],[4000,1.2]];
+  if (v<=1000) return 2.8;
+  if (v>=4000) return 1.0;
+  for(let i=0;i<nodes.length-1;i++){
+    const [v1,c1]=nodes[i], [v2,c2]=nodes[i+1];
+    if (v>=v1 && v<=v2){ const t=(v-v1)/(v2-v1); return c1+t*(c2-c1); }
+  }
+  return 1.0;
+}
+
+// Табл.4 — категории сложности зданий (описания)
+const BCAT_DESC = {
+  one: {
+    I:"Однопролётные и двухпролётные бескрановые здания и сооружения высотой до 5 м.",
+    II:"Все здания и сооружения, не вошедшие в I и III категории сложности.",
+    III:"Здания каркасной конструкции с двухъярусным расположением мостовых (или консольных) кранов, либо уникальные здания и сооружения."
+  },
+  multi: {
+    I:"Здания прямоугольной формы в плане с однотипными помещениями в пределах этажа и простой конструктивной схемой.",
+    II:"Здания, состоящие в плане из 2–3 прямоугольников, конструктивная схема средней сложности, среднее количество разнотипных помещений в пределах этажа.",
+    III:"Здания из нескольких (более 3) прямоугольников или криволинейных очертаний, сложная конструктивная схема, много разнотипных помещений в пределах этажа."
+  }
+};
+
+// Табл.6 — категории сложности обмерных работ
+const OB_WCAT_DESC = {
+  I:"Обмеры в объёме, необходимом для визуального обследования, составления паспортов зданий с выпуском чертежей, схем, планов и разрезов.",
+  II:"Обмерные работы по табл. 5 с выявлением состава перекрытий и покрытий, узлов примыканий и сопряжений конструкций, определением армирования ж/б конструкций, замером высот и длин сварных швов, диаметра заклёпок/болтов и их шага, с составлением и выпуском чертежей и фотографий."
+};
+
+// Табл.8 — категории сложности обследовательских работ
+const OS_WCAT_DESC = {
+  I:"Независимо от состояния конструкций: составление дефектных ведомостей для сметы на капремонт; визуальное обследование (паспортизация), карточки состояния зданий после землетрясений.",
+  II:"Удовлетворительное состояние: выявление объёмов работ, изучение документации, программа обследования, детальный осмотр с зарисовкой дефектов, указание мест отбора проб, фотофиксация, графическое оформление, расчёты несущей способности по отдельным конструкциям, заключение с рекомендациями по эксплуатации.",
+  III:"Неудовлетворительное состояние: то же, что и категория II, плюс — дефектные ведомости повреждений, оценка степени аварийности, разработка временных противоаварийных мероприятий, заключение с выводами и рекомендациями."
+};
+
+// Табл.5 — проценты видов обмерных работ [одноэт-пром, одноэт-жг, многоэт-пром, многоэт-жг]
+const OB_PARTIAL_ITEMS = [
+  {n:"Планы фундаментов и их разрезы", p:[3.7,4.2,3.2,3.9]},
+  {n:"Планы здания", p:[9.1,10.2,16.4,18.2]},
+  {n:"Планы колонн и связей", p:[2.7,2.6,3.2,2.3]},
+  {n:"Планы полов и их разрезы", p:[2.0,2.9,4.3,4.6]},
+  {n:"Поперечные и продольные разрезы с узлами сопряжений конструкций", p:[10.3,12.3,20.1,20.0]},
+  {n:"Фасады", p:[11.4,16.2,18.1,18.2]},
+  {n:"Конструкции колонн и стоек", p:[7.1,7.0,3.2,3.0]},
+  {n:"Антресоли, площадки, лестницы", p:[3.6,3.5,2.1,2.1]},
+  {n:"Подкрановые и тормозные конструкции", p:[7.3,null,null,null]},
+  {n:"Конструктивные планы перекрытий со вскрытиями", p:[null,null,18.1,16.1]},
+  {n:"Конструктивная схема несущих конструкций со связями, прогонами, узлами сопряжений", p:[16.5,21.9,null,null]},
+  {n:"Конструктивная схема ограждающих конструкций покрытий со вскрытиями", p:[10.4,15.2,null,null]},
+  {n:"Стропильные и подстропильные конструкции", p:[12.0,null,null,null]},
+  {n:"Крыши или совмещённые конструкции покрытия", p:[null,null,10.2,10.4]},
+  {n:"Планы кровли", p:[3.9,4.0,1.1,1.2]},
+];
+// Табл.7 — проценты видов обследовательских работ
+const OS_PARTIAL_ITEMS = [
+  {n:"Фундаменты", p:[5.8,6.5,4.5,4.0]},
+  {n:"Стены и перегородки", p:[14.5,21.0,21.8,24.8]},
+  {n:"Полы", p:[4.5,6.0,6.5,6.0]},
+  {n:"Колонны, столбы, стойки и связи по ним", p:[13.8,16.2,9.0,19.6]},
+  {n:"Антресоли, площадки, лестницы", p:[3.8,6.6,3.8,3.7]},
+  {n:"Подкрановые и тормозные конструкции", p:[19.2,null,null,null]},
+  {n:"Перекрытия", p:[null,null,20.1,19.4]},
+  {n:"Несущие конструкции покрытия", p:[17.7,20.8,15.8,6.0]},
+  {n:"Ограждающие конструкции покрытия", p:[15.4,16.9,6.0,3.8]},
+  {n:"Совмещённые покрытия для крыши", p:[null,null,10.2,10.4]},
+  {n:"Кровля", p:[5.3,6.0,2.3,2.3]},
+];
+// индекс колонки для процентных таблиц: 0=одноэт-пром,1=одноэт-жг,2=многоэт-пром,3=многоэт-жг
+function partialColIndex(type, floors){ return (floors==='one'?0:2) + (type==='gr'?1:0); }
+
+// Основные ценовые массивы (проверены программным извлечением из docx)
+const OBMERY_PRICES = {"prom": {"one": {"I": {"I": [6869, 6221, 4585, 3893, 3456], "II": [9649, 8180, 6419, 5642, 4952]}, "II": {"I": [8928, 6983, 6022, 5051, 4500], "II": [11834, 10608, 8365, 7095, 6291]}, "III": {"I": [12935, 9817, 7702, 6504, 5783], "II": [16166, 13726, 10791, 9127, 7715]}}, "multi": {"I": {"I": [7561, 6842, 5051], "II": [10608, 9013, 7052]}, "II": {"I": [9833, 7675, 6616], "II": [13020, 11680, 9183]}, "III": {"I": [14219, 10804, 8463], "II": [17787, 15107, 11863]}}}, "gr": {"one": {"I": {"I": [7885, 7150, 5274, 4487, 3978], "II": [11102, 9410, 7377, 6488, 5698]}, "II": {"I": [10255, 8026, 6927, 5812, 5162], "II": [13612, 12201, 9607, 8167, 7235]}, "III": {"I": [14868, 11300, 8859, 7476, 6658], "II": [18591, 15799, 12399, 10496, 8872]}}, "multi": {"I": {"I": [9551, 8689, 7856, 5812], "II": [13444, 12201, 10355, 8111]}, "II": {"I": [12441, 11300, 8830, 7617], "II": [16476, 14966, 13444, 10565]}, "III": {"I": [17984, 16348, 12428, 9732], "II": [22500, 20454, 17364, 13641]}}}};
+
+const OBSLED_PRICES = {"prom": {"one": {"I": {"I": [3893, 3315, 2595, 2187, 1919], "II": [19551, 16574, 13005, 11030, 9591], "III": [23458, 19918, 15658, 13260, 11821]}, "II": {"I": [4670, 3992, 3103, 2638, 2312], "II": [23458, 19889, 15616, 13217, 11637], "III": [27930, 20749, 16997, 15770, 14064]}, "III": {"I": [5303, 4500, 3556, 3808, 2667], "II": [26505, 22471, 17646, 14953, 13274], "III": [31823, 23655, 19381, 17984, 16038]}}, "multi": {"I": {"I": [4287, 3654, 2850], "II": [21526, 18240, 14318], "III": [25813, 21906, 17210]}, "II": {"I": [5120, 4401, 3385], "II": [25813, 21864, 17181], "III": [30723, 22809, 18705]}, "III": {"I": [5825, 4952, 3893], "II": [29172, 24727, 19424], "III": [35011, 26026, 21329]}}}, "gr": {"one": {"I": {"I": [4500, 3808, 2991, 2553, 2187], "II": [25278, 19071, 14953, 12681, 11030], "III": [26957, 22907, 17984, 15262, 13612]}, "II": {"I": [5375, 4628, 3556, 3047, 2667], "II": [26957, 22880, 17970, 15220, 13386], "III": [32134, 23867, 19578, 18155, 16194]}, "III": {"I": [6094, 5191, 4077, 3442, 3060], "II": [30483, 25842, 20313, 17210, 15249], "III": [36590, 27211, 22287, 20664, 18423]}}, "multi": {"I": {"I": [5416, 4952, 4189, 3286], "II": [27224, 24741, 20961, 16462], "III": [32641, 29693, 25193, 19804]}, "II": {"I": [6504, 5924, 5077, 3907], "II": [32641, 29693, 25151, 19748], "III": [38890, 35348, 26237, 21526]}, "III": {"I": [7364, 6714, 5685, 4471], "II": [36887, 33530, 28437, 22343], "III": [44306, 40258, 29920, 24530]}}}};
+
+const NESUSH_PRICES = {"prom": {"one": {"I": [6602, 6235, 5967, 5684, 5501], "II": [7885, 7518, 7151, 6785, 6461], "III": [8986, 8534, 8111, 7701, 7335]}, "multi": {"I": [7292, 6926, 6586], "II": [8745, 8308, 7885], "III": [9888, 9393, 8915]}}, "gr": {"one": {"I": [8731, 8138, 7715, 7335], "II": [9127, 8675, 8252, 7829], "III": [10339, 9833, 9338, 8872]}, "multi": {"I": [9226, 8760, 8322], "II": [11073, 10523, 10000], "III": [12512, 11877, 11285]}}};
+
+const ZAKL_PRICES = {"prom": {"one": {"I": [7209, 6700, 5629, 4739, 4189], "II": [10256, 8646, 6728, 5629, 4992], "III": [11679, 9859, 7659, 6419, 5698]}, "multi": {"I": [7914, 7363, 6193], "II": [11285, 9493, 7419], "III": [12850, 10847, 8436]}}, "gr": {"one": {"I": [12300, 8279, 7701, 6461], "II": [14599, 11791, 9945, 7758], "III": [16659, 13428, 11355, 8829]}, "multi": {"I": [13527, 9112, 8449, 7123], "II": [16066, 12978, 10946, 8534], "III": [18309, 14782, 12497, 9705]}}};
+
+const BETON_MECH = {"do50": [5798, 6926, 8322, 9987], "do150": [5501, 6602, 7914, 9493], "do250": [4570, 5487, 6855, 7914], "more250": [3273, 3923, 4711, 5657]};
+const BETON_DEFECT = {"do50": [5979, 7151, 8619, 10311], "do150": [4979, 5979, null, 8717], "do250": [4726, 5684, 6812, 8180], "more250": [3640, 4428, 5303, 6376]};
+const KLADKA_PRICES = [6278, 5769, 5219, 4684, 3654];
+
+const CONTROL_TESTS = [["Стропильная ферма железобетонная, пролетом 24 м", 1508597], ["Стропильная ферма железобетонная, пролетом 12 м", 1167947], ["Стропильная ферма стальная, пролетом 36 м", 1411269], ["Стропильная ферма стальная, пролетом 6 м", 778631], ["Подстропильная ферма", 1265275], ["Железобетонные балки пролетом 18 м", 924624], ["Железобетонные балки пролетом 6 м", 729966], ["Железобетонные ригели пролетом свыше 6 м", 739701], ["Железобетонные ригели пролетом до 6 м", 525577], ["Ребристые плиты покрытий пролетом до 3 м, шириной до 1,5 м", 447713], ["Ребристые плиты покрытий пролетом до 3 м, шириной до 3 м", 525577], ["Ребристые плиты покрытий пролетом до 6 м, шириной до 1,5 м", 545041], ["Ребристые плиты покрытий пролетом до 6 м, шириной до 3 м", 622905], ["Ребристые плиты покрытий пролетом более 6 м", 778631], ["Многопустотные плиты перекрытий пролетом до 6 м", 545041], ["Многопустотные плиты перекрытий пролетом более 6 м", 778631], ["Плиты, опертые по контуру", 739701], ["Плита, опертая по трем сторонам", 1109549], ["Стеновые панели навесные длиной до 6 м", 875961], ["Стеновые панели навесные длиной более 6 м", 1167947], ["Стеновые панели крупнопанельных зданий", 1411269], ["Колонны, стойки", 1109549], ["Сваи", 700769], ["Лестничные площадки", 389315], ["Лестничные марши", 467179], ["Балконные, карнизные плиты", 389315], ["Панели перегородок", 389315], ["Фундаментные балки", 389315], ["Перемычки пролетом 2 м", 291988], ["Перемычки пролетом более 2 м", 389315], ["Определение прочности бетона испытанием контрольных кубов (три образца)", 34065], ["Определение прочности бетона неразрушающими методами (одна точка)", 5798], ["Испытание образцов арматуры: предел текучести, временное сопротивление (три образца)", 58398], ["Испытание образцов арматуры: диаграмма деформирования, остаточные деформации", 116794], ["Испытание кирпича, керамических камней, блоков, раствора", 11355], ["Испытание образцов строительных материалов", 11355], ["Испытание кирпичной кладки на сжатие", 116794], ["Испытание кирпичной кладки на осевое растяжение", 152341]];
+
+/* ============================================================
+   ВЫСОТНЫЕ ГРАДАЦИИ
+   ============================================================ */
+function obHeights(floors, type){
+  if (floors==='one') return ["до 4,5 м","св. 4,5 до 6 м","св. 6 до 8 м","св. 8 до 10 м","св. 10 м"];
+  return type==='gr'
+    ? ["до 3,3 м","св. 3,3 до 4,5 м","св. 4,5 до 6 м","св. 7,2 м"]
+    : ["до 4,5 м","св. 4,5 до 6 м","св. 7,2 м"];
+}
+function nsHeights(floors, type){
+  if (floors==='one') return type==='gr'
+    ? ["до 4,5 м","св. 4,5 до 6 м","св. 6 до 7,2 м","св. 7,2 м"]
+    : ["до 4,5 м","св. 4,5 до 6 м","св. 6 до 8 м","св. 8 до 10 м","св. 10 м"];
+  return ["до 4,5 м","св. 4,5 до 6 м","св. 7,2 м"];
+}
+function zkHeights(floors, type){
+  if (type==='gr') return ["до 3,3 м","св. 3,3 до 4,5 м","св. 4,5 до 6 м","св. 7,2 м"];
+  return floors==='one'
+    ? ["до 4,5 м","св. 4,5 до 6 м","св. 6 до 8 м","св. 8 до 10 м","св. 10 м"]
+    : ["до 4,5 м","св. 4,5 до 6 м","св. 7,2 м"];
+}
+
+// Разбор текстовой градации высоты («до 4,5 м», «св. 4,5 до 6 м», «св. 10 м») в числовой диапазон —
+// нужно, чтобы сверять её с общим полем «Высота этажа/здания» (своя шкала на вкладках НС/усиления).
+function heightLabelRange(label){
+  if (!label) return null;
+  const nums = (label.match(/[\d,]+/g) || []).map(s=>parseFloat(s.replace(',','.')));
+  if (!nums.length) return null;
+  if (label.trim().startsWith('до ')) return [0, nums[0]];
+  if (nums.length===2) return [nums[0], nums[1]];
+  return [nums[0], Infinity];
+}
+function heightMismatchWarning(ownSelectId){
+  const sharedLabel = $('#bld_height').selectedOptions[0]?.textContent;
+  const ownLabel = $(ownSelectId).selectedOptions[0]?.textContent;
+  const a = heightLabelRange(sharedLabel), b = heightLabelRange(ownLabel);
+  if (!a || !b || a[1] > b[0] && b[1] > a[0]) return '';
+  return `<div class="warn" style="margin-top:10px;">Не совпадает с полем «Высота этажа/здания» в исходных данных (${sharedLabel}) — на этой вкладке у высоты своя шкала градаций (табл. отличается от общей), проверьте выбор.</div>`;
+}
+
+/* ============================================================
+   ФОРМАТИРОВАНИЕ
+   ============================================================ */
+const nf = new Intl.NumberFormat('ru-RU', {maximumFractionDigits:0});
+const nf2 = new Intl.NumberFormat('ru-RU', {maximumFractionDigits:2});
+function tenge(n){ return nf.format(Math.round(n)) + ' ₸'; }
+function fillSelect(sel, arr){
+  sel.innerHTML = arr.map((h,i)=>`<option value="${i}">${h}</option>`).join('');
+}
+const VAT_RATE = 16;
+let vatOn = false;
+function vatState(){
+  return { on: vatOn, rate: VAT_RATE };
+}
+function syncVatToggleUI(){
+  $all('#vatToggle .vt-opt').forEach(el=>{ el.classList.toggle('active', (el.dataset.vat==='1')===vatOn); });
+}
+function setVatMode(e, on){
+  e.preventDefault();
+  e.stopPropagation();
+  vatOn = on;
+  syncVatToggleUI();
+  try{ localStorage.setItem('esk-obmery-obsledovaniya-vat', vatOn?'1':'0'); }catch(err){}
+  renderSummary();
+}
+function $(s,root){ return (root||document).querySelector(s); }
+function $all(s,root){ return Array.from((root||document).querySelectorAll(s)); }
+
+/* ============================================================
+   ВСПЛЫВАЮЩИЕ ПОДСКАЗКИ ПО ССЫЛКАМ НА ТАБЛИЦЫ СБОРНИКА
+   Единый плавающий блок #infoTooltip, содержимое генерируется на
+   лету функциями из INFO_TOOLTIPS (по текущему выбору здания/категорий)
+   ============================================================ */
+function ttPriceMatrix(title, code, pricesObj, wcatKeys, heightLabels){
+  const type=$('#bld_type').value, floors=$('#bld_floors').value;
+  const renderTable = (wcat) => {
+    let h = '<table><tr><th>Кат. здания</th>' + heightLabels.map(l=>`<th>${l}</th>`).join('') + '</tr>';
+    ['I','II','III'].forEach(b=>{
+      const branch = pricesObj[type][floors][b];
+      const arr = wcat ? (branch && branch[wcat]) : branch;
+      if (!arr) return;
+      h += `<tr><td>${b}</td>` + arr.map(v=>`<td>${v==null?'—':nf.format(v)}</td>`).join('') + '</tr>';
+    });
+    return h + '</table>';
+  };
+  let html = `<div class="tt-title">${title} — ${code}</div>`;
+  html += wcatKeys ? wcatKeys.map(w=>`<div class="tt-sub">Категория работ ${w}</div>${renderTable(w)}`).join('') : renderTable(null);
+  html += `<div class="tt-note">Цена, тенге, за 100 м³ строительного объёма. Для текущего выбора: ${type==='prom'?'промышленное':'жилищно-гражданское'}, ${floors==='one'?'одноэтажное':'многоэтажное'}.</div>`;
+  return html;
+}
+function ttComplex(allowedIds){
+  const factors = allowedIds ? COMPLEX_FACTORS.filter(f=>allowedIds.includes(f.id)) : COMPLEX_FACTORS;
+  let html = `<div class="tt-title">Сложные условия выполнения работ — Табл. 2</div>`;
+  factors.forEach(f=>{ html += `<div class="tt-row"><b>× ${f.coef.toFixed(2)}</b>${f.label}</div>`; });
+  html += `<div class="tt-note">Сейсмичность (7–10 баллов) — взаимоисключающий выбор. При нескольких факторах коэффициенты перемножаются.</div>`;
+  return html;
+}
+function ttPartial(items, code, title){
+  const type=$('#bld_type').value, floors=$('#bld_floors').value;
+  const col = partialColIndex(type, floors);
+  let html = `<div class="tt-title">${title} — ${code}</div>`;
+  items.forEach(it=>{
+    const p = it.p[col];
+    if (p==null) return;
+    html += `<div class="tt-row"><b>${p.toFixed(1)}%</b>${it.n}</div>`;
+  });
+  html += `<div class="tt-note">Для текущего выбора: ${type==='prom'?'промышленное':'жилищно-гражданское'}, ${floors==='one'?'одноэтажное':'многоэтажное'}.</div>`;
+  return html;
+}
+const INFO_TOOLTIPS = {
+  bcatTooltip: () => `
+    <div class="tt-title">Категории сложности зданий — Табл. 4</div>
+    <div class="tt-sub">Одноэтажные</div>
+    <div class="tt-row"><b>I</b>${BCAT_DESC.one.I}</div>
+    <div class="tt-row"><b>II</b>${BCAT_DESC.one.II}</div>
+    <div class="tt-row"><b>III</b>${BCAT_DESC.one.III}</div>
+    <div class="tt-sub">Многоэтажные</div>
+    <div class="tt-row"><b>I</b>${BCAT_DESC.multi.I}</div>
+    <div class="tt-row"><b>II</b>${BCAT_DESC.multi.II}</div>
+    <div class="tt-row"><b>III</b>${BCAT_DESC.multi.III}</div>`,
+  wcatTooltip: () => `
+    <div class="tt-title">Категории сложности обмерных работ — Табл. 6</div>
+    <div class="tt-row"><b>I</b>${OB_WCAT_DESC.I}</div>
+    <div class="tt-row"><b>II</b>${OB_WCAT_DESC.II}</div>`,
+  oswcat8: () => `
+    <div class="tt-title">Категории сложности обследовательских работ — Табл. 8</div>
+    <div class="tt-row"><b>I</b>${OS_WCAT_DESC.I}</div>
+    <div class="tt-row"><b>II</b>${OS_WCAT_DESC.II}</div>
+    <div class="tt-row"><b>III</b>${OS_WCAT_DESC.III}</div>`,
+  step1: () => `
+    <div class="tt-title">Шаг несущих конструкций — Табл. 1</div>
+    <div class="tt-row"><b>× 1,15</b>До 6 м</div>
+    <div class="tt-row"><b>× 1,00</b>6–12 м, без подстропильных ферм и балок</div>
+    <div class="tt-row"><b>× 1,10</b>Свыше 12 м</div>
+    <div class="tt-row"><b>× 1,10</b>При наличии подстропильных ферм и балок</div>
+    <div class="tt-note">Применяется только для зданий I категории сложности (п. 8 Общих указаний).</div>`,
+  complex2: () => ttComplex(null),
+  complex2zakl: () => ttComplex(ZAKL_ALLOWED_FACTORS),
+  smallvol3: () => `
+    <div class="tt-title">Малый строительный объём — Табл. 3</div>
+    <table><tr><th>Объём, м³</th><th>Коэфф.</th></tr>
+      <tr><td>до 1000</td><td>2,80</td></tr>
+      <tr><td>2000</td><td>2,00</td></tr>
+      <tr><td>3000</td><td>1,40</td></tr>
+      <tr><td>4000 и более</td><td>1,00</td></tr>
+    </table>
+    <div class="tt-note">Между узлами — линейная интерполяция (применяется автоматически).</div>`,
+  obpartial5: () => ttPartial(OB_PARTIAL_ITEMS, 'Табл. 5', 'Виды обмерных работ'),
+  ospartial7: () => ttPartial(OS_PARTIAL_ITEMS, 'Табл. 7', 'Виды обследовательских работ'),
+  betonPrice: () => {
+    const heights = ['до 6 м','до 9 м','до 12 м','св. 12 м'];
+    const brackets = [['до 50','do50'],['51–150','do150'],['151–250','do250'],['более 250','more250']];
+    const tbl = obj => '<table><tr><th>Мест</th>' + heights.map(h=>`<th>${h}</th>`).join('') + '</tr>' +
+      brackets.map(([lbl,key])=>`<tr><td>${lbl}</td>` + obj[key].map(v=>`<td>${v==null?'—':nf.format(v)}</td>`).join('') + '</tr>').join('') + '</table>';
+    return `<div class="tt-title">Прочность бетона — Табл. 1604‑0501‑01</div>
+      <div class="tt-sub">Механические приборы</div>${tbl(BETON_MECH)}
+      <div class="tt-sub">Дефектоскопы</div>${tbl(BETON_DEFECT)}
+      <div class="tt-note">Цена, тенге, за 1 место испытания (тариф применяется ко всем местам сразу).</div>`;
+  },
+  kladkaPrice: () => {
+    const brackets = ['до 50','51–150','151–250','251–350','более 350'];
+    const rows = KLADKA_PRICES.map((v,i)=>`<tr><td>${brackets[i]}</td><td>${nf.format(v)}</td></tr>`).join('');
+    return `<div class="tt-title">Кирпичная кладка — Табл. 1604‑0502‑01</div>
+      <table><tr><th>Мест</th><th>Цена</th></tr>${rows}</table>
+      <div class="tt-note">Цена, тенге, за 1 место испытания (дефектоскопы).</div>`;
+  },
+  obmeryPrice: () => { const floors=$('#bld_floors').value, type=$('#bld_type').value; return ttPriceMatrix('Обмерные работы','Табл. 1604‑0101…0206', OBMERY_PRICES, ['I','II'], obHeights(floors,type)); },
+  obsledPrice: () => { const floors=$('#bld_floors').value, type=$('#bld_type').value; return ttPriceMatrix('Инженерное обследование','Табл. 1604‑0301…0406', OBSLED_PRICES, ['I','II','III'], obHeights(floors,type)); },
+  nesushPrice: () => { const floors=$('#bld_floors').value, type=$('#bld_type').value; return ttPriceMatrix('Несущая способность','Табл. 1604‑0601, 0602', NESUSH_PRICES, null, nsHeights(floors,type)); },
+  zaklPrice: () => { const floors=$('#bld_floors').value, type=$('#bld_type').value; return ttPriceMatrix('Заключения по усилению','Табл. 1604‑0701, 0702', ZAKL_PRICES, null, zkHeights(floors,type)); },
+};
+const INFO_TOOLTIP_WIDE = new Set(['betonPrice','kladkaPrice','obmeryPrice','obsledPrice','nesushPrice','zaklPrice']);
+function toggleInfoTooltip(e, key){
+  e.stopPropagation();
+  const box = document.getElementById('infoTooltip');
+  const willShow = !(box.style.display === 'block' && box.dataset.key === key);
+  box.style.display = 'none';
+  if (!willShow) return;
+  box.innerHTML = INFO_TOOLTIPS[key] ? INFO_TOOLTIPS[key]() : '';
+  box.dataset.key = key;
+  const wide = INFO_TOOLTIP_WIDE.has(key);
+  box.classList.toggle('wide', wide);
+  const width = wide ? 480 : 360;
+  const rect = e.currentTarget.getBoundingClientRect();
+  let left = rect.left;
+  if (left + width > window.innerWidth - 8) left = window.innerWidth - width - 8;
+  box.style.left = Math.max(8, left) + 'px';
+  box.style.top = (rect.bottom + 6) + 'px';
+  box.style.display = 'block';
+}
+document.addEventListener('click', ()=>{ document.getElementById('infoTooltip').style.display='none'; });
+
+/* ============================================================
+   БЛОК "СЛОЖНЫЕ УСЛОВИЯ" (табл. 2) — рендер списка чекбоксов/радио
+   ============================================================ */
+function renderComplexList(container, allowedIds){
+  const factors = allowedIds ? COMPLEX_FACTORS.filter(f=>allowedIds.includes(f.id)) : COMPLEX_FACTORS;
+  let html = '<div class="check-list">';
+  factors.filter(f=>!f.group).forEach(f=>{
+    html += `<label class="check-row"><input type="checkbox" id="${container.id}_f${f.id}" data-coef="${f.coef}" class="cx-check"><span class="label">${f.label}</span><span class="coef">× ${f.coef.toFixed(2)}</span></label>`;
+  });
+  const seismic = factors.filter(f=>f.group==='seismic');
+  if (seismic.length){
+    html += `<label class="check-row"><input type="radio" id="${container.id}_seismic_none" name="${container.id}-seismic" value="1" checked class="cx-radio" data-coef="1"><span class="label">Сейсмичность — не учитывать</span><span class="coef">× 1,00</span></label>`;
+    seismic.forEach(f=>{
+      html += `<label class="check-row"><input type="radio" id="${container.id}_seismic_${f.id}" name="${container.id}-seismic" value="${f.coef}" class="cx-radio" data-coef="${f.coef}"><span class="label">${f.label}</span><span class="coef">× ${f.coef.toFixed(2)}</span></label>`;
+    });
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+function complexMultiplier(container){
+  let m = 1;
+  $all('.cx-check', container).forEach(c=>{ if (c.checked) m *= parseFloat(c.dataset.coef); });
+  const r = container.querySelector('.cx-radio:checked');
+  if (r) m *= parseFloat(r.dataset.coef);
+  return m;
+}
+
+/* ============================================================
+   БЛОК "НЕПОЛНЫЙ ОБЪЁМ" — рендер списка процентов
+   ============================================================ */
+function renderPartialList(container, items, colIdx){
+  let html = '<div class="check-list" style="margin-top:8px;">';
+  items.forEach((it,i)=>{
+    const p = it.p[colIdx];
+    if (p==null) return;
+    html += `<label class="check-row"><input type="checkbox" id="${container.id}_${i}" checked data-pct="${p}" class="pt-check"><span class="label">${it.n}</span><span class="coef">${p.toFixed(1)}%</span></label>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+function partialFraction(container){
+  const boxes = $all('.pt-check', container);
+  if (!boxes.length) return 1;
+  let sum = 0;
+  boxes.forEach(b=>{ if (b.checked) sum += parseFloat(b.dataset.pct); });
+  return sum/100;
+}
+
+/* ============================================================
+   МОДУЛЬ 1 — ОБМЕРНЫЕ РАБОТЫ
+   ============================================================ */
+function initObmery(){
+  renderComplexList($('#ob_complex'));
+  const partialBox = $('#ob_partial'), partialList = $('#ob_partial_list');
+  partialBox.addEventListener('change', ()=>{
+    partialList.style.display = partialBox.checked ? 'block' : 'none';
+    calcObmery();
+  });
+  // Делегирование: чекбоксы внутри partialList создаются заново при каждой
+  // перерисовке (renderPartialList → innerHTML), поэтому слушатель вешаем
+  // на контейнер, а не на сами элементы.
+  partialList.addEventListener('change', calcObmery);
+
+  $all('#mod-obmery select, #mod-obmery input').forEach(el=>el.addEventListener('input', calcObmery));
+  $all('#mod-obmery select, #mod-obmery input').forEach(el=>el.addEventListener('change', calcObmery));
+
+  onObmeryStructChange();
+}
+function onObmeryStructChange(){
+  const floors = $('#bld_floors').value, type = $('#bld_type').value;
+  renderPartialList($('#ob_partial_list'), OB_PARTIAL_ITEMS, partialColIndex(type, floors));
+  $('#ob_wcat_hint').textContent = OB_WCAT_DESC[$('#ob_wcat').value];
+  calcObmery();
+}
+function calcObmery(){
+  const type=$('#bld_type').value, floors=$('#bld_floors').value, bcat=$('#bld_bcat').value, wcat=$('#ob_wcat').value;
+  $('#ob_wcat_hint').textContent = OB_WCAT_DESC[wcat];
+
+  const heightIdx = parseInt($('#bld_height').value||0);
+  const volume = Math.min(1000000, Math.max(1, parseFloat($('#bld_volume').value)||0));
+  const base = OBMERY_PRICES[type][floors][bcat][wcat][heightIdx];
+
+  // Табл.1 доступна только для категории I
+  $('#ob_step_card').style.opacity = bcat==='I' ? '1' : '.45';
+  $('#ob_step').disabled = bcat!=='I';
+  const stepKey = $('#ob_step').value;
+  const stepMult = (bcat==='I' && stepKey!=='1') ? STEP_COEF[stepKey] : 1;
+
+  const partialOn = $('#ob_partial').checked;
+  const partialMult = partialOn ? partialFraction($('#ob_partial_list')) : 1;
+
+  const drawMult = $('#ob_drawings').checked ? 0.75 : 1;
+  const estMult = $('#ob_estakada').checked ? 0.70 : 1;
+  const complexMult = complexMultiplier($('#ob_complex'));
+
+  const smallOn = $('#ob_smallvol').checked;
+  const smallMult = smallOn ? table3Coef(volume) : 1;
+  $('#ob_smallvol_hint').innerHTML = volume>0
+    ? `При объёме ${nf.format(volume)} м³ коэффициент табл. 3 = <b>${nf2.format(table3Coef(volume))}</b>${volume<=4000?'':' (объём выше 4000 м³ — коэффициент 1,00, не применяется)'}`
+    : '';
+
+  const unitTotal = (volume/100) * base;
+  const total = unitTotal * partialMult * drawMult * estMult * stepMult * complexMult * smallMult;
+
+  MODULE_TOTALS.ob = total;
+  MODULE_LINES.ob = [
+    ['Категория сложности работ (Табл. 6)', wcat],
+    ['Базовая цена (100 м³)', tenge(base)],
+    ['Объём здания', nf.format(volume)+' м³'],
+    ['Стоимость по объёму', tenge(unitTotal)],
+    partialOn ? ['Неполный объём работ (Табл. 5)', (partialMult*100).toFixed(1)+' %'] : null,
+    drawMult!==1 ? ['Сверка чертежей', '× 0,75'] : null,
+    estMult!==1 ? ['Открытая эстакада', '× 0,70'] : null,
+    stepMult!==1 ? ['Шаг несущих конструкций (Табл. 1)', '× '+nf2.format(stepMult)] : null,
+    complexMult!==1 ? ['Сложные условия (Табл. 2)', '× '+nf2.format(complexMult)] : null,
+    smallMult!==1 ? ['Малый объём (Табл. 3)', '× '+nf2.format(smallMult)] : null,
+  ].filter(Boolean);
+  MODULE_FORMULA.ob = buildFormulaStr(base, volume, [partialMult, drawMult, estMult, stepMult, complexMult, smallMult]) + ` = ${tenge(total)}`;
+  renderSummary();
+}
+
+/* ============================================================
+   МОДУЛЬ 2 — ИНЖЕНЕРНОЕ ОБСЛЕДОВАНИЕ
+   ============================================================ */
+function initObsled(){
+  renderComplexList($('#os_complex'));
+  const partialBox = $('#os_partial'), partialList = $('#os_partial_list');
+  partialBox.addEventListener('change', ()=>{
+    partialList.style.display = partialBox.checked ? 'block' : 'none';
+    calcObsled();
+  });
+  partialList.addEventListener('change', calcObsled);
+  $all('#mod-obsled select, #mod-obsled input').forEach(el=>{ el.addEventListener('input', calcObsled); el.addEventListener('change', calcObsled); });
+  onObsledStructChange();
+}
+function onObsledStructChange(){
+  const floors = $('#bld_floors').value, type = $('#bld_type').value;
+  renderPartialList($('#os_partial_list'), OS_PARTIAL_ITEMS, partialColIndex(type, floors));
+  $('#os_wcat_txt').textContent = OS_WCAT_DESC[$('#os_wcat').value];
+  // коэффициент 0.4/0.8 — только для одноэтажных ЖГ
+  const eqApplicable = (type==='gr' && floors==='one');
+  $('#os_eq').closest('.card').querySelectorAll('#os_eq, #os_eqpub').forEach(el=>el.disabled=!eqApplicable);
+  calcObsled();
+}
+function calcObsled(){
+  const type=$('#bld_type').value, floors=$('#bld_floors').value, bcat=$('#bld_bcat').value, wcat=$('#os_wcat').value;
+  $('#os_wcat_txt').textContent = OS_WCAT_DESC[wcat];
+
+  const heightIdx = parseInt($('#bld_height').value||0);
+  const volume = Math.min(1000000, Math.max(1, parseFloat($('#bld_volume').value)||0));
+  const base = OBSLED_PRICES[type][floors][bcat][wcat][heightIdx];
+
+  $('#os_step_card').style.opacity = bcat==='I' ? '1' : '.45';
+  $('#os_step').disabled = bcat!=='I';
+  const stepKey = $('#os_step').value;
+  const stepMult = (bcat==='I' && stepKey!=='1') ? STEP_COEF[stepKey] : 1;
+
+  const partialOn = $('#os_partial').checked;
+  const partialMult = partialOn ? partialFraction($('#os_partial_list')) : 1;
+
+  const wholeMult = $('#os_wholebuild').checked ? 0.80 : 1;
+  const estMult = $('#os_estakada').checked ? 0.70 : 1;
+  const eqApplicable = (type==='gr' && floors==='one');
+  const eqMult = (eqApplicable && $('#os_eq').checked) ? 0.40 : (eqApplicable && $('#os_eqpub').checked ? 0.80 : 1);
+  const complexMult = complexMultiplier($('#os_complex'));
+
+  const smallOn = $('#os_smallvol').checked;
+  const smallMult = smallOn ? table3Coef(volume) : 1;
+  $('#os_smallvol_hint').innerHTML = volume>0
+    ? `При объёме ${nf.format(volume)} м³ коэффициент табл. 3 = <b>${nf2.format(table3Coef(volume))}</b>${volume<=4000?'':' (выше 4000 м³ — 1,00)'}`
+    : '';
+
+  const unitTotal = (volume/100) * base;
+  const total = unitTotal * partialMult * wholeMult * estMult * eqMult * stepMult * complexMult * smallMult;
+
+  MODULE_TOTALS.os = total;
+  MODULE_LINES.os = [
+    ['Категория сложности работ (Табл. 8)', wcat],
+    ['Базовая цена (100 м³)', tenge(base)],
+    ['Объём здания', nf.format(volume)+' м³'],
+    ['Стоимость по объёму', tenge(unitTotal)],
+    partialOn ? ['Неполный объём работ (Табл. 7)', (partialMult*100).toFixed(1)+' %'] : null,
+    wholeMult!==1 ? ['Расчёт по зданию в целом', '× 0,80'] : null,
+    estMult!==1 ? ['Открытая эстакада', '× 0,70'] : null,
+    eqMult!==1 ? ['Оперативное обследование после землетрясения', '× '+nf2.format(eqMult)] : null,
+    stepMult!==1 ? ['Шаг несущих конструкций (Табл. 1)', '× '+nf2.format(stepMult)] : null,
+    complexMult!==1 ? ['Сложные условия (Табл. 2)', '× '+nf2.format(complexMult)] : null,
+    smallMult!==1 ? ['Малый объём (Табл. 3)', '× '+nf2.format(smallMult)] : null,
+  ].filter(Boolean);
+  MODULE_FORMULA.os = buildFormulaStr(base, volume, [partialMult, wholeMult, estMult, eqMult, stepMult, complexMult, smallMult]) + ` = ${tenge(total)}`;
+  renderSummary();
+}
+
+/* ============================================================
+   МОДУЛЬ 3 — ПРОЧНОСТЬ БЕТОНА / КЛАДКИ
+   ============================================================ */
+function bracketByQty(q){
+  if (q<=50) return 'do50';
+  if (q<=150) return 'do150';
+  if (q<=250) return 'do250';
+  return 'more250';
+}
+function calcBeton(){
+  const method = $('#bt_method').value;
+  const hIdx = parseInt($('#bt_height').value);
+  const qty = Math.min(9999, Math.max(0, parseFloat($('#bt_qty').value)||0));
+  const table = method==='mech' ? BETON_MECH : BETON_DEFECT;
+  const br = bracketByQty(qty);
+  const unit = table[br][hIdx];
+
+  const warnBox = $('#bt_warn');
+  let betonTotal = 0, betonLine = null;
+  if (unit==null){
+    warnBox.innerHTML = `<div class="warn">В исходном Сборнике для сочетания «дефектоскопы, ${qty>150?'150':'до 150'} мест, до 12 м высоты» (позиция 23 табл. 1604‑0501‑01) значение цены в документе отсутствует. Уточните расценку по официальному изданию Сборника или измените параметры.</div>`;
+  } else {
+    warnBox.innerHTML = '';
+    betonTotal = unit * qty;
+    if (qty>0) betonLine = [`Бетон, ${method==='mech'?'мех. приборы':'дефектоскопы'}: ${qty} мест × ${tenge(unit)}`, tenge(betonTotal)];
+  }
+
+  const klQty = Math.min(9999, Math.max(0, parseFloat($('#kl_qty').value)||0));
+  const klBrIdx = klQty<=50?0: klQty<=150?1: klQty<=250?2: klQty<=350?3:4;
+  const klUnit = KLADKA_PRICES[klBrIdx];
+  const klTotal = klQty>0 ? klUnit*klQty : 0;
+
+  const total = betonTotal + klTotal;
+
+  MODULE_TOTALS.bt = total;
+  MODULE_LINES.bt = [
+    betonLine,
+    klQty>0 ? [`Кладка: ${klQty} мест × ${tenge(klUnit)}`, tenge(klTotal)] : null,
+  ].filter(Boolean);
+  MODULE_FORMULA.bt = [
+    betonLine ? `${nf.format(unit)} × ${qty} = ${tenge(betonTotal)}` : null,
+    klQty>0 ? `${nf.format(klUnit)} × ${klQty} = ${tenge(klTotal)}` : null,
+  ].filter(Boolean).join('; ');
+  renderSummary();
+}
+
+/* ============================================================
+   МОДУЛЬ 4 — КОНТРОЛЬНЫЕ ИСПЫТАНИЯ
+   ============================================================ */
+function initTests(){
+  const tbody = $('#tests_tbody');
+  tbody.innerHTML = CONTROL_TESTS.map((t,i)=>`
+    <tr id="test-row-${i}">
+      <td class="mono">${(i+1).toString().padStart(2,'0')}</td>
+      <td>${t[0]}</td>
+      <td class="price">${tenge(t[1])}</td>
+      <td><input type="number" id="test-qty-${i}" min="0" max="9999" step="1" value="0" data-idx="${i}" class="test-qty"></td>
+      <td class="sub" id="test-sub-${i}">—</td>
+    </tr>`).join('');
+  $all('.test-qty').forEach(inp=>inp.addEventListener('input', calcTests));
+}
+function calcTests(){
+  let total = 0;
+  const lines = [];
+  CONTROL_TESTS.forEach((t,i)=>{
+    const inp = $(`.test-qty[data-idx="${i}"]`);
+    const q = Math.min(9999, Math.max(0, parseFloat(inp.value)||0));
+    const row = $('#test-row-'+i), sub = $('#test-sub-'+i);
+    if (q>0){
+      const s = t[1]*q;
+      total += s;
+      sub.textContent = tenge(s);
+      row.classList.add('nonzero');
+      lines.push([`${t[0]} × ${q}`, tenge(s)]);
+    } else {
+      sub.textContent = '—';
+      row.classList.remove('nonzero');
+    }
+  });
+  MODULE_TOTALS.tests = total;
+  MODULE_LINES.tests = lines;
+  renderSummary();
+}
+
+/* ============================================================
+   МОДУЛЬ 5 — НЕСУЩАЯ СПОСОБНОСТЬ
+   ============================================================ */
+function initNesush(){
+  $all('#mod-nesush select, #mod-nesush input').forEach(el=>{ el.addEventListener('input', calcNesush); el.addEventListener('change', calcNesush); });
+  $('#ns_recalc').addEventListener('change', ()=>{
+    $('#ns_recalc_field').style.display = $('#ns_recalc').checked ? 'block' : 'none';
+    calcNesush();
+  });
+  onNesushStructChange();
+}
+function onNesushStructChange(){
+  fillSelect($('#ns_height'), nsHeights($('#bld_floors').value, $('#bld_type').value));
+  calcNesush();
+}
+function calcNesush(){
+  $('#ns_height_warn').innerHTML = heightMismatchWarning('#ns_height');
+  if ($('#ns_special').checked){
+    MODULE_TOTALS.ns = null;
+    MODULE_TOTALS.ns_special = true;
+    MODULE_LINES.ns = [];
+    MODULE_FORMULA.ns = '';
+    renderSummary();
+    return;
+  }
+  const type=$('#bld_type').value, floors=$('#bld_floors').value, bcat=$('#bld_bcat').value;
+  const heightIdx = parseInt($('#ns_height').value||0);
+  const volume = Math.min(1000000, Math.max(1, parseFloat($('#bld_volume').value)||0));
+  const base = NESUSH_PRICES[type][floors][bcat][heightIdx];
+
+  let mult = 1;
+  const parts = [];
+  const multFactors = [];
+  const add = (id,label,coef)=>{ if ($(id).checked){ mult*=coef; parts.push([label, '× '+nf2.format(coef)]); multFactors.push(coef); } };
+  add('#ns_loads','Сбор нагрузок',1.10);
+  add('#ns_seismic','Учёт сейсмического воздействия',1.35);
+  add('#ns_plan30','Здание в плане более 30 м',1.10);
+  add('#ns_h50','Высота здания более 50 м',1.20);
+  add('#ns_vert','Учёт вертикальных воздействий',1.30);
+  add('#ns_instr','Инструментальные записи ускорений',1.40);
+  add('#ns_noreinf','Без армирования',0.90);
+  add('#ns_noreinfcomb','Без армирования и без сочетаний усилий',0.80);
+  add('#ns_flat','Плоская расчётная схема',0.90);
+
+  const smallOn = $('#ns_smallvol').checked;
+  const smallMult = smallOn ? table3Coef(volume) : 1;
+  $('#ns_smallvol_hint').innerHTML = volume>0
+    ? `При объёме ${nf.format(volume)} м³ коэффициент табл. 3 = <b>${nf2.format(table3Coef(volume))}</b>${volume<=4000?'':' (выше 4000 м³ — 1,00)'}`
+    : '';
+  if (smallMult!==1) parts.push(['Малый объём (Табл. 3)', '× '+nf2.format(smallMult)]);
+
+  const recalcOn = $('#ns_recalc').checked;
+  const recalcVal = recalcOn ? Math.min(0.7, Math.max(0.2, parseFloat($('#ns_recalc_val').value)||0.5)) : 1;
+  if (recalcOn) parts.push(['Перерасчёт по изменённым данным', '× '+nf2.format(recalcVal)]);
+
+  const unitTotal = (volume/100)*base;
+  const total = unitTotal * mult * smallMult * recalcVal;
+
+  MODULE_TOTALS.ns = total;
+  MODULE_TOTALS.ns_special = false;
+  MODULE_LINES.ns = [
+    ['Базовая цена (100 м³)', tenge(base)],
+    ['Объём здания', nf.format(volume)+' м³'],
+    ['Стоимость по объёму', tenge(unitTotal)],
+    ...parts,
+  ];
+  MODULE_FORMULA.ns = buildFormulaStr(base, volume, [...multFactors, smallMult, recalcVal]) + ` = ${tenge(total)}`;
+  renderSummary();
+}
+
+/* ============================================================
+   МОДУЛЬ 6 — ЗАКЛЮЧЕНИЯ ПО УСИЛЕНИЮ
+   ============================================================ */
+function initZakl(){
+  renderComplexList($('#zk_complex'), ZAKL_ALLOWED_FACTORS);
+  $all('#mod-zakl select, #mod-zakl input').forEach(el=>{ el.addEventListener('input', calcZakl); el.addEventListener('change', calcZakl); });
+  onZaklStructChange();
+}
+function onZaklStructChange(){
+  fillSelect($('#zk_height'), zkHeights($('#bld_floors').value, $('#bld_type').value));
+  calcZakl();
+}
+function calcZakl(){
+  const type=$('#bld_type').value, floors=$('#bld_floors').value, bcat=$('#bld_bcat').value;
+  const heightIdx = parseInt($('#zk_height').value||0);
+  const volume = Math.min(1000000, Math.max(1, parseFloat($('#bld_volume').value)||0));
+  const base = ZAKL_PRICES[type][floors][bcat][heightIdx];
+  $('#zk_height_warn').innerHTML = heightMismatchWarning('#zk_height');
+
+  const complexMult = complexMultiplier($('#zk_complex'));
+  const smallOn = $('#zk_smallvol').checked;
+  const smallMult = smallOn ? table3Coef(volume) : 1;
+  $('#zk_smallvol_hint').innerHTML = volume>0
+    ? `При объёме ${nf.format(volume)} м³ коэффициент табл. 3 = <b>${nf2.format(table3Coef(volume))}</b>${volume<=4000?'':' (выше 4000 м³ — 1,00)'}`
+    : '';
+
+  const unitTotal = (volume/100)*base;
+  const total = unitTotal * complexMult * smallMult;
+
+  MODULE_TOTALS.zk = total;
+  MODULE_LINES.zk = [
+    ['Базовая цена (100 м³)', tenge(base)],
+    ['Объём здания', nf.format(volume)+' м³'],
+    ['Стоимость по объёму', tenge(unitTotal)],
+    complexMult!==1 ? ['Сложные условия (Табл. 2)', '× '+nf2.format(complexMult)] : null,
+    smallMult!==1 ? ['Малый объём (Табл. 3)', '× '+nf2.format(smallMult)] : null,
+  ].filter(Boolean);
+  MODULE_FORMULA.zk = buildFormulaStr(base, volume, [complexMult, smallMult]) + ` = ${tenge(total)}`;
+  renderSummary();
+}
+
+/* ============================================================
+   ИТОГОВАЯ СВОДКА ПО ВСЕМ ВИДАМ РАБОТ (карточка внизу страницы,
+   видна независимо от того, какая вкладка сейчас открыта)
+   ============================================================ */
+const MODULE_TOTALS = { ob:0, os:0, bt:0, tests:0, ns:0, ns_special:false, zk:0 };
+// Расшифровка примененных коэффициентов по каждому модулю — не выводится на экран
+// (см. историю правок — карточки результата на вкладках убраны по просьбе пользователя),
+// собирается в calc*()-функциях и используется только в подробной «Расчётной записке».
+const MODULE_LINES = { ob:[], os:[], bt:[], tests:[], ns:[], zk:[] };
+// Компактная строка «база × (объём/100) × коэфф. = итог» на модуль — для «Расчётной записки».
+const MODULE_FORMULA = { ob:'', os:'', bt:'', ns:'', zk:'' };
+function buildFormulaStr(base, volume, mults){
+  const parts = mults.filter(m=>m!==1).map(m=>nf2.format(m));
+  return `${nf.format(base)} × (${nf.format(volume)} / 100)${parts.length ? ' × '+parts.join(' × ') : ''}`;
+}
+// Номер расчёта — генерируется один раз на загрузку страницы, используется в «паспорте» печатной формы.
+const REPORT_ID = `OBS-${new Date().getFullYear()}-${String(Math.floor(Math.random()*900000)+100000)}`;
+function renderSummary(){
+  const box = $('#finalSummary');
+  if (!box) return;
+  const items = [
+    ['obmery','Обмерные работы', MODULE_TOTALS.ob],
+    ['obsled','Инженерное обследование', MODULE_TOTALS.os],
+    ['beton','Прочность бетона / кладки', MODULE_TOTALS.bt],
+    ['tests','Контрольные испытания', MODULE_TOTALS.tests],
+    ['nesush','Несущая способность', MODULE_TOTALS.ns],
+    ['zakl','Заключения по усилению', MODULE_TOTALS.zk],
+  ];
+  const {rate, on} = vatState();
+  let sum = 0;
+  let html = '';
+  items.forEach(([m,label,val])=>{
+    if (m==='nesush' && MODULE_TOTALS.ns_special){
+      html += `<div class="bline clickable" data-m="${m}"><span class="k">${label}</span><span class="v" style="color:var(--red);">договорная цена</span></div>`;
+      return;
+    }
+    sum += val||0;
+    html += `<div class="bline clickable" data-m="${m}"><span class="k">${label}</span><span class="v">${tenge(val||0)}</span></div>`;
+  });
+  const vatSum = on ? sum*rate/100 : 0;
+  html += `<div class="bline total"><span class="k">Итого без НДС</span><span class="v">${tenge(sum)}</span></div>`;
+  if (on){
+    html += `<div class="bline"><span class="k">НДС ${rate}%</span><span class="v">${tenge(vatSum)}</span></div>`;
+    html += `<div class="bline total"><span class="k">Итого с НДС</span><span class="v">${tenge(sum+vatSum)}</span></div>`;
+  }
+  if (MODULE_TOTALS.ns_special) html += `<div class="hint" style="margin-top:8px;">Несущая способность — повышенная сложность конструкций, стоимость по договорной цене, в сумму не включена.</div>`;
+  box.innerHTML = html;
+  $('#finalSummaryTotal').textContent = tenge(on ? sum+vatSum : sum);
+  $all('.bline[data-m]', box).forEach(row=>{
+    row.addEventListener('click', ()=>{
+      const btn = $(`#tabs button[data-m="${row.dataset.m}"]`);
+      if (btn) btn.click();
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  });
+}
+
+/* ============================================================
+   РАСЧЁТНАЯ ЗАПИСКА (печать)
+   ============================================================ */
+function moduleReportSection(title, code, total, lines, formula, specialNote){
+  if (specialNote){
+    return `<div class="print-section">
+      <h2>${title} <span style="font-size:11px;color:#666;font-weight:400;">${code}</span></h2>
+      <p>${specialNote}</p>
+    </div>`;
+  }
+  if (!lines.length && !(total>0)){
+    return `<div class="print-section">
+      <h2>${title} <span style="font-size:11px;color:#666;font-weight:400;">${code}</span></h2>
+      <div class="module-empty">
+        <div class="me-title">Не включено в расчёт</div>
+        <div class="me-sub">Пользователь не выбрал данный вид работ.</div>
+      </div>
+    </div>`;
+  }
+  return `<div class="print-section">
+    <h2>${title} <span style="font-size:11px;color:#666;font-weight:400;">${code}</span></h2>
+    <table class="summary-table">
+      <tr><th>Параметр</th><th>Значение</th></tr>
+      ${lines.map(([k,v])=>`<tr><td>${k}</td><td style="text-align:right;">${v}</td></tr>`).join('')}
+      <tr><td><b>Стоимость по модулю</b></td><td style="text-align:right;"><b>${tenge(total)}</b></td></tr>
+    </table>
+    ${formula ? `<div class="print-pre">Расчёт: ${formula}</div>` : ''}
+  </div>`;
+}
+function printReport(){
+  const type = $('#bld_type').value==='prom' ? 'Промышленное' : 'Жилищно-гражданское';
+  const floors = $('#bld_floors').value==='one' ? 'Одноэтажное' : 'Многоэтажное';
+  const bcat = $('#bld_bcat').value;
+  const heightOpt = $('#bld_height').selectedOptions[0];
+  const height = heightOpt ? heightOpt.textContent : '';
+  const volume = nf.format(Math.min(1000000, Math.max(1, parseFloat($('#bld_volume').value)||0)));
+
+  const items = [
+    ['Обмерные работы', MODULE_TOTALS.ob],
+    ['Инженерное обследование', MODULE_TOTALS.os],
+    ['Прочность бетона / кладки', MODULE_TOTALS.bt],
+    ['Контрольные испытания', MODULE_TOTALS.tests],
+    ['Несущая способность', MODULE_TOTALS.ns_special ? null : MODULE_TOTALS.ns],
+    ['Заключения по усилению', MODULE_TOTALS.zk],
+  ];
+  let sum = 0;
+  const rows = items.map(([label,val])=>{
+    if (val==null) return `<tr><td>${label}</td><td style="text-align:right;">договорная цена</td></tr>`;
+    sum += val;
+    return `<tr><td>${label}</td><td style="text-align:right;">${tenge(val)}</td></tr>`;
+  }).join('');
+  const {rate, on} = vatState();
+  const vatSum = on ? sum*rate/100 : 0;
+
+  const sectionsHtml = [
+    moduleReportSection('1. Обмерные работы', 'Табл. 1604‑0101…0206', MODULE_TOTALS.ob, MODULE_LINES.ob, MODULE_FORMULA.ob),
+    moduleReportSection('2. Инженерное обследование', 'Табл. 1604‑0301…0406', MODULE_TOTALS.os, MODULE_LINES.os, MODULE_FORMULA.os),
+    moduleReportSection('3. Прочность бетона / кладки', 'Табл. 1604‑0501, 0502', MODULE_TOTALS.bt, MODULE_LINES.bt, MODULE_FORMULA.bt),
+    moduleReportSection('4. Контрольные испытания', 'Табл. 1604‑0504‑01', MODULE_TOTALS.tests, MODULE_LINES.tests, null),
+    moduleReportSection('5. Несущая способность', 'Табл. 1604‑0601, 0602', MODULE_TOTALS.ns, MODULE_LINES.ns, MODULE_FORMULA.ns,
+      MODULE_TOTALS.ns_special ? 'Повышенная сложность конструкций — стоимость определяется по договорным ценам, вне Сборника (п. 4 Общих положений главы 3); в общий итог не включена.' : null),
+    moduleReportSection('6. Заключения по усилению', 'Табл. 1604‑0701, 0702', MODULE_TOTALS.zk, MODULE_LINES.zk, MODULE_FORMULA.zk),
+  ].join('');
+
+  const qrShareUrl = buildShareUrl();
+  const grandTotal = on ? sum+vatSum : sum;
+
+  document.getElementById('printArea').innerHTML = `
+    <div class="print-header">
+      <div class="print-brand">PSD PRO</div>
+      <h1>Расчёт стоимости обмерных работ и обследования зданий и сооружений</h1>
+      <div class="print-subtitle">СЦИ РК 8.03-04-2025, Раздел 4 — цены на 1 января 2026 г., без НДС</div>
+      <div class="print-meta">Расчёт № ${REPORT_ID} · Дата: ${new Date().toLocaleDateString('ru-RU')}</div>
+    </div>
+    <div class="print-section">
+      <h2>Нормативные документы</h2>
+      <p>СЦИ РК 8.03-04-2025 «Цены на инженерные изыскания для строительства. Раздел 4. Обмерные работы и обследования зданий и сооружений».</p>
+    </div>
+    <div class="print-section">
+      <h2>Исходные данные</h2>
+      <table class="summary-table">
+        <tr><th>Параметр</th><th>Значение</th></tr>
+        <tr><td>Назначение</td><td style="text-align:right;">${type}</td></tr>
+        <tr><td>Этажность</td><td style="text-align:right;">${floors}</td></tr>
+        <tr><td>Категория сложности здания (Табл. 4)</td><td style="text-align:right;">${bcat}</td></tr>
+        <tr><td>Высота этажа/здания</td><td style="text-align:right;">${height}</td></tr>
+        <tr><td>Строительный объём</td><td style="text-align:right;">${volume} м³</td></tr>
+      </table>
+    </div>
+    <div class="print-section">
+      <h2>Расшифровка по видам работ</h2>
+    </div>
+    ${sectionsHtml}
+    <div class="print-section" style="page-break-before:always;">
+      <h2>Итого по всем видам работ</h2>
+      <table class="summary-table">
+        <tr><th>Вид работ</th><th>Стоимость</th></tr>
+        ${rows}
+        <tr><td><b>Итого без НДС</b></td><td style="text-align:right;"><b>${tenge(sum)}</b></td></tr>
+        ${on ? `<tr><td>НДС ${rate}%</td><td style="text-align:right;">${tenge(vatSum)}</td></tr><tr><td><b>Итого с НДС</b></td><td style="text-align:right;"><b>${tenge(sum+vatSum)}</b></td></tr>` : ''}
+      </table>
+      <div class="grand-total-block">
+        <div class="gt-label">Итоговая стоимость</div>
+        <div class="gt-value">${tenge(grandTotal)}</div>
+        <div class="gt-note">${on ? `с учётом НДС ${rate}%` : 'без учёта НДС'}</div>
+      </div>
+    </div>
+    <div class="print-section qr-card">
+      <div class="qr-card-title">🔗 Проверить расчёт</div>
+      <div class="qr-card-body">
+        <a href="${qrShareUrl}" target="_blank" rel="noopener" title="Открыть калькулятор с этими же исходными данными">
+          <img src="${generateQrDataUrl(qrShareUrl)}" width="160" height="160" alt="QR-код проверки расчёта">
+        </a>
+        <p>Откройте калькулятор с теми же исходными данными и проверьте результат живым пересчётом.</p>
+      </div>
+    </div>
+    <div class="print-footer">Калькулятор — вспомогательный инструмент для прикидочных расчётов; для договорной цены сверяйтесь с полным текстом Сборника СЦИ РК 8.03-04-2025. Документ сформирован автоматически в «Электронном справочнике конструктора».</div>`;
+  window.print();
+}
+
+/* ============================================================
+   ВКЛАДКИ
+   ============================================================ */
+function initTabs(){
+  $all('#tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      $all('#tabs button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      $all('section.module').forEach(s=>s.classList.remove('active'));
+      $('#mod-'+btn.dataset.m).classList.add('active');
+      saveActiveTab(btn.dataset.m);
+    });
+  });
+}
+
+/* ============================================================
+   СОХРАНЕНИЕ ВВЕДЁННЫХ ДАННЫХ МЕЖДУ ВИЗИТАМИ (localStorage)
+   ============================================================ */
+const FORM_STORAGE_KEY = 'esk-obmery-obsledovaniya-v1';
+const NONGROUP_IDS = COMPLEX_FACTORS.filter(f=>!f.group).map(f=>f.id);
+const SEISMIC_IDS = COMPLEX_FACTORS.filter(f=>f.group==='seismic').map(f=>f.id);
+function complexFieldIds(prefix, allowedIds){
+  const nong = allowedIds ? NONGROUP_IDS.filter(id=>allowedIds.includes(id)) : NONGROUP_IDS;
+  const seis = allowedIds ? SEISMIC_IDS.filter(id=>allowedIds.includes(id)) : SEISMIC_IDS;
+  const ids = nong.map(id=>`${prefix}_f${id}`);
+  if (seis.length){
+    ids.push(`${prefix}_seismic_none`);
+    seis.forEach(id=>ids.push(`${prefix}_seismic_${id}`));
+  }
+  return ids;
+}
+const FORM_FIELD_IDS = [
+  'bld_type','bld_floors','bld_bcat','bld_volume','bld_height',
+
+  'ob_wcat',
+  'ob_partial', ...OB_PARTIAL_ITEMS.map((_,i)=>`ob_partial_list_${i}`),
+  'ob_drawings','ob_estakada','ob_step',
+  ...complexFieldIds('ob_complex'),
+  'ob_smallvol',
+
+  'os_wcat',
+  'os_partial', ...OS_PARTIAL_ITEMS.map((_,i)=>`os_partial_list_${i}`),
+  'os_wholebuild','os_estakada','os_eq','os_eqpub','os_step',
+  ...complexFieldIds('os_complex'),
+  'os_smallvol',
+
+  'bt_method','bt_height','bt_qty','kl_qty',
+
+  ...CONTROL_TESTS.map((_,i)=>`test-qty-${i}`),
+
+  'ns_height',
+  'ns_loads','ns_seismic','ns_plan30','ns_h50','ns_vert','ns_instr','ns_noreinf','ns_noreinfcomb','ns_flat',
+  'ns_smallvol','ns_recalc','ns_recalc_val','ns_special',
+
+  'zk_height',
+  ...complexFieldIds('zk_complex', ZAKL_ALLOWED_FACTORS),
+  'zk_smallvol',
+];
+function collectFormState(){
+  const state = {};
+  FORM_FIELD_IDS.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    state[id] = (el.type === 'checkbox' || el.type === 'radio') ? el.checked : el.value;
+  });
+  state.__vatOn = vatOn;
+  return state;
+}
+function applyFormState(state){
+  FORM_FIELD_IDS.forEach(id=>{
+    if(!(id in state)) return;
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(el.type === 'checkbox' || el.type === 'radio') el.checked = state[id];
+    else el.value = state[id];
+    el.dispatchEvent(new Event('change', {bubbles:true}));
+  });
+  if ('__vatOn' in state){ vatOn = !!state.__vatOn; syncVatToggleUI(); }
+}
+function saveFormState(){
+  try{ localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(collectFormState())); }catch(e){}
+}
+function loadFormState(){
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if(!raw) return;
+    applyFormState(JSON.parse(raw));
+  }catch(e){}
+}
+document.body.addEventListener('input', saveFormState);
+document.body.addEventListener('change', saveFormState);
+
+// === Экспорт/импорт расчёта в файл (кнопки «Сохранить»/«Загрузить») ===
+function saveStateToFile(){
+  const blob = new Blob([JSON.stringify(collectFormState(), null, 2)], {type:'application/json'});
+  const stamp = new Date().toISOString().slice(0,10);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `obmery-obsledovaniya-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(a.href);
+}
+function loadStateFromFile(event){
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      applyFormState(JSON.parse(reader.result));
+      recalcAll();
+    }catch(err){
+      alert('Не удалось прочитать файл — убедитесь, что это файл, сохранённый этим калькулятором.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// === QR-проверка расчёта (кодирует исходные данные в ссылку — сканирование/клик
+//     открывает калькулятор с теми же значениями, как в peremychka-ugolok.html).
+//     Значения кодируются массивом без ключей (порядок — как в FORM_FIELD_IDS) —
+//     объект с ключами (как в collectFormState) почти вдвое длиннее и не помещается
+//     в QR у используемой версии библиотеки (проверено: >3000 символов — падает). ===
+function buildShareUrl(){
+  const values = FORM_FIELD_IDS.map(id=>{
+    const el = document.getElementById(id);
+    if (!el) return '';
+    return (el.type === 'checkbox' || el.type === 'radio') ? (el.checked ? 1 : 0) : el.value;
+  });
+  values.push(vatOn ? 1 : 0); // последний элемент — переключатель НДС (не входит в FORM_FIELD_IDS)
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(values))));
+  const url = new URL(window.location.href);
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set('d', encoded);
+  return url.toString();
+}
+function applyShareStateFromUrl(){
+  try{
+    const encoded = new URLSearchParams(window.location.search).get('d');
+    if (!encoded) return false;
+    const values = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    FORM_FIELD_IDS.forEach((id,i)=>{
+      const el = document.getElementById(id);
+      if (!el || i>=values.length) return;
+      if (el.type === 'checkbox' || el.type === 'radio') el.checked = !!values[i];
+      else el.value = values[i];
+      el.dispatchEvent(new Event('change', {bubbles:true}));
+    });
+    if (values.length > FORM_FIELD_IDS.length){
+      vatOn = !!values[FORM_FIELD_IDS.length];
+      syncVatToggleUI();
+    }
+    return true;
+  }catch(e){ return false; }
+}
+// Печатный размер (мм) должен давать ≥5 px на модуль QR, иначе камера телефона код не распознаёт.
+function generateQrDataUrl(text){
+  if (typeof QRCode === 'undefined') return '';
+  const tempDiv = document.createElement('div');
+  tempDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+  document.body.appendChild(tempDiv);
+  try{
+    const size = 260;
+    new QRCode(tempDiv, { text, width:size, height:size, correctLevel: QRCode.CorrectLevel.L });
+    const canvas = tempDiv.querySelector('canvas');
+    return canvas ? canvas.toDataURL('image/png') : '';
+  }catch(e){
+    return '';
+  }finally{
+    document.body.removeChild(tempDiv);
+  }
+}
+
+function saveActiveTab(name){ try{ localStorage.setItem(FORM_STORAGE_KEY+'-tab', name); }catch(e){} }
+function restoreActiveTab(){
+  try{
+    const name = localStorage.getItem(FORM_STORAGE_KEY+'-tab');
+    if(!name) return;
+    const btn = $(`#tabs button[data-m="${name}"]`);
+    if(btn) btn.click();
+  }catch(e){}
+}
+
+/* ============================================================
+   ГРАНИЦЫ ЧИСЛОВЫХ ПОЛЕЙ — визуально подправляем значение к
+   min/max при уходе фокуса (расчёты и так защищены Math.min/max
+   внутри calc*-функций — это только про то, что видно в поле)
+   ============================================================ */
+document.addEventListener('blur', (e)=>{
+  const el = e.target;
+  if (!el || el.tagName !== 'INPUT' || el.type !== 'number' || el.value === '') return;
+  const v = parseFloat(el.value);
+  if (isNaN(v)) return;
+  const min = el.min !== '' ? parseFloat(el.min) : null;
+  const max = el.max !== '' ? parseFloat(el.max) : null;
+  let clamped = v;
+  if (min!==null && clamped<min) clamped = min;
+  if (max!==null && clamped>max) clamped = max;
+  if (clamped !== v){
+    el.value = clamped;
+    el.dispatchEvent(new Event('change', {bubbles:true}));
+  }
+}, true);
+
+/* ============================================================
+   ИНИЦИАЛИЗАЦИЯ
+   ============================================================ */
+function recalcAll(){ calcObmery(); calcObsled(); calcBeton(); calcTests(); calcNesush(); calcZakl(); }
+
+function onSharedBuildingChange(){
+  const floors = $('#bld_floors').value, type = $('#bld_type').value;
+  fillSelect($('#bld_height'), obHeights(floors, type));
+  onObmeryStructChange();
+  onObsledStructChange();
+  onNesushStructChange();
+  onZaklStructChange();
+}
+['bld_type','bld_floors','bld_bcat','bld_volume'].forEach(id=>{
+  $('#'+id).addEventListener('input', onSharedBuildingChange);
+  $('#'+id).addEventListener('change', onSharedBuildingChange);
+});
+// bld_height не меняет набор опций (в отличие от типа/этажности), поэтому
+// достаточно просто пересчитать обмеры/обследование, без onSharedBuildingChange
+// (иначе fillSelect() внутри неё сбросит выбранную высоту обратно на первую).
+$('#bld_height').addEventListener('change', ()=>{ calcObmery(); calcObsled(); calcNesush(); calcZakl(); });
+
+$all('#mod-beton select, #mod-beton input').forEach(el=>{ el.addEventListener('input', calcBeton); el.addEventListener('change', calcBeton); });
+
+initTabs();
+initObmery();
+initObsled();
+calcBeton();
+initTests();
+initNesush();
+initZakl();
+onSharedBuildingChange();
+
+restoreActiveTab();
+// Ссылка из QR-кода (?d=...) имеет приоритет над сохранённым в браузере состоянием
+if (applyShareStateFromUrl()){
+  saveFormState();
+  try{ localStorage.setItem('esk-obmery-obsledovaniya-vat', vatOn?'1':'0'); }catch(err){}
+} else {
+  loadFormState();
+  try{ vatOn = localStorage.getItem('esk-obmery-obsledovaniya-vat') === '1'; }catch(err){}
+}
+syncVatToggleUI();
+recalcAll();
+</script>
+</body>
+</html>
