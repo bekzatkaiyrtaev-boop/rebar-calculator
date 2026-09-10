@@ -18,7 +18,12 @@
      (все они настроены как редиректы в Vercel), но без canonical-тега
      Google иногда всё равно путает версии и не выбирает основную. */
   (function setCanonical(){
-    const canonicalHref = 'https://www.psdpro.kz' + location.pathname;
+    // index.html нормализуем в "/", чтобы главная страница не получала
+    // два разных canonical в зависимости от того, как на неё зашли
+    // (корень сайта vs явная ссылка на index.html из навигации) —
+    // именно этот разнобой в sitemap.xml (там прописан корень "/")
+    const normalizedPath = location.pathname.replace(/\/index\.html$/, '/');
+    const canonicalHref = 'https://www.psdpro.kz' + normalizedPath;
     let link = document.querySelector('link[rel="canonical"]');
     if (!link){
       link = document.createElement('link');
