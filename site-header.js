@@ -170,7 +170,11 @@
 
   const authMount = document.getElementById('siteAuth');
   const isCalculatorPage = current !== 'index.html' && current !== 'about.html';
-  const requiresAuth = isCalculatorPage && !FREE_ACCESS_PAGES.has(current);
+  // ЭСК теперь полностью открытый справочник (интерактивные калькуляторы
+  // переехали в PSDPRO, где и остаётся вход по логину) — гейт отключён
+  // сайт-wide. FREE_ACCESS_PAGES/openAccess оставлены в site-structure.js
+  // и коде ниже нетронутыми на случай, если понадобится вернуть.
+  const requiresAuth = false;
   let authGateEl = null;
   let pageViewLogged = false; // чтобы не логировать один и тот же просмотр повторно
 
