@@ -11,6 +11,28 @@
 
 (function(){
 
+  /* ── Canonical URL ──
+     Жёстко закрепляем www.psdpro.kz как единственный "настоящий"
+     адрес сайта для поисковиков — сайт технически доступен ещё и
+     по esk-kz.vercel.app/psdpro.kz/rebar-calculator-seven.vercel.app
+     (все они настроены как редиректы в Vercel), но без canonical-тега
+     Google иногда всё равно путает версии и не выбирает основную. */
+  (function setCanonical(){
+    // index.html нормализуем в "/", чтобы главная страница не получала
+    // два разных canonical в зависимости от того, как на неё зашли
+    // (корень сайта vs явная ссылка на index.html из навигации) —
+    // именно этот разнобой в sitemap.xml (там прописан корень "/")
+    const normalizedPath = location.pathname.replace(/\/index\.html$/, '/');
+    const canonicalHref = 'https://www.psdpro.kz' + normalizedPath;
+    let link = document.querySelector('link[rel="canonical"]');
+    if (!link){
+      link = document.createElement('link');
+      link.rel = 'canonical';
+      document.head.appendChild(link);
+    }
+    link.href = canonicalHref;
+  })();
+
   /* ── Порядок страниц для кнопок "Назад / Вперёд" ── */
   /* ── Порядок страниц для "Назад/Вперёд" строим из общей структуры
      сайта (site-structure.js), а не храним отдельным списком —
