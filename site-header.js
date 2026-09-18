@@ -72,7 +72,6 @@
     { href: "index.html",  label: "Содержание" },
     { href: "#", label: "← Назад",   dynamic: "prev" },
     { href: "#", label: "Вперёд →",  dynamic: "next" },
-    { href: "forum.html",  label: "Форум" },
     { href: "about.html",  label: "Об авторе" }
   ];
 
