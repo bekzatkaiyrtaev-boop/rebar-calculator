@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расход арматуры с учётом нахлёста — Электронный справочник конструктора</title>
+<meta name="description" content="Нахлёст стержней по EN 1992-1-1 (благоприятные условия сцепления, 50% стыкуемых стержней в сечении) и расход арматуры сетки с учётом нахлёста — по площади и шагу или в погонных метрах.">
+<style>
+  /* ── Токены ── */
+  :root {
+    --bg:         #0f1117;
+    --surface:    #1a1d27;
+    --surface2:   #22263a;
+    --border:     #2e3347;
+    --accent:     #4f8ef7;
+    --accent2:    #7dd3a8;
+    --warn:       #f4b942;
+    --text:       #d6daf0;
+    --muted:      #6b7099;
+    --result-bg:  #0d2240;
+    --result-brd: #4f8ef7;
+    --mono:       'JetBrains Mono', 'Courier New', monospace;
+    --sans:       'Inter', 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    padding: 24px 16px 48px;
+    min-height: 100vh;
+  }
+
+  /* ── Заголовок страницы ── */
+  .page-title {
+    text-align: center;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+  }
+  .page-title h1 { font-size: 22px; font-weight: 700; letter-spacing: -.3px; color: #fff; }
+  .page-title p { color: var(--muted); margin-top: 4px; font-size: 12px; }
+  .ref-badge {
+    display: inline-block;
+    margin-top: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+
+  /* ── Layout ── */
+  .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 1100px; margin: 0 auto; }
+  @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } }
+
+  /* ── Карточки ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; }
+  .card.full { grid-column: 1 / -1; }
+  .card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin-bottom: 14px; }
+
+  /* ── Поля ввода ── */
+  .field { margin-bottom: 14px; min-width: 0; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+  .field label span { font-family: var(--mono); color: var(--text); font-size: 13px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  input[type=number], select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--accent2);
+    font-family: var(--mono);
+    font-size: 14px;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input[type=number]:focus, select:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); color: var(--text); }
+
+  .info-line { font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.6; }
+  .info-line b { color: var(--accent2); }
+
+  /* ── Переключатель режима ── */
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tab-btn {
+    padding: 6px 14px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 5px; color: var(--muted); font-size: 12px; cursor: pointer; transition: all .15s;
+  }
+  .tab-btn.active { background: var(--result-bg); border-color: var(--accent); color: var(--accent); }
+  .mode-block { display: none; }
+  .mode-block.active { display: block; }
+
+  /* ── Шаги расчёта ── */
+  .steps { font-family: var(--mono); font-size: 12px; line-height: 2; }
+  .step-row { display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .step-row:last-child { border-bottom: none; }
+  .step-name { color: var(--muted); }
+  .step-val  { color: var(--accent); font-weight: 600; white-space: nowrap; }
+  .step-val.max { color: var(--accent2); }
+
+  /* ── Свёрнутые блоки ── */
+  summary.card-title { cursor: pointer; list-style: none; user-select: none; }
+  summary.card-title::-webkit-details-marker { display: none; }
+  .details-arrow { display: inline-block; margin-right: 6px; font-size: 9px; color: var(--accent); transition: transform .15s ease; }
+  details[open] > summary.card-title .details-arrow { transform: rotate(90deg); }
+
+  /* ── Итог ── */
+  .result-box {
+    grid-column: 1 / -1;
+    background: var(--result-bg);
+    border: 2px solid var(--result-brd);
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .result-item { text-align: center; }
+  .result-label { font-size: 12px; color: var(--muted); }
+  .result-formula { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .result-value { font-family: var(--mono); font-size: 34px; font-weight: 700; color: var(--accent); letter-spacing: -1px; }
+  .result-value.green { color: var(--accent2); }
+  .result-unit { font-size: 15px; color: var(--muted); margin-left: 4px; }
+
+  .note {
+    font-size: 11px; color: var(--muted); padding: 10px 14px;
+    background: var(--surface2); border-radius: 5px; margin-top: 10px; line-height: 1.6;
+  }
+  .note b { color: var(--warn); }
+
+  .disclaimer {
+    max-width: 1100px; margin: 24px auto 0; padding: 16px 20px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    font-size: 11px; line-height: 1.7; color: var(--muted);
+  }
+  .disclaimer p { margin-bottom: 8px; }
+  .disclaimer p:last-child { margin-bottom: 0; }
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+
+<div id="site-header"></div>
+<style>
+.esk-nav-bar { max-width:1100px; margin:0 auto; padding:16px 16px 0; display:flex; justify-content:center; gap:8px; flex-wrap:wrap; font-family:'Segoe UI',Roboto,Arial,sans-serif; }
+.esk-nav-bar a { display:inline-block; background:#232833; border:1px solid #2c313d; color:#e8eaed; border-radius:6px; padding:8px 14px; font-size:0.85rem; font-weight:600; text-decoration:none; }
+.esk-nav-bar a:hover { border-color:#4c8dff; color:#4c8dff; }
+.esk-nav-bar a.esk-current { background:#4c8dff; border-color:#4c8dff; color:#0b0e13; }
+</style>
+<div class="esk-nav-bar">
+  <a href="armatura-34028-2016.html">ГОСТ 34028-2016</a>
+  <a href="Vedomost_elementov.html">Ведомость деталей</a>
+  <a href="podbor-secheniya-armatury.html">Подбор сечения арматуры</a>
+  <a href="ankerovka-nahlest.html">Анкеровка и нахлёст арматуры</a>
+  <a href="zashitny-sloy.html">Защитный слой бетона</a>
+  <a href="raskhod-armatury-nahlest.html" class="esk-current">Расход с нахлёстом</a>
+</div>
+
+<div class="page-title">
+  <h1>Расход арматуры с учётом нахлёста</h1>
+  <span class="ref-badge">EN 1992-1-1 · СП РК EN</span>
+</div>
+
+<div class="layout">
+
+  <!-- ── Ввод: арматура ── -->
+  <div class="card">
+    <div class="card-title">Исходные данные — арматура</div>
+
+    <div class="field">
+      <label>Класс арматуры</label>
+      <select id="rebarClass" onchange="onClassChange()">
+        <option value="А240">А240</option>
+        <option value="А400">А400</option>
+        <option value="А500" selected>А500</option>
+        <option value="А600">А600</option>
+        <option value="B500">B500</option>
+      </select>
+      <div class="info-line">Марка стали (справочно): <b id="steelGradeOut">—</b><br>Конкретная марка зависит от производителя — уточняйте в сертификате качества.</div>
+    </div>
+
+    <div class="field">
+      <label>Диаметр <span>Ø, мм</span></label>
+      <select id="diameter" onchange="calc()"></select>
+    </div>
+
+    <div class="field">
+      <label>Класс бетона</label>
+      <select id="concreteClass" onchange="calc()">
+        <option value="C12/15">C12/15</option>
+        <option value="C16/20">C16/20</option>
+        <option value="C20/25" selected>C20/25</option>
+        <option value="C25/30">C25/30</option>
+        <option value="C30/37">C30/37</option>
+        <option value="C35/45">C35/45</option>
+        <option value="C40/50">C40/50</option>
+        <option value="C45/55">C45/55</option>
+        <option value="C50/60">C50/60</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Защитный слой бетона c<sub>d</sub> <span>мм</span></label>
+      <input type="number" id="coverCd" value="20" step="1" min="0" oninput="calc()">
+    </div>
+
+    <div class="field">
+      <label>Мерная (стандартная) длина стержня <span>м</span></label>
+      <input type="number" id="barLength" value="11.7" step="0.1" min="0.5" oninput="calc()">
+    </div>
+  </div>
+
+  <!-- ── Ход расчёта нахлёста ── -->
+  <div class="card">
+    <div class="card-title">Ход расчёта — нахлёст</div>
+    <details>
+      <summary class="card-title" style="margin-bottom:0;"><span class="details-arrow">▶</span>Промежуточные шаги (EN 1992-1-1)</summary>
+      <div class="steps" id="steps" style="margin-top:12px;"></div>
+    </details>
+
+    <div class="note" style="margin-top:14px;">
+      Класс бетона, класс арматуры, диаметр и защитный слой — исходные данные. Приняты фиксированные условия: благоприятные условия сцепления (η₁=1,0), прямые концы стержней, 50% стыкуемых стержней в одном сечении (α₆=1,4).
+    </div>
+  </div>
+
+  <!-- ── Итог нахлёста ── -->
+  <div class="result-box">
+    <div class="result-item">
+      <div class="result-label">Нахлёст l₀</div>
+      <div class="result-value" id="resL0">—</div>
+      <div class="result-formula" id="resL0d"></div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">Коэффициент запаса на нахлёст</div>
+      <div class="result-value green" id="resK">—</div>
+      <div class="result-formula" id="resKFormula"></div>
+    </div>
+  </div>
+
+  <!-- ── Расход на сетку ── -->
+  <div class="card full">
+    <div class="card-title">Расход арматуры сетки с учётом нахлёста</div>
+
+    <div class="tabs">
+      <button type="button" class="tab-btn active" id="tabLinearBtn" onclick="setMode('linear')">В погонных метрах</button>
+      <button type="button" class="tab-btn" id="tabAreaBtn" onclick="setMode('area')">По площади и шагу</button>
+    </div>
+
+    <div class="mode-block active" id="modeLinear">
+      <div class="field">
+        <label>Длина стержней сетки без нахлеста <span>м</span></label>
+        <input type="number" id="netLength" value="100" step="1" min="0" oninput="calc()">
+      </div>
+    </div>
+
+    <div class="mode-block" id="modeArea">
+      <div class="field-row">
+        <div class="field">
+          <label>Площадь сетки <span>м²</span></label>
+          <input type="number" id="meshArea" value="100" step="1" min="0" oninput="calc()">
+        </div>
+        <div class="field">
+          <label>Шаг X <span>мм</span></label>
+          <input type="number" id="stepX" value="200" step="10" min="10" oninput="calc()">
+        </div>
+        <div class="field">
+          <label>Шаг Y <span>мм</span></label>
+          <input type="number" id="stepY" value="200" step="10" min="10" oninput="calc()">
+        </div>
+      </div>
+      <div class="info-line">Длина без нахлеста: <b id="netFromAreaOut">—</b> (по формуле 1000/шагX + 1000/шагY на м² площади)</div>
+    </div>
+
+    <div class="result-box" style="margin-top:16px;">
+      <div class="result-item">
+        <div class="result-label">Расход с учётом нахлёста</div>
+        <div class="result-value" id="resTotal">—</div>
+        <div class="result-formula" id="resTotalFormula"></div>
+      </div>
+      <div class="result-item">
+        <div class="result-label">Масса</div>
+        <div class="result-value green" id="resMass">—</div>
+        <div class="result-formula" id="resMassFormula"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<div class="disclaimer">
+  <p><b>Как читать результат.</b> Нахлёст l₀ рассчитан для введённых класса арматуры, диаметра и класса бетона при благоприятных условиях сцепления (η₁=1,0) и 50% стыкуемых стержней в одном сечении (α₆=1,4) — фактический нахлёст на конкретном объекте (с реальным защитным слоем, % стыкуемых стержней и условиями сцепления) может отличаться, см. полный расчёт: <a href="ankerovka-nahlest.html" style="color:var(--accent)">Анкеровка и нахлёст арматуры</a>.</p>
+  <p>Коэффициент запаса k = L<sub>мерная</sub> / (L<sub>мерная</sub> − l₀) — показывает, во сколько раз итоговый расход стали больше «чистой» длины сетки без учёта перекрытия стержней на стыках.</p>
+</div>
+
+<div id="site-footer"></div>
+
+<script>
+// Расчётное сопротивление текучести fyk по классу арматуры, Н/мм² (МПа)
+const REBAR_FYK = { "А240":240, "А400":400, "А500":500, "А600":600, "B500":500 };
+
+// Стандартный ряд диаметров по классу арматуры, мм (ГОСТ 34028-2016)
+const REBAR_DIAMETERS = {
+  "А240": [6,8,10,12,14,16,18,20,22,25,28,32,36,40],
+  "А400": [6,8,10,12,14,16,18,20,22,25,28,32,36,40],
+  "А500": [6,8,10,12,14,16,18,20,22,25,28,32,36,40],
+  "А600": [10,12,14,16,18,20,22,25,28,32,36,40],
+  "B500": [6,8,10,12,14,16,20,25,32]
+};
+
+// Справочное соответствие класса и марки стали (не влияет на расчёт)
+const STEEL_GRADE = {
+  "А240": "Ст3сп / Ст3пс (ГОСТ 380) — классич. обозначение А-I",
+  "А400": "35ГС, 25Г2С (ГОСТ 5781) — классич. обозначение А-III",
+  "А500": "25Г2С, 35ГС, 32Г2Рпс — свариваемая арматура А500С",
+  "А600": "20ХГ2Ц — классич. обозначение Ат-IVC",
+  "B500": "Вр-1 — холоднодеформированная арматурная проволока (ГОСТ 6727)"
+};
+
+// f_ctk,0.05 (МПа) по классам бетона — EN 1992-1-1 Табл. 3.1
+const CONCRETE_FCTK = {
+  "C12/15": 1.1, "C16/20": 1.3, "C20/25": 1.5, "C25/30": 1.8,
+  "C30/37": 2.0, "C35/45": 2.2, "C40/50": 2.5, "C45/55": 2.7,
+  "C50/60": 2.9
+};
+
+let currentMode = 'linear';
+
+function onClassChange(){
+  populateDiameters();
+  calc();
+}
+
+function populateDiameters(preferred){
+  const cls = document.getElementById('rebarClass').value;
+  const sel = document.getElementById('diameter');
+  const list = REBAR_DIAMETERS[cls];
+  const prev = preferred !== undefined ? preferred : parseFloat(sel.value);
+  sel.innerHTML = list.map(d => `<option value="${d}">Ø ${d}</option>`).join('');
+  if (list.includes(prev)) sel.value = String(prev);
+  else sel.value = String(list.includes(10) ? 10 : list[0]);
+}
+
+function setMode(mode){
+  currentMode = mode;
+  document.getElementById('tabLinearBtn').classList.toggle('active', mode === 'linear');
+  document.getElementById('tabAreaBtn').classList.toggle('active', mode === 'area');
+  document.getElementById('modeLinear').classList.toggle('active', mode === 'linear');
+  document.getElementById('modeArea').classList.toggle('active', mode === 'area');
+  saveFormState();
+  calc();
+}
+
+// α6 — влияние % стыкуемых стержней в одном сечении (EN 1992-1-1 Табл. 8.3)
+function getAlpha6(percentSpliced){
+  const p = percentSpliced;
+  if (p <= 25) return 1.0;
+  if (p <= 33) return 1.0 + (p - 25) / (33 - 25) * (1.15 - 1.0);
+  if (p <= 50) return 1.15 + (p - 33) / (50 - 33) * (1.4 - 1.15);
+  return 1.5; // > 50%
+}
+
+function calc(){
+  const cls = document.getElementById('rebarClass').value;
+  const d = parseFloat(document.getElementById('diameter').value);
+  const Lbar = parseFloat(document.getElementById('barLength').value) || 0;
+  const concrete = document.getElementById('concreteClass').value;
+  const cd = parseFloat(document.getElementById('coverCd').value) || 0;
+
+  document.getElementById('steelGradeOut').textContent = STEEL_GRADE[cls] || '—';
+
+  // ── Нахлёст, EN 1992-1-1: благоприятные условия сцепления, 50% стыкуемых стержней в сечении ──
+  const fyk = REBAR_FYK[cls];
+  const gammaS = 1.15;
+  const sigmaSd = fyk / gammaS; // = fyd
+
+  const fctk005 = CONCRETE_FCTK[concrete];
+  const alphaCt = 1.0;
+  const gammaC = 1.5;
+  const fctd = alphaCt * fctk005 / gammaC;
+
+  const eta1 = 1.0;      // благоприятные условия сцепления
+  const eta2 = d <= 32 ? 1.0 : (132 - d) / 100;
+  const fbd = 2.25 * eta1 * eta2 * fctd;
+
+  const lbRqd = (d / 4) * (sigmaSd / fbd);
+
+  const percentSpliced = 50; // % стыкуемых стержней в одном сечении
+  const alpha1 = 1.0, alpha2 = 1.0, alpha3 = 1.0, alpha5 = 1.0;
+  const alpha6 = getAlpha6(percentSpliced);
+  const l0raw = alpha1 * alpha2 * alpha3 * alpha5 * alpha6 * lbRqd;
+  const l0min = Math.max(0.3 * alpha6 * lbRqd, 15 * d, 200);
+  const l0 = Math.max(l0raw, l0min);
+  const l0_m = l0 / 1000;
+
+  document.getElementById('steps').innerHTML = `
+    <div class="step-row"><span class="step-name">f<sub>yd</sub> = f<sub>yk</sub>/γ<sub>s</sub> = ${fyk}/${gammaS}</span><span class="step-val">${sigmaSd.toFixed(1)} МПа</span></div>
+    <div class="step-row"><span class="step-name">f<sub>ctd</sub> = α<sub>ct</sub>·f<sub>ctk,0.05</sub>/γ<sub>C</sub> (бетон ${concrete})</span><span class="step-val">${fctd.toFixed(3)} МПа</span></div>
+    <div class="step-row"><span class="step-name">η₂ (d=${d} мм)</span><span class="step-val">${eta2.toFixed(3)}</span></div>
+    <div class="step-row"><span class="step-name">f<sub>bd</sub> = 2,25·η₁·η₂·f<sub>ctd</sub> (η₁=${eta1.toFixed(1)})</span><span class="step-val">${fbd.toFixed(3)} МПа</span></div>
+    <div class="step-row"><span class="step-name">l<sub>b,rqd</sub> = (φ/4)·(σ<sub>sd</sub>/f<sub>bd</sub>)</span><span class="step-val">${lbRqd.toFixed(1)} мм</span></div>
+    <div class="step-row"><span class="step-name">l₀ = α₁·α₂·α₃·α₅·α₆·l<sub>b,rqd</sub> (α₆=${alpha6.toFixed(2)} при ${percentSpliced}% стыкуемых)</span><span class="step-val">${l0raw.toFixed(1)} мм</span></div>
+    <div class="step-row"><span class="step-name">l₀,min = max{0,3·α₆·l<sub>b,rqd</sub>; 15φ; 200}</span><span class="step-val">${l0min.toFixed(1)} мм</span></div>
+    <div class="step-row"><span class="step-name" style="color:var(--text)">l₀ = max{l₀; l₀,min}</span><span class="step-val max">${l0.toFixed(1)} мм</span></div>
+  `;
+
+  document.getElementById('resL0').innerHTML = `${l0.toFixed(0)}<span class="result-unit">мм</span>`;
+  document.getElementById('resL0d').textContent = `≈ ${(l0/d).toFixed(1)}·Ø`;
+
+  // ── Коэффициент запаса ──
+  let k = NaN;
+  if (Lbar - l0_m > 0) k = Lbar / (Lbar - l0_m);
+  document.getElementById('resK').textContent = isFinite(k) ? k.toFixed(3) : '—';
+  document.getElementById('resKFormula').innerHTML = isFinite(k)
+    ? `k = ${Lbar}/(${Lbar}−${l0_m.toFixed(3)})`
+    : `мерная длина слишком мала для этого нахлёста`;
+
+  // ── Расход на сетку ──
+  let Lnet = 0;
+  if (currentMode === 'linear') {
+    Lnet = parseFloat(document.getElementById('netLength').value) || 0;
+    document.getElementById('netFromAreaOut').textContent = '—';
+  } else {
+    const S = parseFloat(document.getElementById('meshArea').value) || 0;
+    const sx = parseFloat(document.getElementById('stepX').value) || 0;
+    const sy = parseFloat(document.getElementById('stepY').value) || 0;
+    Lnet = (sx > 0 && sy > 0) ? S * (1000/sx + 1000/sy) : 0;
+    document.getElementById('netFromAreaOut').textContent = Lnet ? `${Lnet.toFixed(1)} м` : '—';
+  }
+
+  const Ltotal = isFinite(k) ? Lnet * k : NaN;
+  const massPerM = d * d * 0.00617; // кг/м, плотность стали 7,85 г/см³
+  const mass = isFinite(Ltotal) ? Ltotal * massPerM : NaN;
+
+  document.getElementById('resTotal').innerHTML = isFinite(Ltotal) ? `${Ltotal.toFixed(1)}<span class="result-unit">м</span>` : '—';
+  document.getElementById('resTotalFormula').textContent = isFinite(Ltotal) ? `${Lnet.toFixed(1)} м × ${k.toFixed(3)}` : '';
+  document.getElementById('resMass').innerHTML = isFinite(mass) ? `${mass.toFixed(1)}<span class="result-unit">кг</span>` : '—';
+  document.getElementById('resMassFormula').textContent = isFinite(mass) ? `${Ltotal.toFixed(1)} м × ${massPerM.toFixed(3)} кг/м` : '';
+
+  saveFormState();
+}
+
+// === Сохранение введённых данных между визитами (localStorage) ===
+const FORM_STORAGE_KEY = 'esk-raskhod-armatury-nahlest-v1';
+const FORM_FIELD_IDS = ['rebarClass','diameter','concreteClass','barLength','netLength','meshArea','stepX','stepY'];
+function saveFormState(){
+  try{
+    const state = { mode: currentMode };
+    FORM_FIELD_IDS.forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) state[id] = el.value;
+    });
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+function loadFormState(){
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if(!raw) return;
+    const state = JSON.parse(raw);
+    if ('rebarClass' in state) document.getElementById('rebarClass').value = state.rebarClass;
+    populateDiameters('diameter' in state ? parseFloat(state.diameter) : undefined);
+    if ('concreteClass' in state) document.getElementById('concreteClass').value = state.concreteClass;
+    ['barLength','netLength','meshArea','stepX','stepY'].forEach(id=>{
+      if(id in state){ const el = document.getElementById(id); if(el) el.value = state[id]; }
+    });
+    if (state.mode) currentMode = state.mode;
+  }catch(e){}
+}
+
+document.querySelectorAll('.card input[type=number]').forEach(el=>{
+  el.addEventListener('input', saveFormState);
+});
+
+loadFormState();
+document.getElementById('tabLinearBtn').classList.toggle('active', currentMode === 'linear');
+document.getElementById('tabAreaBtn').classList.toggle('active', currentMode === 'area');
+document.getElementById('modeLinear').classList.toggle('active', currentMode === 'linear');
+document.getElementById('modeArea').classList.toggle('active', currentMode === 'area');
+if (!document.getElementById('diameter').options.length) populateDiameters();
+calc();
+</script>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+
+</body>
+</html>

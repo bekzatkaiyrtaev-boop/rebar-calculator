@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расчёт простенка из кирпичной кладки — Электронный справочник конструктора</title>
+<meta name="description" content="Проверка несущей способности простенка на центральное сжатие по СП РК 5.02-102-2012 (СНиП II-22-81): расчётное сопротивление кладки, коэффициент продольного изгиба φ, при недостаточной прочности — усиление сетчатым армированием.">
+<style>
+:root {
+  --bg:       #0f1117;
+  --surface:  #1a1d27;
+  --surface2: #22263a;
+  --border:   #2e3347;
+  --accent:   #4f8ef7;
+  --green:    #7dd3a8;
+  --warn:     #f4b942;
+  --red:      #ef4444;
+  --text:     #d6daf0;
+  --muted:    #6b7099;
+  --mono:     'JetBrains Mono','Courier New',monospace;
+  --sans:     'Inter','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;padding:24px 16px 48px;}
+.page-wrap{max-width:1100px;margin:0 auto;}
+
+.page-title{text-align:center;margin-bottom:6px;font-size:22px;font-weight:700;color:#fff;}
+.page-sub{text-align:center;color:var(--muted);font-size:12px;margin-bottom:24px;}
+.page-sub .ref{font-family:var(--mono);color:var(--accent);}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.card-header{background:var(--surface2);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.card-header .title{font-size:13px;font-weight:700;color:#fff;}
+.card-header .ref{font-family:var(--mono);font-size:10.5px;color:var(--accent);background:transparent;border:none;padding:0;opacity:.85;}
+.card-body{padding:16px;}
+
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:600px){ .field-grid{grid-template-columns:1fr;} }
+.field{min-width:0;}
+.field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;}
+.field input, .field select{
+  width:100%;background:transparent;border:1px solid transparent;border-radius:6px;
+  color:var(--green);font-family:var(--sans);font-size:14px;font-weight:600;
+  padding:10px 12px;outline:none;transition:background .15s,border-color .15s;
+}
+.field input:hover, .field select:hover{background:var(--surface2);border-color:var(--border);}
+.field input:focus, .field select:focus{background:var(--surface2);border-color:var(--accent);}
+.field input.invalid, .field select.invalid{background:rgba(239,68,68,.08);border-color:var(--red);}
+.field.full{grid-column:1 / -1;}
+.field .hint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5;}
+
+.result-box{
+  margin-top:4px;padding:20px;border-radius:8px;text-align:center;
+  border:1px solid var(--border);background:var(--surface2);
+}
+.result-box .verdict{font-size:22px;font-weight:800;letter-spacing:.5px;margin-bottom:8px;}
+.result-box.pass{border-color:var(--green);}
+.result-box.pass .verdict{color:var(--green);}
+.result-box.fail{border-color:var(--red);}
+.result-box.fail .verdict{color:var(--red);}
+.result-box .detail{font-family:var(--mono);font-size:13px;color:var(--text);}
+.result-box .detail b{color:#fff;}
+
+table.datatable{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;}
+table.datatable th{background:var(--surface2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.4px;padding:8px 8px;border:1px solid var(--border);text-align:center;}
+table.datatable td{padding:7px 8px;border:1px solid var(--border);text-align:center;color:var(--text);font-family:var(--mono);}
+table.datatable td.label{text-align:left;color:var(--muted);font-family:var(--sans);}
+
+.text-block{padding:16px;font-size:13px;line-height:1.8;color:var(--text);}
+.text-block p{margin-bottom:10px;}
+.text-block p:last-child{margin-bottom:0;}
+.text-block b{color:#fff;}
+
+.warn-note{margin-top:10px;padding:10px 12px;border-radius:6px;background:rgba(244,185,66,.08);border:1px solid rgba(244,185,66,.35);color:var(--warn);font-size:12px;line-height:1.6;}
+.err-note{margin-top:10px;padding:10px 12px;border-radius:6px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.35);color:var(--red);font-size:12px;line-height:1.6;}
+
+details{margin-top:2px;}
+summary.card-header{cursor:pointer;list-style:none;user-select:none;}
+summary.card-header::-webkit-details-marker{display:none;}
+.details-arrow{display:inline-block;margin-right:8px;font-size:10px;color:var(--accent);transition:transform .15s ease;}
+details[open] > summary.card-header .details-arrow{transform:rotate(90deg);}
+
+.steps{padding:16px;font-size:13px;line-height:2.1;color:var(--text);}
+.steps p{margin:10px 0 2px;}
+.steps b{color:#fff;}
+.steps .katex{color:var(--text);font-size:1.02em;}
+.steps .katex-display{margin:2px 0 10px;}
+
+.scheme-wrap{padding:18px 16px;text-align:center;}
+.scheme-wrap svg{max-width:520px;width:100%;height:auto;}
+
+#meshCard.needed .card-header{background:rgba(244,185,66,.12);}
+#meshCard.needed .card-header .title{color:var(--warn);}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+<div class="page-wrap">
+
+<div id="site-header"></div>
+
+<div class="page-title">Расчёт простенка из кирпичной кладки</div>
+<div class="page-sub">Проверка несущей способности на центральное сжатие · <span class="ref">СП РК 5.02-102-2012 (СНиП II-22-81)</span></div>
+
+<!-- ══════ Расчётная схема ══════ -->
+<div class="card">
+  <div class="card-header"><span class="title">Расчётная схема</span></div>
+  <div class="scheme-wrap">
+    <svg viewBox="0 0 520 280" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+        </marker>
+      </defs>
+      <!-- стена с проёмами -->
+      <rect x="20" y="20" width="480" height="190" fill="none" stroke="var(--border)" stroke-width="1.5"></rect>
+      <rect x="50" y="50" width="140" height="130" fill="none" stroke="var(--muted)" stroke-width="1.3" stroke-dasharray="5 4"></rect>
+      <text x="120" y="120" text-anchor="middle" fill="var(--muted)" font-size="11" font-family="var(--sans)">проём</text>
+      <rect x="330" y="50" width="140" height="130" fill="none" stroke="var(--muted)" stroke-width="1.3" stroke-dasharray="5 4"></rect>
+      <text x="400" y="120" text-anchor="middle" fill="var(--muted)" font-size="11" font-family="var(--sans)">проём</text>
+      <!-- простенок -->
+      <rect x="210" y="20" width="100" height="190" fill="var(--surface2)" stroke="var(--accent)" stroke-width="1.8"></rect>
+      <g stroke="var(--border)" stroke-width="1">
+        <line x1="210" y1="35" x2="310" y2="35"></line>
+        <line x1="210" y1="50" x2="310" y2="50"></line>
+        <line x1="210" y1="65" x2="310" y2="65"></line>
+        <line x1="210" y1="80" x2="310" y2="80"></line>
+        <line x1="210" y1="95" x2="310" y2="95"></line>
+        <line x1="210" y1="110" x2="310" y2="110"></line>
+        <line x1="210" y1="125" x2="310" y2="125"></line>
+        <line x1="210" y1="140" x2="310" y2="140"></line>
+        <line x1="210" y1="155" x2="310" y2="155"></line>
+        <line x1="210" y1="170" x2="310" y2="170"></line>
+        <line x1="210" y1="185" x2="310" y2="185"></line>
+        <line x1="260" y1="20" x2="260" y2="35"></line>
+        <line x1="235" y1="35" x2="235" y2="50"></line>
+        <line x1="285" y1="35" x2="285" y2="50"></line>
+      </g>
+      <text x="260" y="120" text-anchor="middle" fill="var(--text)" font-size="11" font-weight="700" font-family="var(--sans)" transform="rotate(90 260 120)" opacity="0">простенок</text>
+      <!-- размер b (ширина простенка) -->
+      <line x1="210" y1="8" x2="310" y2="8" stroke="var(--accent)" stroke-width="1.2" marker-start="url(#arr)" marker-end="url(#arr)"></line>
+      <text x="260" y="6" text-anchor="middle" fill="var(--accent)" font-size="12" font-family="var(--mono)">b</text>
+      <!-- размер h0 (расчётная высота) -->
+      <line x1="500" y1="20" x2="500" y2="210" stroke="var(--accent)" stroke-width="1.2" marker-start="url(#arr)" marker-end="url(#arr)"></line>
+      <text x="512" y="118" text-anchor="middle" fill="var(--accent)" font-size="12" font-family="var(--mono)" transform="rotate(90 512 118)">h₀</text>
+      <!-- план: толщина h -->
+      <g transform="translate(210,240)">
+        <rect x="0" y="0" width="100" height="24" fill="var(--surface2)" stroke="var(--accent)" stroke-width="1.5"></rect>
+        <line x1="0" y1="34" x2="100" y2="34" stroke="var(--accent)" stroke-width="1.2" marker-start="url(#arr)" marker-end="url(#arr)"></line>
+        <text x="50" y="47" text-anchor="middle" fill="var(--accent)" font-size="12" font-family="var(--mono)">b</text>
+        <line x1="-14" y1="0" x2="-14" y2="24" stroke="var(--accent)" stroke-width="1.2" marker-start="url(#arr)" marker-end="url(#arr)"></line>
+        <text x="-24" y="16" text-anchor="middle" fill="var(--accent)" font-size="12" font-family="var(--mono)">h</text>
+        <text x="50" y="16" text-anchor="middle" fill="var(--muted)" font-size="9.5" font-family="var(--sans)">план</text>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<!-- ══════ Геометрия и опирание ══════ -->
+<div class="card" id="inputsCard">
+  <div class="card-header"><span class="title">Геометрия и условия опирания</span></div>
+  <div class="card-body">
+    <div class="field-grid">
+      <div class="field">
+        <label>Толщина простенка h, мм</label>
+        <input type="number" id="pierH" value="380" min="1" step="10">
+      </div>
+      <div class="field">
+        <label>Ширина простенка b, мм</label>
+        <input type="number" id="pierB" value="640" min="1" step="10">
+      </div>
+      <div class="field">
+        <label>Расчётная высота H, мм</label>
+        <input type="number" id="pierHeight" value="3000" min="1" step="10">
+        <div class="hint">Высота простенка в свету между опорами (перекрытиями/перемычками)</div>
+      </div>
+      <div class="field">
+        <label>Условия опирания по высоте</label>
+        <select id="supportScheme">
+          <option value="hinged">Шарнирное опирание сверху и снизу</option>
+          <option value="rigid">Многоэтажное здание, ≥3 пролёта, жёсткие перекрытия</option>
+          <option value="cantilever">Защемление одним концом, другой свободен (консоль)</option>
+        </select>
+        <div class="hint" id="schemeHint"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ Материал кладки ══════ -->
+<div class="card">
+  <div class="card-header">
+    <span class="title">Материал кладки</span>
+    <span class="ref">табл. 10, 15 СНиП II-22-81</span>
+  </div>
+  <div class="card-body">
+    <div class="field-grid">
+      <div class="field full">
+        <label>Тип кладки</label>
+        <select id="masonryType">
+          <option value="clay_plastic">Кирпич керамический пластического прессования (полнотелый/пустотелый)</option>
+          <option value="silicate">Кирпич силикатный</option>
+          <option value="clay_semidry">Кирпич керамический полусухого прессования</option>
+          <option value="ceramic_stone">Керамические камни (пустотелые, все виды)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Марка кирпича/камня</label>
+        <select id="brickGrade"></select>
+      </div>
+      <div class="field">
+        <label>Марка раствора</label>
+        <select id="mortarGrade"></select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ Нагрузка ══════ -->
+<div class="card">
+  <div class="card-header"><span class="title">Нагрузка</span></div>
+  <div class="card-body">
+    <div class="field-grid">
+      <div class="field">
+        <label>Расчётная продольная сила N, кН</label>
+        <input type="number" id="loadN" value="150" min="0" step="1">
+      </div>
+      <div class="field" id="mgField" style="display:none;">
+        <label>Коэффициент mg (длительность нагрузки)</label>
+        <input type="number" id="mgManual" value="0.9" min="0.1" max="1" step="0.01">
+        <div class="hint">При h &lt; 300 мм mg &lt; 1 нужно определять отдельно по СП РК 5.02-102-2012 (влияние длительной части нагрузки). Введите значение вручную — здесь только справочный дефолт.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ Результат: неармированная кладка ══════ -->
+<div class="card">
+  <div class="card-header"><span class="title">Несущая способность неармированной кладки</span></div>
+  <div class="card-body">
+    <div class="result-box" id="resultBox">
+      <div class="verdict" id="verdict">—</div>
+      <div class="detail" id="detail">Заполните параметры</div>
+    </div>
+    <div id="errNote"></div>
+  </div>
+  <details id="stepsDetails">
+    <summary class="card-header">
+      <span class="title"><span class="details-arrow">▶</span>Промежуточные шаги</span>
+    </summary>
+    <div class="steps" id="steps"></div>
+  </details>
+</div>
+
+<!-- ══════ Усиление сетчатым армированием ══════ -->
+<div class="card" id="meshCard">
+  <div class="card-header">
+    <span class="title">Усиление сетчатым армированием</span>
+    <span class="ref">п.6, табл.15 СНиП II-22-81</span>
+  </div>
+  <div class="card-body">
+    <div class="field-grid">
+      <div class="field">
+        <label>Диаметр стержня сетки d<sub>s</sub>, мм</label>
+        <select id="meshDiam">
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5" selected>5</option>
+          <option value="6">6</option>
+          <option value="8">8</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Шаг стержней сетки c, мм</label>
+        <input type="number" id="meshCell" value="100" min="30" max="120" step="5">
+        <div class="hint">Ячейка сетки — по СНиП 30–120 мм</div>
+      </div>
+      <div class="field">
+        <label>Шаг сеток по высоте кладки s, мм</label>
+        <input type="number" id="meshStep" value="200" min="1" step="10">
+      </div>
+      <div class="field">
+        <label>Класс арматуры сетки</label>
+        <select id="meshClass">
+          <option value="360">Вр-1 (R_s = 360 МПа)</option>
+          <option value="225">А240 / А-I (R_s = 225 МПа)</option>
+          <option value="custom">Своё значение R_s</option>
+        </select>
+      </div>
+      <div class="field full" id="meshRsField" style="display:none;">
+        <label>R_s, МПа (расчётное сопротивление арматуры сеток растяжению)</label>
+        <input type="number" id="meshRs" value="360" min="1" step="1">
+        <div class="hint">По СНиП II-22-81 принимается не более 360 МПа независимо от фактического класса стали</div>
+      </div>
+    </div>
+    <div class="result-box" id="resultBox2">
+      <div class="verdict" id="verdict2">—</div>
+      <div class="detail" id="detail2">Заполните параметры</div>
+    </div>
+    <div id="meshWarnNote"></div>
+  </div>
+  <details id="stepsDetails2">
+    <summary class="card-header">
+      <span class="title"><span class="details-arrow">▶</span>Промежуточные шаги</span>
+    </summary>
+    <div class="steps" id="steps2"></div>
+  </details>
+</div>
+
+<!-- ══════ Пояснения ══════ -->
+<div class="card">
+  <div class="card-header"><span class="title">Пояснения и допущения</span></div>
+  <div class="text-block">
+    <p>Проверка выполняется только для <b>центрального сжатия</b> (без учёта эксцентриситета) и <b>прямоугольного</b> сечения простенка: N ≤ m<sub>g</sub>·φ·R·A.</p>
+    <p><b>φ</b> (коэффициент продольного изгиба) определяется по гибкости λ<sub>h</sub> = h₀/h и упругой характеристике кладки α (табл.15, зависит от типа кладки и марки раствора) — билинейной интерполяцией табл.18 СНиП II-22-81.</p>
+    <p><b>m<sub>g</sub></b> принимается равным 1 при толщине простенка h ≥ 300 мм (стандартное упрощение норм). При меньшей толщине коэффициент снижается из-за влияния длительной части нагрузки — вводится вручную.</p>
+    <p><b>Сетчатое армирование</b> повышает расчётное сопротивление кладки: R<sub>sk</sub> = R + 2μ₁R<sub>s</sub>/100, где μ₁ — процент армирования по объёму (0,1–1 %). Эффективно при гибкости λ<sub>h</sub> ≤ 15 — при большей гибкости прирост прочности от сетки менее надёжен.</p>
+    <p style="color:var(--warn);"><b>Не входит в объём расчёта:</b> внецентренное сжатие (эксцентриситет e₀), тавровые/сложные сечения, продольное (не сетчатое) армирование, местное смятие под опорами перемычек. Итоговое проектное решение должен проверить конструктор.</p>
+  </div>
+</div>
+
+</div>
+
+<div id="site-footer"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Табл. 10 СНиП II-22-81 / СП РК 5.02-102-2012 — расчётное
+   сопротивление сжатию кладки R, МПа (на тяжёлых растворах).
+   Столбцы марок раствора: М200,М150,М100,М75,М50,М25,М10,М4,0.2,нулевой
+   (те же значения, что в kirpich-530-2012.html)
+   ══════════════════════════════════════════════════════════════ */
+const MORTAR_GRADES = [
+  { key:'m200', label:'М200', bucket:'high' },
+  { key:'m150', label:'М150', bucket:'high' },
+  { key:'m100', label:'М100', bucket:'high' },
+  { key:'m75',  label:'М75',  bucket:'high' },
+  { key:'m50',  label:'М50',  bucket:'high' },
+  { key:'m25',  label:'М25',  bucket:'high' },
+  { key:'m10',  label:'М10',  bucket:'m10'  },
+  { key:'m4',   label:'М4',   bucket:'m4'   },
+  { key:'m02',  label:'0,2',  bucket:'m2'   },
+  { key:'zero', label:'Нулевой (без раствора)', bucket:'zero' }
+];
+
+const COMPRESSIVE = {
+  'М300': [3.9, 3.6, 3.3, 3.0, 2.8, 2.5, 2.2, 1.8, 1.7, 1.5],
+  'М250': [3.6, 3.3, 3.0, 2.8, 2.5, 2.2, 1.9, 1.6, 1.5, 1.3],
+  'М200': [3.2, 3.0, 2.7, 2.5, 2.2, 1.8, 1.6, 1.4, 1.3, 1.0],
+  'М150': [2.6, 2.4, 2.2, 2.0, 1.8, 1.5, 1.3, 1.2, 1.0, 0.8],
+  'М125': [null, 2.2, 2.0, 1.9, 1.7, 1.4, 1.2, 1.1, 0.9, 0.7],
+  'М100': [null, 2.0, 1.8, 1.7, 1.5, 1.3, 1.0, 0.9, 0.8, 0.6],
+  'М75':  [null, null, 1.5, 1.4, 1.3, 1.1, 0.9, 0.7, 0.6, 0.5],
+  'М50':  [null, null, null, 1.1, 1.0, 0.9, 0.7, 0.6, 0.5, 0.35],
+  'М35':  [null, null, null, 0.9, 0.8, 0.7, 0.6, 0.45, 0.4, 0.25]
+};
+const BRICK_GRADES = ['М300','М250','М200','М150','М125','М100','М75','М50','М35'];
+
+/* Табл. 15* СНиП II-22-81 — упругая характеристика кладки α */
+const MASONRY_TYPES = [
+  { id:'clay_plastic', label:'Кирпич керамический пластического прессования', alpha:{ high:1000, m10:750, m4:500, m2:350, zero:200 } },
+  { id:'silicate',     label:'Кирпич силикатный',                             alpha:{ high:750,  m10:500, m4:350, m2:350, zero:200 } },
+  { id:'clay_semidry', label:'Кирпич керамический полусухого прессования',    alpha:{ high:500,  m10:500, m4:350, m2:350, zero:200 } },
+  { id:'ceramic_stone',label:'Керамические камни (пустотелые)',               alpha:{ high:1200, m10:1000, m4:750, m2:500, zero:350 } }
+];
+
+/* Табл. 18 СНиП II-22-81 — коэффициент продольного изгиба φ */
+const PHI_TABLE = {
+  alphaCols: [1500,1000,750,500,350,200,100],
+  rows: [
+    { lamH:4,  phi:[1,    1,    0.98, 0.94, 0.9,  0.82, null] },
+    { lamH:6,  phi:[0.98, 0.96, 0.95, 0.91, 0.88, 0.81, 0.68] },
+    { lamH:8,  phi:[0.95, 0.92, 0.9,  0.85, 0.8,  0.7,  0.54] },
+    { lamH:10, phi:[0.92, 0.88, 0.84, 0.79, 0.72, 0.6,  0.43] },
+    { lamH:12, phi:[0.88, 0.84, 0.79, 0.72, 0.64, 0.51, 0.34] },
+    { lamH:14, phi:[0.85, 0.79, 0.73, 0.66, 0.57, 0.43, 0.28] },
+    { lamH:16, phi:[0.81, 0.74, 0.68, 0.59, 0.5,  0.37, 0.23] },
+    { lamH:18, phi:[0.77, 0.7,  0.63, 0.53, 0.45, 0.32, null] },
+    { lamH:22, phi:[0.69, 0.61, 0.53, 0.43, 0.35, 0.24, null] },
+    { lamH:26, phi:[0.61, 0.52, 0.45, 0.36, 0.29, 0.2,  null] },
+    { lamH:30, phi:[0.53, 0.45, 0.39, 0.32, 0.25, 0.17, null] },
+    { lamH:34, phi:[0.44, 0.38, 0.32, 0.26, 0.21, 0.14, null] },
+    { lamH:38, phi:[0.36, 0.31, 0.26, 0.21, 0.17, 0.12, null] },
+    { lamH:42, phi:[0.29, 0.25, 0.21, 0.17, 0.14, 0.09, null] },
+    { lamH:46, phi:[0.21, 0.18, 0.16, 0.13, 0.1,  0.07, null] },
+    { lamH:50, phi:[0.17, 0.15, 0.13, 0.1,  0.08, 0.05, null] },
+    { lamH:54, phi:[0.13, 0.12, 0.1,  0.08, 0.06, 0.04, null] }
+  ]
+};
+
+const SUPPORT_SCHEMES = {
+  hinged:     { beta:1.0, hint:'h₀ = H — простенок между перекрытиями с шарнирным опиранием (наиболее частый случай)' },
+  rigid:      { beta:0.9, hint:'h₀ = 0,9H — верх и низ упруго защемлены жёсткими перекрытиями многоэтажного здания' },
+  cantilever: { beta:2.0, hint:'h₀ = 2H — например, парапетный или консольный простенок' }
+};
+
+function interpRow(rowPhi, alpha){
+  const cols = PHI_TABLE.alphaCols;
+  if (alpha >= cols[0]) return rowPhi[0];
+  if (alpha <= cols[cols.length-1]) {
+    for (let i=cols.length-1;i>=0;i--){ if (rowPhi[i]!=null) return rowPhi[i]; }
+  }
+  for (let i=0;i<cols.length-1;i++){
+    if (alpha <= cols[i] && alpha >= cols[i+1]){
+      const v1 = rowPhi[i], v2 = rowPhi[i+1];
+      if (v1==null) return v2;
+      if (v2==null) return v1;
+      const frac = (alpha - cols[i]) / (cols[i+1] - cols[i]);
+      return v1 + (v2-v1)*frac;
+    }
+  }
+  return rowPhi[rowPhi.length-1];
+}
+
+function getPhi(lamH, alpha){
+  const rows = PHI_TABLE.rows;
+  const lam = Math.max(lamH, rows[0].lamH);
+  if (lam >= rows[rows.length-1].lamH) return interpRow(rows[rows.length-1].phi, alpha);
+  for (let i=0;i<rows.length-1;i++){
+    if (lam >= rows[i].lamH && lam <= rows[i+1].lamH){
+      const v1 = interpRow(rows[i].phi, alpha);
+      const v2 = interpRow(rows[i+1].phi, alpha);
+      const frac = (lam - rows[i].lamH) / (rows[i+1].lamH - rows[i].lamH);
+      return v1 + (v2-v1)*frac;
+    }
+  }
+  return interpRow(rows[0].phi, alpha);
+}
+
+function renderMath(el){
+  if (window.renderMathInElement){
+    renderMathInElement(el, {
+      delimiters: [
+        {left:'$$', right:'$$', display:true},
+        {left:'$', right:'$', display:false}
+      ],
+      throwOnError:false
+    });
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Заполнение селектов кирпича/камня и раствора
+   ══════════════════════════════════════════════════════════════ */
+function populateBrickSelect(){
+  const sel = document.getElementById('brickGrade');
+  sel.innerHTML = BRICK_GRADES.map(g => `<option value="${g}">${g}</option>`).join('');
+  sel.value = 'М100';
+}
+
+function populateMortarSelect(){
+  const brick = document.getElementById('brickGrade').value;
+  const row = COMPRESSIVE[brick];
+  const sel = document.getElementById('mortarGrade');
+  const prev = sel.value;
+  sel.innerHTML = MORTAR_GRADES.map((m,i) => row[i]!=null ? `<option value="${m.key}">${m.label}</option>` : '').join('');
+  const options = [...sel.options].map(o=>o.value);
+  if (options.includes(prev)) sel.value = prev;
+  else if (options.includes('m75')) sel.value = 'm75';
+  else sel.value = options[0];
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Валидация числовых полей
+   ══════════════════════════════════════════════════════════════ */
+function markInvalid(id, bad){
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('invalid', !!bad);
+}
+
+// Возвращает число, если оно проходит проверку, иначе null и добавляет текст ошибки в errors.
+function readNumber(id, label, errors, opts){
+  opts = opts || {};
+  const min = opts.min !== undefined ? opts.min : 0;
+  const minIncl = opts.minIncl !== undefined ? opts.minIncl : false; // true: v>=min допустимо, false: v>min
+  const max = opts.max;
+  const el = document.getElementById(id);
+  const raw = el.value;
+  if (raw === '' || raw == null){
+    errors.push(`«${label}» — не заполнено`);
+    markInvalid(id, true);
+    return null;
+  }
+  const v = parseFloat(raw);
+  if (isNaN(v)){
+    errors.push(`«${label}» — введите число`);
+    markInvalid(id, true);
+    return null;
+  }
+  const belowMin = minIncl ? (v < min) : (v <= min);
+  if (belowMin){
+    errors.push(`«${label}» должно быть ${minIncl ? 'не менее' : 'больше'} ${min} (введено ${raw})`);
+    markInvalid(id, true);
+    return null;
+  }
+  if (max !== undefined && v > max){
+    errors.push(`«${label}» не должно превышать ${max} (введено ${raw})`);
+    markInvalid(id, true);
+    return null;
+  }
+  markInvalid(id, false);
+  return v;
+}
+
+function resetMeshResult(){
+  document.getElementById('verdict2').textContent = '—';
+  document.getElementById('detail2').textContent = 'Заполните параметры';
+  document.getElementById('resultBox2').className = 'result-box';
+  document.getElementById('steps2').innerHTML = '';
+  document.getElementById('meshWarnNote').innerHTML = '';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Основной расчёт
+   ══════════════════════════════════════════════════════════════ */
+let lastLamH = 0, lastR = 0, lastPhi = 0, lastMg = 1, lastA = 0;
+
+function calc(){
+  const errors = [];
+  const h = readNumber('pierH', 'Толщина простенка h', errors);
+  const b = readNumber('pierB', 'Ширина простенка b', errors);
+  const H = readNumber('pierHeight', 'Расчётная высота H', errors);
+
+  const schemeId = document.getElementById('supportScheme').value;
+  const scheme = SUPPORT_SCHEMES[schemeId];
+  document.getElementById('schemeHint').textContent = scheme.hint;
+
+  const mgField = document.getElementById('mgField');
+  mgField.style.display = (h && h < 300) ? 'block' : 'none';
+
+  const brick = document.getElementById('brickGrade').value;
+  const mortarKey = document.getElementById('mortarGrade').value;
+  const typeId = document.getElementById('masonryType').value;
+
+  const N = readNumber('loadN', 'Расчётная продольная сила N', errors, { min:0, minIncl:true });
+
+  let mg = 1;
+  const mgAuto = h ? h >= 300 : true;
+  if (!mgAuto){
+    mg = readNumber('mgManual', 'Коэффициент mg', errors, { min:0, max:1 });
+  } else {
+    markInvalid('mgManual', false);
+  }
+
+  const errNote = document.getElementById('errNote');
+
+  if (errors.length){
+    errNote.innerHTML = `<div class="err-note"><b>Проверьте исходные данные:</b><br>${errors.join('<br>')}</div>`;
+    document.getElementById('verdict').textContent = '—';
+    document.getElementById('detail').textContent = 'Исправьте отмеченные поля';
+    document.getElementById('resultBox').className = 'result-box';
+    document.getElementById('steps').innerHTML = '';
+    resetMeshResult();
+    document.getElementById('meshCard').classList.remove('needed');
+    return;
+  }
+  errNote.innerHTML = '';
+
+  const mortarIdx = MORTAR_GRADES.findIndex(m => m.key === mortarKey);
+  const R = COMPRESSIVE[brick][mortarIdx];
+  if (R == null){
+    errNote.innerHTML = '<div class="err-note">Такое сочетание марки кирпича и марки раствора не нормируется таблицей — выберите другой раствор.</div>';
+    document.getElementById('verdict').textContent = '—';
+    document.getElementById('detail').textContent = '';
+    document.getElementById('resultBox').className = 'result-box';
+    document.getElementById('steps').innerHTML = '';
+    resetMeshResult();
+    document.getElementById('meshCard').classList.remove('needed');
+    return;
+  }
+
+  const bucket = MORTAR_GRADES[mortarIdx].bucket;
+  const alpha = MASONRY_TYPES.find(t => t.id === typeId).alpha[bucket];
+
+  const beta = scheme.beta;
+  const h0 = beta * H;
+  const lamH = h0 / h;
+  const phi = getPhi(lamH, alpha);
+
+  const A = b * h;
+  const NuN = mg * phi * R * A;
+  const Nu = NuN / 1000;
+
+  lastLamH = lamH; lastR = R; lastPhi = phi; lastMg = mg; lastA = A;
+
+  const ok = N <= Nu;
+  const box = document.getElementById('resultBox');
+  box.className = 'result-box ' + (ok ? 'pass' : 'fail');
+  document.getElementById('verdict').textContent = ok ? 'НЕСУЩАЯ СПОСОБНОСТЬ ДОСТАТОЧНА' : 'НЕДОСТАТОЧНО — ТРЕБУЕТСЯ УСИЛЕНИЕ';
+  document.getElementById('detail').innerHTML =
+    `N = ${N.toFixed(1)} кН <b>${ok?'≤':'>'}</b> N<sub>u</sub> = ${Nu.toFixed(1)} кН` +
+    `<br>R = ${R} МПа · α = ${alpha} · λ<sub>h</sub> = ${lamH.toFixed(2)} · φ = ${phi.toFixed(3)} · m<sub>g</sub> = ${mg}`;
+
+  const steps = `
+    <p>Расчётная высота простенка (${scheme.hint.split(' — ')[1] || ''}):</p>
+    $$h_0 = \\beta \\cdot H = ${beta}\\times ${H}\\text{ мм} = ${h0.toFixed(0)}\\text{ мм}$$
+    <p>Гибкость простенка:</p>
+    $$\\lambda_h = \\frac{h_0}{h} = \\frac{${h0.toFixed(0)}}{${h}} = ${lamH.toFixed(2)}$$
+    <p>Коэффициент продольного изгиба φ по табл.18 (упругая характеристика α = ${alpha}):</p>
+    $$\\varphi = ${phi.toFixed(3)}$$
+    <p>Площадь сечения простенка:</p>
+    $$A = b\\times h = ${b}\\times ${h} = ${A.toFixed(0)}\\text{ мм}^2$$
+    <p>Несущая способность неармированной кладки:</p>
+    $$N_u = m_g\\cdot\\varphi\\cdot R\\cdot A = ${mg}\\times ${phi.toFixed(3)}\\times ${R}\\times ${A.toFixed(0)} = ${NuN.toFixed(0)}\\text{ Н} = ${Nu.toFixed(1)}\\text{ кН}$$
+  `;
+  document.getElementById('steps').innerHTML = steps;
+  renderMath(document.getElementById('steps'));
+
+  calcMesh(N, ok);
+}
+
+function calcMesh(N, unreinforcedOk){
+  const meshCard = document.getElementById('meshCard');
+  meshCard.classList.toggle('needed', !unreinforcedOk);
+
+  const warnNote = document.getElementById('meshWarnNote');
+  warnNote.innerHTML = '';
+
+  const meshErrors = [];
+  const ds = readNumber('meshDiam', 'Диаметр стержня сетки', meshErrors);
+  const c = readNumber('meshCell', 'Шаг стержней сетки c', meshErrors);
+  const s = readNumber('meshStep', 'Шаг сеток по высоте s', meshErrors);
+  const Rs = readNumber('meshRs', 'R_s арматуры сетки', meshErrors);
+
+  if (meshErrors.length){
+    warnNote.innerHTML = `<div class="err-note"><b>Проверьте параметры армирования:</b><br>${meshErrors.join('<br>')}</div>`;
+    document.getElementById('verdict2').textContent = '—';
+    document.getElementById('detail2').textContent = 'Исправьте отмеченные поля';
+    document.getElementById('resultBox2').className = 'result-box';
+    document.getElementById('steps2').innerHTML = '';
+    return;
+  }
+
+  if (!lastR){
+    document.getElementById('verdict2').textContent = '—';
+    document.getElementById('detail2').textContent = 'Заполните параметры';
+    document.getElementById('resultBox2').className = 'result-box';
+    document.getElementById('steps2').innerHTML = '';
+    return;
+  }
+
+  const fs = Math.PI * ds * ds / 4;
+  const mu = 200 * fs / (c * s); // %, объёмный процент армирования
+  const muUsed = Math.min(mu, 1);
+  const Rsk = lastR + 2 * muUsed * Rs / 100;
+  const NuN2 = lastMg * lastPhi * Rsk * lastA;
+  const Nu2 = NuN2 / 1000;
+
+  const ok2 = N <= Nu2;
+  const box2 = document.getElementById('resultBox2');
+  box2.className = 'result-box ' + (ok2 ? 'pass' : 'fail');
+  document.getElementById('verdict2').textContent = ok2 ? 'С СЕТКОЙ — НЕСУЩАЯ СПОСОБНОСТЬ ДОСТАТОЧНА' : 'С СЕТКОЙ — ВСЁ РАВНО НЕДОСТАТОЧНО';
+  document.getElementById('detail2').innerHTML =
+    `N = ${N.toFixed(1)} кН <b>${ok2?'≤':'>'}</b> N<sub>u,sk</sub> = ${Nu2.toFixed(1)} кН` +
+    `<br>μ₁ = ${mu.toFixed(3)}% · R<sub>sk</sub> = ${Rsk.toFixed(2)} МПа`;
+
+  const steps2 = `
+    <p>Площадь сечения одного стержня сетки:</p>
+    $$f_s = \\frac{\\pi d_s^2}{4} = \\frac{\\pi\\times ${ds}^2}{4} = ${fs.toFixed(2)}\\text{ мм}^2$$
+    <p>Процент армирования по объёму (квадратная сетка с ячейкой c, шагом по высоте s):</p>
+    $$\\mu_1 = \\frac{200 f_s}{c\\cdot s} = \\frac{200\\times ${fs.toFixed(2)}}{${c}\\times ${s}} = ${mu.toFixed(3)}\\%$$
+    <p>Расчётное сопротивление сжатию армированной кладки:</p>
+    $$R_{sk} = R + \\frac{2\\mu_1 R_s}{100} = ${lastR} + \\frac{2\\times ${muUsed.toFixed(3)}\\times ${Rs}}{100} = ${Rsk.toFixed(3)}\\text{ МПа}$$
+    <p>Несущая способность армированной кладки:</p>
+    $$N_{u,sk} = m_g\\cdot\\varphi\\cdot R_{sk}\\cdot A = ${lastMg}\\times ${lastPhi.toFixed(3)}\\times ${Rsk.toFixed(3)}\\times ${lastA.toFixed(0)} = ${NuN2.toFixed(0)}\\text{ Н} = ${Nu2.toFixed(1)}\\text{ кН}$$
+  `;
+  document.getElementById('steps2').innerHTML = steps2;
+  renderMath(document.getElementById('steps2'));
+
+  let warnHtml = '';
+  if (mu < 0.1) warnHtml += 'Процент армирования ниже минимального (0,1%) — кладка формально не считается армокаменной. Уменьшите шаг сетки c/s или увеличьте диаметр стержней.<br>';
+  if (mu > 1) warnHtml += 'Процент армирования выше рекомендованного максимума (1%) — прирост прочности свыше этого предела в расчёте не учитывается (μ₁ ограничен 1%).<br>';
+  if (lastLamH > 15) warnHtml += `Гибкость λ<sub>h</sub> = ${lastLamH.toFixed(1)} &gt; 15 — сетчатое армирование при большой гибкости менее эффективно и надёжно, по нормам рекомендуется для коротких простенков/столбов (λ<sub>h</sub> ≤ 15).<br>`;
+  if (warnHtml) warnNote.innerHTML = `<div class="warn-note">${warnHtml}</div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Инициализация и обработчики
+   ══════════════════════════════════════════════════════════════ */
+populateBrickSelect();
+populateMortarSelect();
+
+document.getElementById('brickGrade').addEventListener('change', () => { populateMortarSelect(); calc(); saveFormState(); });
+document.getElementById('meshClass').addEventListener('change', function(){
+  const rsField = document.getElementById('meshRsField');
+  if (this.value === 'custom'){
+    rsField.style.display = 'block';
+  } else {
+    rsField.style.display = 'none';
+    document.getElementById('meshRs').value = this.value;
+  }
+  calc();
+});
+
+document.getElementById('inputsCard').addEventListener('input', calc);
+document.getElementById('inputsCard').addEventListener('change', calc);
+['mortarGrade','masonryType','loadN','mgManual','meshDiam','meshCell','meshStep','meshRs'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', calc);
+  el.addEventListener('change', calc);
+});
+
+/* === Сохранение введённых данных между визитами (localStorage) === */
+const FORM_STORAGE_KEY = 'esk-prostenok-kladka-v1';
+const FORM_FIELD_IDS = ['pierH','pierB','pierHeight','supportScheme','masonryType','brickGrade','mortarGrade','loadN','mgManual','meshDiam','meshCell','meshStep','meshClass','meshRs'];
+function saveFormState(){
+  try{
+    const state = {};
+    FORM_FIELD_IDS.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      state[id] = (el.type === 'checkbox') ? el.checked : el.value;
+    });
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+function loadFormState(){
+  try{
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if(!raw) return;
+    const state = JSON.parse(raw);
+    FORM_FIELD_IDS.forEach(id=>{
+      if(!(id in state)) return;
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(el.type === 'checkbox') el.checked = state[id];
+      else el.value = state[id];
+      el.dispatchEvent(new Event('change', {bubbles:true}));
+    });
+  }catch(e){}
+}
+document.getElementById('inputsCard').addEventListener('input', saveFormState);
+document.getElementById('inputsCard').addEventListener('change', saveFormState);
+['mortarGrade','masonryType','loadN','mgManual','meshDiam','meshCell','meshStep','meshClass','meshRs'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', saveFormState);
+  el.addEventListener('change', saveFormState);
+});
+
+loadFormState();
+calc();
+</script>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+
+</body>
+</html>
