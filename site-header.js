@@ -12,18 +12,23 @@
 (function(){
 
   /* ── Canonical URL ──
-     Жёстко закрепляем www.psdpro.kz как единственный "настоящий"
-     адрес сайта для поисковиков — сайт технически доступен ещё и
-     по esk-kz.vercel.app/psdpro.kz/rebar-calculator-seven.vercel.app
-     (все они настроены как редиректы в Vercel), но без canonical-тега
-     Google иногда всё равно путает версии и не выбирает основную. */
+     Жёстко закрепляем esk.psdpro.kz как единственный "настоящий"
+     адрес ЭСК для поисковиков — без canonical-тега Google иногда
+     путает версии страниц и не выбирает основную.
+     ВАЖНО (18.09): раньше здесь стоял www.psdpro.kz — это было верно,
+     пока домен принадлежал ЭСК. После переезда домена на PSDPRO
+     www.psdpro.kz — уже другой сайт, и старый canonical заставлял
+     Google считать страницы ЭСК дублями несуществующих страниц на
+     www.psdpro.kz и не индексировать их ("Вариант страницы с тегом
+     canonical" в Search Console). Если домен ЭСК снова сменится —
+     поправить здесь. */
   (function setCanonical(){
     // index.html нормализуем в "/", чтобы главная страница не получала
     // два разных canonical в зависимости от того, как на неё зашли
     // (корень сайта vs явная ссылка на index.html из навигации) —
     // именно этот разнобой в sitemap.xml (там прописан корень "/")
     const normalizedPath = location.pathname.replace(/\/index\.html$/, '/');
-    const canonicalHref = 'https://www.psdpro.kz' + normalizedPath;
+    const canonicalHref = 'https://esk.psdpro.kz' + normalizedPath;
     let link = document.querySelector('link[rel="canonical"]');
     if (!link){
       link = document.createElement('link');
