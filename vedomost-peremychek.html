@@ -994,11 +994,9 @@ tfoot.explication-total td {
       });
     });
 
-    // Порядок как в исходной ведомости: перемычки/прогоны/плиты по алфавиту, ручные позиции — в конце
-    return Object.values(groups).sort((a, b) => {
-      if (a.isCustom !== b.isCustom) return a.isCustom ? 1 : -1;
-      return a.name.localeCompare(b.name, 'ru');
-    });
+    // Порядок — как пользователь добавляет позиции в ведомости сверху вниз
+    // (порядок вставки ключей в groups); отдельная сортировка не нужна.
+    return Object.values(groups);
   }
 
   function renderExplication() {
