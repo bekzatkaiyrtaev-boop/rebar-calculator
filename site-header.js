@@ -189,7 +189,8 @@
       body: JSON.stringify({
         name: user.displayName || (user.email ? user.email.split('@')[0] : ''),
         email: user.email,
-        method: method
+        method: method,
+        site: 'ЭСК'
       })
     }).catch(function(){ /* тихо игнорируем — учёт не критичен для работы сайта */ });
   }
@@ -203,7 +204,7 @@
     fetch(PAGEVIEW_LOG_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: user.email, page: pageLabel })
+      body: JSON.stringify({ email: user.email, page: pageLabel, site: 'ЭСК' })
     }).catch(function(){ /* тихо игнорируем */ });
   }
 
