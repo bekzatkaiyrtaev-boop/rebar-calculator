@@ -70,29 +70,29 @@
   SITE_PAGES.push(...SITE_PAGES_FILTERED);
 
   /* ── Кнопки навигации в шапке (порядок = порядок отображения) ──
-     Чтобы добавить новую кнопку — просто добавьте объект в массив.
-     current: true  — эта кнопка ведёт на текущую страницу (авто)
-     dynamic: "prev"/"next" — управляется скриптом (Назад/Вперёд) */
+     Тот же набор кнопок, что и в шапке PSD PRO (site-header.js там) —
+     "ЭСК" и "Об авторе" ведут на страницы самого справочника, остальные
+     уводят на соответствующие страницы PSD PRO. Чтобы перейти в
+     содержание справочника — жмут "ЭСК" (это и есть index.html). */
   const NAV_ITEMS = [
-    { href: "index.html",  label: "Содержание" },
-    { href: "#", label: "← Назад",   dynamic: "prev" },
-    { href: "#", label: "Вперёд →",  dynamic: "next" },
-    { href: "about.html",  label: "Об авторе" }
+    { href: "https://www.psdpro.kz/",              label: "Главная" },
+    { href: "https://www.psdpro.kz/raschety.html", label: "Расчёты" },
+    { href: "index.html",                          label: "ЭСК" },
+    { href: "forum.html",                          label: "Форум" },
+    { href: "about.html",                          label: "Об авторе" },
+    { href: "https://www.psdpro.kz/contact.html",  label: "Связаться" }
   ];
 
   const mount = document.getElementById('site-header');
   if (!mount) return;
 
   const current = location.pathname.split('/').pop() || 'index.html';
-  const isCover = current === 'index.html';
-  const idx = SITE_PAGES.findIndex(p => p.href === current);
 
   /* ── Собираем HTML навигации ── */
   const navHTML = NAV_ITEMS.map(item => {
-    const idAttr = item.dynamic ? ` id="siteNav${item.dynamic === 'prev' ? 'Prev' : 'Next'}"` : '';
-    const isCurrent = !item.dynamic && item.href === current;
-    const cls = isCurrent ? ' class="current"' : (item.dynamic ? ' class="disabled"' : '');
-    return `<a href="${item.href}"${idAttr}${cls}>${item.label}</a>`;
+    const isCurrent = item.href === current;
+    const cls = isCurrent ? ' class="current"' : '';
+    return `<a href="${item.href}"${cls}>${item.label}</a>`;
   }).join('<span class="sep">·</span>');
 
   /* ── Рендерим шапку ── */
@@ -108,29 +108,6 @@
       <div class="site-auth" id="siteAuth"></div>
     </header>
   `;
-
-  /* ── Настраиваем "Назад / Вперёд" по позиции в SITE_PAGES ── */
-  const prevBtn = document.getElementById('siteNavPrev');
-  const nextBtn = document.getElementById('siteNavNext');
-
-  if (prevBtn && nextBtn){
-    if (idx > 0){
-      prevBtn.href = SITE_PAGES[idx - 1].href;
-      prevBtn.title = SITE_PAGES[idx - 1].title;
-      prevBtn.classList.remove('disabled');
-    }
-    if (idx >= 0 && idx < SITE_PAGES.length - 1){
-      nextBtn.href = SITE_PAGES[idx + 1].href;
-      nextBtn.title = SITE_PAGES[idx + 1].title;
-      nextBtn.classList.remove('disabled');
-    } else if (idx === -1 && SITE_PAGES.length > 0){
-      // Мы не на одной из "листов" (например, index.html или about.html) —
-      // "Вперёд" ведёт к первой странице справочника
-      nextBtn.href = SITE_PAGES[0].href;
-      nextBtn.title = SITE_PAGES[0].title;
-      nextBtn.classList.remove('disabled');
-    }
-  }
 
   /* ══════════════════════════════════════════════════════════════
      СЧЁТЧИК "СЕЙЧАС НА САЙТЕ" — временно отключён.
