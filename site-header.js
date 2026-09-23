@@ -98,8 +98,13 @@
   /* ── Рендерим шапку ── */
   mount.innerHTML = `
     <header class="site-header">
-      <h1>Электронный справочник конструктора</h1>
-      <nav class="site-nav">${navHTML}</nav>
+      <div class="site-header-media">
+        <img class="site-header-img" src="icons/3.png" alt="Электронный справочник конструктора">
+        <div class="site-header-tint"></div>
+      </div>
+      <div class="site-header-overlay">
+        <nav class="site-nav">${navHTML}</nav>
+      </div>
       <div class="site-auth" id="siteAuth"></div>
     </header>
   `;

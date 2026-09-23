@@ -5,6 +5,11 @@
    Цвета здесь заданы напрямую (не через переменные страницы),
    чтобы шапка выглядела одинаково независимо от того, как
    называются CSS-переменные на конкретной странице.
+
+   Визуально шапка и фон полностью повторяют PSD PRO (23.09) —
+   баннер-картинка icons/3.png + текстура фона icons/fon.png,
+   скопированы из PSDPRO, чтобы переход по кнопке "ЭСК" ощущался
+   как один и тот же сайт, а не смена дизайна.
    ══════════════════════════════════════════════════════════════ */
 
 /* ── Глобальный сброс: убираем стрелочки ▲▼ у полей number ──
@@ -19,48 +24,135 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/* ── Общий фон-орнамент для всех страниц сайта ──
+   Источник один: этот файл подключён везде. Страницы не задают
+   свой background для body, чтобы не перебивать это правило. */
+body {
+  background: #020617 url("icons/fon.png") top center repeat-y;
+  background-size: 1400px auto;
+}
+
 .site-header {
+  position: relative;
   text-align: center;
-  max-width: 1100px;
+  max-width: 960px;
   margin: 0 auto 24px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #2e3347;
 }
-.site-header h1 {
-  font-size: 26px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.3px;
-  margin: 0;
+/* ── Mobile-first: на узких экранах картинка идёт в полный рост
+   (высота по пропорциям), а меню — обычной полосой под ней, без
+   наложения (иначе на маленькой высоте текст перекрывает лого). ── */
+.site-header-media {
+  position: relative;
+  border-radius: 14px 14px 0 0;
+  overflow: hidden;
 }
-.site-header .site-author {
-  color: #6b7099;
-  margin-top: 6px;
-  font-size: 13px;
+.site-header-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: brightness(.9) saturate(.9);
+  /* Гасим все 4 края САМОЙ КАРТИНКИ в прозрачность (не затрагивает
+     меню/кнопку входа — они отдельные элементы поверх). */
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0, #000 70px, #000 calc(100% - 70px), transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+  -webkit-mask-composite: source-in, source-over;
+  mask-image:
+    linear-gradient(to right, transparent 0, #000 70px, #000 calc(100% - 70px), transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+  mask-composite: intersect;
+}
+/* ── От планшетной ширины — обрезаем лишний тёмный фон сверху/снизу
+   картинки, так шапка ниже, а лого остаётся по центру. На мобильных
+   не трогаем — при таком узком контейнере обрезка задела бы текст
+   на картинке. ── */
+@media (min-width: 641px) {
+  .site-header-media {
+    aspect-ratio: 4.3 / 1;
+  }
+  .site-header-img {
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+}
+/* ── Тонировка картинки в тон фона сайта — мультиплай ближе
+   подтягивает синий фон картинки к тёмному фону сайта. Та же маска,
+   что и у картинки, — чтобы тонировка не давала жёсткий край там,
+   где сама картинка уже прозрачная. ── */
+.site-header-tint {
+  position: absolute;
+  inset: 0;
+  background: rgba(15,17,23,.28);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0, #000 70px, #000 calc(100% - 70px), transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+  -webkit-mask-composite: source-in, source-over;
+  mask-image:
+    linear-gradient(to right, transparent 0, #000 70px, #000 calc(100% - 70px), transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+  mask-composite: intersect;
+}
+.site-header-overlay {
+  /* Отдельный блок ПОСЛЕ .site-header-media (не внутри) — иначе его
+     обрезает overflow:hidden+aspect-ratio картинки на десктопе. */
+  position: relative;
+  margin-top: -28px;
+  background: transparent;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 .site-nav {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  margin-top: 14px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .site-nav a {
-  color: #6b7099;
+  display: inline-block;
+  color: #e2e8f0;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
   letter-spacing: .2px;
-  transition: color .15s;
+  padding: 9px 16px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 2px 6px rgba(0,0,0,.35);
+  transition: color .15s, background .15s, transform .1s, box-shadow .15s;
 }
-.site-nav a:hover { color: #4f8ef7; }
-.site-nav a.current { color: #4f8ef7; pointer-events: none; }
+.site-nav a:hover {
+  color: #fff;
+  background: linear-gradient(180deg, rgba(59,130,246,.28), rgba(59,130,246,.1));
+  border-color: rgba(59,130,246,.45);
+  transform: translateY(-1px);
+  box-shadow: 0 1px 0 rgba(255,255,255,.08) inset, 0 4px 10px rgba(0,0,0,.4);
+}
+.site-nav a.current {
+  color: #fff;
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  border-color: #3b82f6;
+  box-shadow: 0 1px 0 rgba(255,255,255,.25) inset, 0 3px 8px rgba(59,130,246,.45);
+  pointer-events: none;
+}
 .site-nav a.disabled { opacity: .35; pointer-events: none; }
-.site-nav .sep { color: #2e3347; font-size: 14px; }
+.site-nav .sep { display: none; }
 
-/* ── Авторизация через Google ── */
+/* ── Авторизация — в правом верхнем углу шапки (поверх картинки),
+   отдельно от строки меню. Позиционируется относительно .site-header
+   (у него position:relative). ── */
 .site-auth {
-  margin-top: 16px;
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 3;
   display: flex;
   justify-content: center;
 }
@@ -69,7 +161,7 @@ input[type="number"] {
   align-items: center;
   gap: 10px;
   background: rgba(255,255,255,0.04);
-  border: 1px solid #2e3347;
+  border: 1px solid #334155;
   border-radius: 999px;
   padding: 5px 8px 5px 6px;
 }
@@ -81,14 +173,14 @@ input[type="number"] {
   display: block;
 }
 .auth-name {
-  color: #d7dae8;
+  color: #e2e8f0;
   font-size: 13px;
   white-space: nowrap;
 }
 .auth-logout {
   background: none;
   border: none;
-  color: #6b7099;
+  color: #64748b;
   font-size: 12px;
   cursor: pointer;
   padding: 2px 6px;
@@ -101,7 +193,7 @@ input[type="number"] {
   position: fixed;
   inset: 0;
   z-index: 2000;
-  background: rgba(8, 10, 18, 0.97);
+  background: rgba(6, 9, 18, 0.97);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,8 +203,8 @@ input[type="number"] {
   max-width: 420px;
   width: 100%;
   text-align: center;
-  background: #12141f;
-  border: 1px solid #2e3347;
+  background: #0f172a;
+  border: 1px solid #334155;
   border-radius: 16px;
   padding: 36px 28px;
 }
@@ -129,29 +221,30 @@ input[type="number"] {
 }
 .auth-login-btn {
   background: rgba(255,255,255,0.04);
-  border: 1px solid #2e3347;
+  border: 1px solid #334155;
   border-radius: 999px;
-  color: #d7dae8;
+  color: #e2e8f0;
   font-size: 13px;
   padding: 7px 18px;
   cursor: pointer;
   transition: color .15s, border-color .15s;
 }
-.auth-login-btn:hover { color: #4f8ef7; border-color: #4f8ef7; }
+.auth-login-btn:hover { color: #3b82f6; border-color: #3b82f6; }
+.auth-gate-admin {
   display: block;
-  color: #6b7099;
+  color: #64748b;
   font-size: 12px;
   text-decoration: none;
   margin-bottom: 14px;
 }
-.auth-gate-admin:hover { color: #4f8ef7; }
+.auth-gate-admin:hover { color: #3b82f6; }
 .auth-gate-back {
   display: inline-block;
-  color: #6b7099;
+  color: #64748b;
   font-size: 13px;
   text-decoration: none;
 }
-.auth-gate-back:hover { color: #4f8ef7; }
+.auth-gate-back:hover { color: #3b82f6; }
 
 /* ── Кнопка "Войти через Google" в гейте ── */
 .auth-google-btn {
@@ -175,7 +268,7 @@ input[type="number"] {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #6b7099;
+  color: #64748b;
   font-size: 12px;
   margin-bottom: 18px;
 }
@@ -184,7 +277,7 @@ input[type="number"] {
   content: "";
   flex: 1;
   height: 1px;
-  background: #2e3347;
+  background: #334155;
 }
 
 /* ── Вкладки "Почта и пароль" / "Ссылка на почту" ── */
@@ -192,7 +285,7 @@ input[type="number"] {
   display: flex;
   gap: 6px;
   background: rgba(255,255,255,0.03);
-  border: 1px solid #2e3347;
+  border: 1px solid #334155;
   border-radius: 10px;
   padding: 4px;
   margin-bottom: 16px;
@@ -202,15 +295,15 @@ input[type="number"] {
   background: none;
   border: none;
   border-radius: 7px;
-  color: #6b7099;
+  color: #64748b;
   font-size: 12.5px;
   padding: 8px 6px;
   cursor: pointer;
   transition: color .15s, background .15s;
 }
 .auth-tab.active {
-  background: rgba(79,142,247,0.14);
-  color: #4f8ef7;
+  background: rgba(47,125,250,0.14);
+  color: #3b82f6;
 }
 
 /* ── Содержимое вкладок: поля и кнопки ── */
@@ -221,16 +314,16 @@ input[type="number"] {
   width: 100%;
   box-sizing: border-box;
   background: #0d0f18;
-  border: 1px solid #2e3347;
+  border: 1px solid #334155;
   border-radius: 8px;
-  color: #d7dae8;
+  color: #e2e8f0;
   font-size: 13.5px;
   padding: 10px 12px;
   margin-bottom: 10px;
   outline: none;
   transition: border-color .15s;
 }
-.auth-tab-panel input:focus { border-color: #4f8ef7; }
+.auth-tab-panel input:focus { border-color: #3b82f6; }
 .auth-tab-panel input::placeholder { color: #565b7d; }
 
 .auth-actions {
@@ -244,24 +337,24 @@ input[type="number"] {
   font-size: 13px;
   padding: 9px 10px;
   cursor: pointer;
-  border: 1px solid #2e3347;
+  border: 1px solid #334155;
   transition: opacity .15s, border-color .15s;
 }
 #authLoginBtn {
-  background: #4f8ef7;
-  border-color: #4f8ef7;
+  background: #3b82f6;
+  border-color: #3b82f6;
   color: #fff;
 }
 #authLoginBtn:hover { opacity: .88; }
 #authRegisterBtn {
   background: none;
-  color: #d7dae8;
+  color: #e2e8f0;
 }
-#authRegisterBtn:hover { border-color: #4f8ef7; color: #4f8ef7; }
+#authRegisterBtn:hover { border-color: #3b82f6; color: #3b82f6; }
 
 #authSendLinkBtn {
   width: 100%;
-  background: #4f8ef7;
+  background: #3b82f6;
   border: none;
   border-radius: 8px;
   color: #fff;
@@ -274,7 +367,7 @@ input[type="number"] {
 #authSendLinkBtn:hover { opacity: .88; }
 
 .auth-hint {
-  color: #6b7099;
+  color: #64748b;
   font-size: 12px;
   line-height: 1.4;
   margin: 6px 0 0;
