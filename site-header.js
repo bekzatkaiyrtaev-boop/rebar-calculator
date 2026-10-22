@@ -77,7 +77,7 @@
     { href: "https://www.psdpro.kz/",              label: "Главная" },
     { href: "https://www.psdpro.kz/raschety.html", label: "Расчёты" },
     { href: "index.html",                          label: "ЭСК" },
-    { href: "forum.html",                          label: "Форум" },
+    { href: "https://www.psdpro.kz/forum.html",    label: "Форум" },
     { href: "about.html",                          label: "Об авторе" },
     { href: "https://www.psdpro.kz/contact.html",  label: "Связаться" }
   ];
