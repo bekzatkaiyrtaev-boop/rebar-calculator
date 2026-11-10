@@ -27,9 +27,10 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);fon
 .page-title{text-align:center;margin-bottom:6px;font-size:22px;font-weight:700;color:#fff;}
 .page-sub{text-align:center;color:var(--muted);font-size:12.5px;margin-bottom:24px;line-height:1.6;}
 
-.layout{display:grid;grid-template-columns:300px 1fr;gap:16px;margin-top:4px;}
-.panel,.drawing,.reference{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;}
-.panel{align-self:start;}
+.layout{display:grid;grid-template-columns:300px 1fr;margin-top:4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.reference{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;}
+.panel,.drawing{padding:20px;}
+.panel{align-self:start;border-right:1px solid var(--border);}
 h2{font-size:16px;margin:0 0 16px;color:#fff;font-weight:700;}
 label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:16px 0 6px;}
 label:first-of-type{margin-top:0;}
@@ -73,7 +74,7 @@ a{color:var(--accent);}
 
 @media(max-width:900px){
   .layout{grid-template-columns:1fr;}
-  .panel{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
+  .panel{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;border-right:0;border-bottom:1px solid var(--border);}
   .panel h2,.panel>.hint{grid-column:1/-1;}
   .metrics{grid-template-columns:repeat(2,1fr);}
 }
