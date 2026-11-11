@@ -60,9 +60,7 @@ h1,h2,h3,p,dl,dd{margin:0;}
 .empty-detail h2{font-size:18px;color:#fff;font-weight:700;}
 
 .detail-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px;}
-.detail-top .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px;}
 .detail-top h2{font-size:22px;color:#fff;font-weight:700;}
-.subline{margin-top:4px;color:var(--muted);font-size:12px;}
 .primary{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:7px;padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .primary:hover{opacity:.88;}
 
@@ -152,7 +150,7 @@ svg text{font-family:var(--sans);}
 <h1 class="page-title">Плиты плоские по серии ИИ-03-02</h1>
 <div class="page-sub" id="purpose" hidden>Плоские плиты из тяжёлого и лёгкого бетона, армированные сварными сетками</div>
 
-<section class="detail" id="detail" aria-label="Выбранная плита">
+<section class="detail" id="detail">
 <div id="detail-heading"></div>
 <div class="overview">
 <aside class="left">
@@ -215,11 +213,10 @@ function loopMarkup(loop){if(!loop)return '<p class="hint">Данные не у�
 function sourceMarkup(item){const pages=item.sourcePages??item.sourcePage;const pageText=Array.isArray(pages)?pages.join(', '):pages;const parts=[`<strong>${esc(DB.series||'ИИ-03-02')} · ${esc(DB.album||'Часть I · альбом №15 · 1957')}</strong>`];if(item.drawing)parts.push(`Чертёж: ${esc(item.drawing)}`);if(pageText!==undefined&&pageText!==null)parts.push(`Страницы файла DJVU: ${esc(pageText)}`);if(item.sourceDescription)parts.push(esc(item.sourceDescription));return parts.join('<br>');}
 function renderDetail(item){
   if(!item){$('detail-heading').replaceChildren();$('sketch-slot').replaceChildren();$('detail-content').innerHTML='<div class="empty-detail"><h2>В разделе нет плит</h2></div>';return;}
-  const type=item.concreteType==='light'?'Лёгкий бетон':'Тяжёлый бетон';
   const loadNames={design:'Расчётная',longTerm:'Нормативная длительная',shortTerm:'Нормативная кратковременная'};
   const loadRows=Object.entries(loadNames).map(([key,label])=>`<tr><th scope="row">${label}</th><td>${withUnit(item.loads?.[key],'кгс/м²',1)}</td></tr>`).join('');
   const test=item.test,hasTest=test&&Object.values(test).some(v=>v!==null&&v!==undefined&&v!=='');
-  $('detail-heading').innerHTML=`<div class="detail-top"><div><div class="eyebrow">Выбранная плита</div><h2 id="selected-mark">${esc(item.mark)}</h2><p class="subline">${type} · ${esc(DB.series||'ИИ-03-02')} · альбом №15</p></div><button class="primary" type="button" id="print">Печать / PDF</button></div>`;
+  $('detail-heading').innerHTML=`<div class="detail-top"><div><h2 id="selected-mark">${esc(item.mark)}</h2></div><button class="primary" type="button" id="print">Печать / PDF</button></div>`;
   $('sketch-slot').innerHTML=`<div class="sketch-wrap"><div class="sketch-head"><h3>Схема плиты</h3><span>Размеры — мм</span></div>${slabSvg(item)}<p class="sketch-foot">Схематичный эскиз. Армирование — по спецификации сеток.${geometryFor(item).loops.length?' ⊕ — монтажная петля.':''}</p></div>`;
   $('detail-content').innerHTML=`<div class="detail-grid"><section class="block"><h3>Характеристики</h3><dl class="kv">${keyValue('Бетон',readable(item.concrete))}${keyValue('Объём бетона',item.volume!==null&&item.volume!==undefined?`${volume(item.volume)} м³`:'—')}${keyValue('Расход стали',withUnit(item.steel,'кг',3))}</dl>${reviewMarkup(item.reviewNotes)}<dl class="kv">${keyValue('Сталь на 1 м³ бетона',withUnit(item.steelPerM3,'кг/м³',2))}${keyValue('Расчётный пролёт',withUnit(item.span,'мм',0))}${keyValue('Опирание, не менее',withUnit(item.supportMin,'мм',0))}</dl></section><section class="block"><h3>Нагрузки по альбому</h3><p class="load-source-note">С учётом собственного веса плиты</p><table class="load-table"><tbody>${loadRows}</tbody></table>${['design','longTerm','shortTerm'].some(key=>item.loads?.[key]===null||item.loads?.[key]===undefined)?'<p class="self-weight" style="margin-top:10px">«—» — значение в альбоме не приведено.</p>':''}</section></div><div class="section-rule reinforcement-grid"><section class="block"><h3>Сетки</h3>${meshesMarkup(item.meshes)}</section><section class="block loop-spec"><h3>Монтажные петли</h3>${loopMarkup(item.loop)}</section></div>${hasTest?`<section class="block section-rule"><h3>Контроль при испытании</h3><dl class="kv">${keyValue('Контрольный прогиб',withUnit(test.deflection,'мм',2))}${keyValue('Нагрузка при проверке прочности',withUnit(test.proofStrength,'кгс/м²',1))}${keyValue('Нагрузка при проверке прогиба',withUnit(test.proofDeflection,'кгс/м²',1))}</dl></section>`:''}${Array.isArray(item.notes)&&item.notes.length?`<section class="block section-rule"><h3>Примечания альбома</h3>${lines(item.notes,'note-list')}</section>`:''}<section class="source section-rule" aria-label="Источник данных">${sourceMarkup(item)}</section>`;
   $('print').onclick=()=>window.print();
