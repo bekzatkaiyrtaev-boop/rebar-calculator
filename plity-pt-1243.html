@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Каталог плит ПТ — серия 1.243.1-4 — Электронный справочник конструктора</title>
+<meta name="description" content="Каталог плоских плит ПТ по серии 1.243.1-4: размеры, нагрузки, армирование и схема выбранной плиты.">
+<style>
+:root {
+  --bg:       #0f1117;
+  --surface:  #1a1d27;
+  --surface2: #22263a;
+  --border:   #2e3347;
+  --accent:   #4f8ef7;
+  --green:    #7dd3a8;
+  --warn:     #f4b942;
+  --red:      #ef4444;
+  --text:     #d6daf0;
+  --muted:    #6b7099;
+  --mono:     'JetBrains Mono','Courier New',monospace;
+  --sans:     'Inter','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;}
+button{font:inherit;}
+h1,h2,h3,p,dl,dd{margin:0;}
+.page-wrap{max-width:1100px;margin:0 auto;padding:24px 16px 48px;}
+
+.page-title{text-align:center;margin-bottom:6px;font-size:22px;font-weight:700;color:#fff;}
+.page-sub{text-align:center;color:var(--muted);font-size:12.5px;margin-bottom:24px;line-height:1.6;}
+
+/* Один общий блок-карточка на весь раздел: список марок слева, схема
+   выбранной плиты справа — как в исходнике ("shared card"). */
+.detail{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:22px;min-width:0;}
+#detail-heading{margin-bottom:0;}
+.overview{display:grid;grid-template-columns:320px minmax(0,1fr);gap:22px;align-items:start;margin-top:4px;}
+@media(max-width:900px){.overview{grid-template-columns:1fr;}}
+
+.results-title{padding:0 0 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.results-title h2{font-size:14px;color:#fff;font-weight:700;}
+.counter{font-size:11.5px;color:var(--muted);}
+.result-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:7px;}
+.result-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.result-table th{text-align:left;font-weight:700;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;background:var(--surface2);padding:9px 10px;white-space:nowrap;}
+.result-table td{padding:10px;border-top:1px solid var(--border);white-space:nowrap;color:var(--text);}
+.result-table th:first-child,.result-table td:first-child{padding-left:12px;}
+.result-table th:last-child,.result-table td:last-child{padding-right:12px;text-align:right;}
+.result-table tbody tr:first-child td{border-top:0;}
+.result-table tr[data-id]{cursor:pointer;}
+.result-table tr[data-id]:hover{background:var(--surface2);}
+.result-table tr.selected{background:rgba(79,142,247,.12);box-shadow:inset 3px 0 var(--accent);}
+.mark-select{border:0;background:transparent;color:var(--text);padding:0;font-size:12.5px;font-weight:700;text-align:left;cursor:pointer;font-family:inherit;}
+.row-size{font-size:11px;color:var(--muted);}
+.row-load{font-family:var(--mono);}
+.selection-note{padding-top:10px;font-size:11px;color:var(--muted);}
+
+.detail-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px;}
+.detail-top .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px;}
+.detail-top h2{font-size:22px;color:#fff;font-weight:700;}
+.subline{margin-top:4px;color:var(--muted);font-size:12px;}
+.primary{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:7px;padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.primary:hover{opacity:.88;}
+
+.sketch-wrap{border:1px solid var(--border);border-radius:8px;background:#fff;overflow:hidden;}
+.sketch-head{padding:12px 14px 0;display:flex;justify-content:space-between;gap:10px;align-items:center;}
+.sketch-head h3{font-size:12px;color:#172c3a;font-weight:700;}
+.sketch-head span{font-size:10.5px;color:#64748b;}
+.sketch{display:block;width:100%;height:auto;max-height:365px;}
+.sketch-foot{padding:0 14px 13px;font-size:11px;color:#64748b;}
+
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);}
+@media(max-width:560px){.detail-grid,.reinforcement-grid{grid-template-columns:1fr;}}
+.block h3{font-size:13px;margin-bottom:10px;color:#fff;font-weight:700;}
+.kv>div{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.kv dt{color:var(--muted);}
+.kv dd{text-align:right;font-weight:700;color:var(--text);max-width:65%;overflow-wrap:anywhere;}
+.load-table{border-collapse:collapse;width:100%;font-size:12px;}
+.load-table th,.load-table td{padding:7px 0;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;}
+.load-table th{font-weight:500;color:var(--muted);}
+.load-table td{text-align:right;font-weight:700;font-family:var(--mono);color:var(--text);white-space:nowrap;}
+.load-source-note{font-size:11px;color:var(--accent);margin:8px 0 12px;}
+.self-weight{font-size:11px;color:var(--muted);line-height:1.65;}
+
+.section-rule{margin-top:20px;padding-top:18px;border-top:1px solid var(--border);}
+.reinforcement-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.spec-lines{margin:0;padding:0;list-style:none;font-size:12px;}
+.spec-lines li{margin-top:6px;color:var(--text);}
+.spec-lines strong{font-weight:700;color:#fff;}
+.hint{font-size:12px;color:var(--muted);}
+.note-list{margin:0;padding-left:16px;font-size:12px;color:var(--muted);}
+.note-list li+li{margin-top:5px;}
+.source{font-size:11px;color:var(--muted);line-height:1.7;}
+.source strong{color:var(--text);font-weight:700;}
+
+.review-note{margin:10px 0 2px;padding:10px 11px;border:1px solid rgba(244,185,66,.35);border-left:3px solid var(--warn);border-radius:7px;background:rgba(244,185,66,.1);color:var(--warn);font-size:11px;line-height:1.5;}
+.review-note h4{margin:0 0 5px;font-size:11px;font-weight:700;}
+.review-note p+p{margin-top:6px;}
+.review-note .review-source{display:block;font-size:10px;margin-top:2px;color:var(--warn);opacity:.8;}
+
+.empty-detail{padding:60px 20px;text-align:center;color:var(--muted);}
+.empty-detail h2{font-size:18px;color:#fff;font-weight:700;}
+
+svg text{font-family:var(--sans);}
+.sketch .dimension,#dim-arrow path{stroke:#60a5fa;}
+.sketch .dimtext{fill:#2563eb;font-size:13px;}
+.sketch .viewlabel{fill:#64748b;font-size:11px;}
+.sketch .mesh-line{stroke:#187b80;stroke-width:1;opacity:.55;}
+.sketch .lifting-loop{stroke:#aa6b28;}
+
+[hidden]{display:none!important;}
+
+@media print{
+  #site-header,#site-footer,.page-sub,.panel,.primary{display:none!important;}
+  body{background:#fff;color:#111;}
+  .page-wrap{padding:0;margin:12px 0;}
+  .overview{display:block;}
+  .detail{border:0;padding:0;}
+  .sketch-wrap{break-inside:avoid;}
+}
+</style>
+<link rel="stylesheet" href="site-header.css">
+<link rel="stylesheet" href="site-footer.css">
+</head>
+<body>
+<div id="site-header"></div>
+<div class="page-wrap">
+
+<h1 class="page-title">Каталог плит ПТ — серия 1.243.1-4</h1>
+<div class="page-sub" id="purpose">Плоские плиты перекрытия подпольных каналов общественных зданий</div>
+
+<section class="detail" id="detail" aria-label="Выбранная плита">
+<div id="detail-heading"></div>
+<div class="overview">
+<aside class="left">
+<section class="panel results" aria-labelledby="results-title">
+  <div class="results-title"><h2 id="results-title">Выберите плиту</h2><span class="counter" id="result-count" aria-live="polite"></span></div>
+  <div class="result-scroll"><table class="result-table"><thead><tr><th scope="col">Марка</th><th scope="col">A × B × h<br>мм</th><th scope="col" id="table-load">q расч.<br>кгс/м²</th><th scope="col">Масса<br>кг</th></tr></thead><tbody id="results-body"></tbody></table></div>
+  <p class="selection-note" id="selection-note">Нажмите на марку, чтобы открыть данные и схему. Нагрузка в таблице — <strong>без собственного веса плиты</strong>.</p>
+</section>
+</aside>
+<div id="sketch-slot" aria-live="polite"></div>
+</div>
+<div id="detail-content" aria-live="polite"></div>
+</section>
+
+</div>
+<div id="site-footer"></div>
+
+<script src="site-structure.js"></script>
+<script src="site-header.js"></script>
+<script src="site-footer.js"></script>
+<script>
+'use strict';
+const DB={"series":"1.243.1-4","title":"Плиты плоские железобетонные, армированные сварными сетками из стали класса Вр-I","purpose":"Перекрытие подпольных каналов внутри общественных зданий.","supportMin":60,"source":{"file":"1.243.1-4 = Плиты плоские с сетками из Вр-I - ПТ{8;12,5}-{8,6;11,9;13,13;16,14}.djvu","pageCount":16,"effectiveDate":"01.08.1983"},"common":{"concrete":"М200","thickness":80,"selfWeight":{"design":220,"normative":200},"notes":["Плиты предназначены для перекрытия подпольных каналов внутри общественных зданий.","Опирание — не менее 60 мм; толщина плиты — 80 мм. На сборочном чертеже защитный слой указан 15 мм.","В серии принят предел огнестойкости 0,5 часа. Марка бетона сохранена в обозначении серии: М200.","При расчётной зимней температуре ниже −40 °C для строповочных петель не допускается сталь ВСт3пс2."]},"items":[{"id":"pt125-8-6","mark":"ПТ 12,5-8.6","a":800,"b":600,"h":80,"mass":96,"volume":0.038,"steel":0.86,"steelEquivalent":1.12,"loads":{"design":1250,"normative":1050,"longTerm":900},"spans":{"l1":800,"l2":600},"drawing":"1.243.1-4-100","sourcePage":7,"assemblyPage":8,"mesh":{"mark":"С1","summary":["780 × 580 мм · Ø4 Вр-I · 1 шт.","Шаг 200 × 200 мм; крайние ячейки 100 мм. Масса сетки 0,54 кг."],"specification":[{"label":"Позиция 1","value":"Ø4 Вр-I, L = 780 мм — 4 шт."},{"label":"Позиция 2","value":"Ø4 Вр-I, L = 580 мм — 5 шт."}],"geometry":{"length":780,"width":580,"diameter":4,"stepA":200,"stepB":200,"edgeCellA":100,"edgeCellB":100,"endOverhang":40,"countAlongA":4,"countAlongB":5}},"lifting":{"mark":"П1","summary":["2 шт. · Ø6 А-I · L = 690 мм","Масса одной петли 0,16 кг; всего 0,32 кг."],"specification":[{"label":"Чертёж","value":"1.243.1-4-023"},{"label":"Привязка вдоль A","value":"C = 200 мм от каждого торца"},{"label":"Привязка по B","value":"По оси B/2"}],"geometry":{"quantity":2,"c":200,"yOffset":300}},"notes":[],"sourcePages":[3,5,6,7,8,12,14,15,16],"sourceDescription":"Нагрузки и расчётные пролёты — техническое описание, табл. 1–2 (стр. 3); номенклатура — табл. 4 (стр. 6). Спецификация плиты — стр. 7, сборочный чертёж — стр. 8; сетка — стр. 12, 14; петли — стр. 15; ведомость расхода стали — стр. 16.","meshSource":{"mark":"С1","designation":"1.243.1-4-010","Lmm":780,"Hmm":580,"diameterMm":4,"Smm":200,"Kmm":200,"m":3,"n":2,"edgeCellLmm":100,"edgeCellHmm":100,"massKg":0.54,"bars":[{"position":"1","designation":"1.243.1-4-011","lengthMm":780,"quantity":4,"totalMassKg":0.28},{"position":"2","designation":"1.243.1-4-012","lengthMm":580,"quantity":5,"totalMassKg":0.26}],"specificationPage":12,"drawingPage":14},"loopSource":{"mark":"П1","designation":"1.243.1-4-023","steel":"А-I ГОСТ 5781-82","diameterMm":6,"barLengthMm":690,"massKg":0.16,"drawingPage":15,"heightMm":140,"straightLegEachSideMm":170,"bendRadiusLargeMm":30,"bendRadiusSmallMm":20}},{"id":"pt125-11-9","mark":"ПТ 12,5-11.9","a":1100,"b":900,"h":80,"mass":198,"volume":0.079,"steel":1.8,"steelEquivalent":2.5,"loads":{"design":1250,"normative":1050,"longTerm":900},"spans":{"l1":1100,"l2":900},"drawing":"1.243.1-4-100-01","sourcePage":7,"assemblyPage":8,"mesh":{"mark":"С3","summary":["1080 × 880 мм · Ø5 Вр-I · 1 шт.","Шаг 200 × 200 мм. Масса сетки 1,48 кг."],"specification":[{"label":"Позиция 1","value":"Ø5 Вр-I, L = 1080 мм — 5 шт."},{"label":"Позиция 2","value":"Ø5 Вр-I, L = 880 мм — 6 шт."}],"geometry":{"length":1080,"width":880,"diameter":5,"stepA":200,"stepB":200,"edgeCellA":null,"edgeCellB":null,"endOverhang":40,"countAlongA":5,"countAlongB":6}},"lifting":{"mark":"П1","summary":["2 шт. · Ø6 А-I · L = 690 мм","Масса одной петли 0,16 кг; всего 0,32 кг."],"specification":[{"label":"Чертёж","value":"1.243.1-4-023"},{"label":"Привязка вдоль A","value":"C = 270 мм от каждого торца"},{"label":"Привязка по B","value":"По оси B/2"}],"geometry":{"quantity":2,"c":270,"yOffset":450}},"notes":[],"sourcePages":[3,5,6,7,8,12,14,15,16],"sourceDescription":"Нагрузки и расчётные пролёты — техническое описание, табл. 1–2 (стр. 3); номенклатура — табл. 4 (стр. 6). Спецификация плиты — стр. 7, сборочный чертёж — стр. 8; сетка — стр. 12, 14; петли — стр. 15; ведомость расхода стали — стр. 16.","meshSource":{"mark":"С3","designation":"1.243.1-4-010-02","Lmm":1080,"Hmm":880,"diameterMm":5,"Smm":200,"Kmm":200,"m":5,"n":4,"edgeCellLmm":null,"edgeCellHmm":null,"massKg":1.48,"bars":[{"position":"1","designation":"1.243.1-4-015","lengthMm":1080,"quantity":5,"totalMassKg":0.75},{"position":"2","designation":"1.243.1-4-016","lengthMm":880,"quantity":6,"totalMassKg":0.73}],"specificationPage":12,"drawingPage":14},"loopSource":{"mark":"П1","designation":"1.243.1-4-023","steel":"А-I ГОСТ 5781-82","diameterMm":6,"barLengthMm":690,"massKg":0.16,"drawingPage":15,"heightMm":140,"straightLegEachSideMm":170,"bendRadiusLargeMm":30,"bendRadiusSmallMm":20}},{"id":"pt125-13-13","mark":"ПТ 12,5-13.13","a":1300,"b":1300,"h":80,"mass":338,"volume":0.135,"steel":4.32,"steelEquivalent":5.82,"loads":{"design":1250,"normative":1050,"longTerm":900},"spans":{"l1":1300,"l2":1300},"drawing":"1.243.1-4-200-01","sourcePage":9,"assemblyPage":11,"mesh":{"mark":"С5","summary":["1280 × 1280 мм · Ø5 Вр-I · 1 шт.","Шаг 150 × 150 мм. Масса сетки 3,2 кг."],"specification":[{"label":"В двух направлениях","value":"Ø5 Вр-I, L = 1280 мм — 18 шт. (9 в каждом направлении)"}],"geometry":{"length":1280,"width":1280,"diameter":5,"stepA":150,"stepB":150,"edgeCellA":null,"edgeCellB":null,"endOverhang":40,"countAlongA":9,"countAlongB":9}},"lifting":{"mark":"П2","summary":["4 шт. · Ø8 А-I · L = 690 мм","Масса одной петли 0,28 кг; всего 1,12 кг."],"specification":[{"label":"Чертёж","value":"1.243.1-4-023-01"},{"label":"Привязка вдоль A","value":"C = 320 мм от каждого торца"},{"label":"Привязка по B","value":"240 мм от каждой кромки"}],"geometry":{"quantity":4,"c":320,"yOffset":240}},"notes":[],"sourcePages":[3,5,6,9,11,12,14,15,16],"sourceDescription":"Нагрузки и расчётные пролёты — техническое описание, табл. 1–2 (стр. 3); номенклатура — табл. 4 (стр. 6). Спецификация плиты — стр. 9, сборочный чертёж — стр. 11; сетка — стр. 12, 14; петли — стр. 15; ведомость расхода стали — стр. 16.","meshSource":{"mark":"С5","designation":"1.243.1-4-010-04","Lmm":1280,"Hmm":1280,"diameterMm":5,"Smm":150,"Kmm":150,"m":8,"n":8,"edgeCellLmm":null,"edgeCellHmm":null,"massKg":3.2,"bars":[{"position":"1,2","designation":"1.243.1-4-018","lengthMm":1280,"quantity":18,"totalMassKg":3.2,"quantityPerDirection":9}],"specificationPage":12,"drawingPage":14},"loopSource":{"mark":"П2","designation":"1.243.1-4-023-01","steel":"А-I ГОСТ 5781-82","diameterMm":8,"barLengthMm":690,"massKg":0.28,"drawingPage":15,"heightMm":140,"straightLegEachSideMm":170,"bendRadiusLargeMm":30,"bendRadiusSmallMm":20}},{"id":"pt125-16-14","mark":"ПТ 12,5-16.14","a":1600,"b":1400,"h":80,"mass":448,"volume":0.179,"steel":7.4,"steelEquivalent":10.03,"loads":{"design":1250,"normative":1050,"longTerm":900},"spans":{"l1":1600,"l2":1400},"drawing":"1.243.1-4-200","sourcePage":9,"assemblyPage":11,"mesh":{"mark":"С7","summary":["1580 × 1380 мм · Ø5 Вр-I · 1 шт.","Шаг 100 × 100 мм. Масса сетки 5,98 кг."],"specification":[{"label":"Позиция 1","value":"Ø5 Вр-I, L = 1580 мм — 14 шт."},{"label":"Позиция 2","value":"Ø5 Вр-I, L = 1380 мм — 16 шт."}],"geometry":{"length":1580,"width":1380,"diameter":5,"stepA":100,"stepB":100,"edgeCellA":null,"edgeCellB":null,"endOverhang":40,"countAlongA":14,"countAlongB":16}},"lifting":{"mark":"П2","summary":["4 шт. · Ø8 А-I · L = 690 мм","Масса одной петли 0,28 кг; всего 1,12 кг."],"specification":[{"label":"Чертёж","value":"1.243.1-4-023-01"},{"label":"Привязка вдоль A","value":"C = 400 мм от каждого торца"},{"label":"Привязка по B","value":"240 мм от каждой кромки"}],"geometry":{"quantity":4,"c":400,"yOffset":240}},"notes":[],"sourcePages":[3,5,6,9,11,13,14,15,16],"sourceDescription":"Нагрузки и расчётные пролёты — техническое описание, табл. 1–2 (стр. 3); номенклатура — табл. 4 (стр. 6). Спецификация плиты — стр. 9, сборочный чертёж — стр. 11; сетка — стр. 13, 14; петли — стр. 15; ведомость расхода стали — стр. 16.","meshSource":{"mark":"С7","designation":"1.243.1-4-010-06","Lmm":1580,"Hmm":1380,"diameterMm":5,"Smm":100,"Kmm":100,"m":15,"n":13,"edgeCellLmm":null,"edgeCellHmm":null,"massKg":5.98,"bars":[{"position":"1","designation":"1.243.1-4-021","lengthMm":1580,"quantity":14,"totalMassKg":2.94},{"position":"2","designation":"1.243.1-4-022","lengthMm":1380,"quantity":16,"totalMassKg":3.04}],"specificationPage":13,"drawingPage":14},"loopSource":{"mark":"П2","designation":"1.243.1-4-023-01","steel":"А-I ГОСТ 5781-82","diameterMm":8,"barLengthMm":690,"massKg":0.28,"drawingPage":15,"heightMm":140,"straightLegEachSideMm":170,"bendRadiusLargeMm":30,"bendRadiusSmallMm":20},"reviewNotes":[{"text":"Натуральный расход стали в таблице 4 — 7,40 кг, в ведомости расхода стали — 7,10 кг. Сумма компонентов 5,98 + 1,12 = 7,10 кг. В карточке приведено 7,40 кг по таблице 4; расход требует уточнения.","source":"Таблица 4 (стр. 6); спецификация С7 (стр. 13); ведомость расхода стали (стр. 16)."}]},{"id":"pt8-11-9","mark":"ПТ 8-11.9","a":1100,"b":900,"h":80,"mass":198,"volume":0.079,"steel":1.23,"steelEquivalent":1.75,"loads":{"design":800,"normative":670,"longTerm":520},"spans":{"l1":1100,"l2":900},"drawing":"1.243.1-4-100-02","sourcePage":7,"assemblyPage":8,"mesh":{"mark":"С2","summary":["1080 × 880 мм · Ø4 Вр-I · 1 шт.","Шаг 200 × 200 мм. Масса сетки 0,97 кг."],"specification":[{"label":"Позиция 1","value":"Ø4 Вр-I, L = 1080 мм — 5 шт."},{"label":"Позиция 2","value":"Ø4 Вр-I, L = 880 мм — 6 шт."}],"geometry":{"length":1080,"width":880,"diameter":4,"stepA":200,"stepB":200,"edgeCellA":null,"edgeCellB":null,"endOverhang":40,"countAlongA":5,"countAlongB":6}},"lifting":{"mark":"П1","summary":["2 шт. · Ø6 А-I · L = 690 мм","Масса одной петли 0,16 кг; всего 0,32 кг."],"specification":[{"label":"Чертёж","value":"1.243.1-4-023"},{"label":"Привязка вдоль A","value":"C = 270 мм от каждого торца"},{"label":"Привязка по B","value":"По оси B/2"}],"geometry":{"quantity":2,"c":270,"yOffset":450}},"notes":[],"sourcePages":[3,5,6,7,8,12,14,15,16],"sourceDescription":"Нагрузки и расчётные пролёты — техническое описание, табл. 1–2 (стр. 3); номенклатура — табл. 4 (стр. 6). Спецификация плиты — стр. 7, сборочный чертёж — стр. 8; сетка — стр. 12, 14; петли — стр. 15; ведомость расхода стали — стр. 16.","meshSource":{"mark":"С2","designation":"1.243.1-4-010-01","Lmm":1080,"Hmm":880,"diameterMm":4,"Smm":200,"Kmm":200,"m":5,"n":4,"edgeCellLmm":null,"edgeCellHmm":null,"massKg":0.97,"bars":[{"position":"1","designation":"1.243.1-4-013","lengthMm":1080,"quantity":5,"totalMassKg":0.49},{"position":"2","designation":"1.243.1-4-014","lengthMm":880,"quantity":6,"totalMassKg":0.48}],"specificationPage":12,"drawingPage":14},"loopSource":{"mark":"П1","designation":"1.243.1-4-023","steel":"А-I ГОСТ 5781-82","diameterMm":6,"barLengthMm":690,"massKg":0.16,"drawingPage":15,"heightMm":140,"straightLegEachSideMm":170,"bendRadiusLargeMm":30,"bendRadiusSmallMm":20},"reviewNotes":[{"text":"В таблице 4 и ведомости расхода стали напечатано 1,23 кг. Сумма указанных компонентов: сетка 0,97 кг + петли 0,32 кг = 1,29 кг. В карточке сохранён итог серии 1,23 кг; расход требует уточнения.","source":"Таблица 4 (стр. 6); спецификация С2 (стр. 12); ведомость расхода стали (стр. 16)."}]},{"id":"pt8-13-13","mark":"ПТ 8-13.13","a":1300,"b":1300,"h":80,"mass":338,"volume":0.135,"steel":3.19,"steelEquivalent":4.16,"loads":{"design":800,"normative":670,"longTerm":520},"spans":{"l1":1300,"l2":1300},"drawing":"1.243.1-4-200-03","sourcePage":10,"assemblyPage":11,"mesh":{"mark":"С4","summary":["1280 × 1280 мм · Ø4 Вр-I · 1 шт.","Шаг 150 × 150 мм. Масса сетки 2,07 кг."],"specification":[{"label":"В двух направлениях","value":"Ø4 Вр-I, L = 1280 мм — 18 шт. (9 в каждом направлении)"}],"geometry":{"length":1280,"width":1280,"diameter":4,"stepA":150,"stepB":150,"edgeCellA":null,"edgeCellB":null,"endOverhang":40,"countAlongA":9,"countAlongB":9}},"lifting":{"mark":"П2","summary":["4 шт. · Ø8 А-I · L = 690 мм","Масса одной петли 0,28 кг; всего 1,12 кг."],"specification":[{"label":"Чертёж","value":"1.243.1-4-023-01"},{"label":"Привязка вдоль A","value":"C = 320 мм от каждого торца"},{"label":"Привязка по B","value":"240 мм от каждой кромки"}],"geometry":{"quantity":4,"c":320,"yOffset":240}},"notes":[],"sourcePages":[3,5,6,10,11,12,14,15,16],"sourceDescription":"Нагрузки и расчётные пролёты — техническое описание, табл. 1–2 (стр. 3); номенклатура — табл. 4 (стр. 6). Спецификация плиты — стр. 10, сборочный чертёж — стр. 11; сетка — стр. 12, 14; петли — стр. 15; ведомость расхода стали — стр. 16.","meshSource":{"mark":"С4","designation":"1.243.1-4-010-03","Lmm":1280,"Hmm":1280,"diameterMm":4,"Smm":150,"Kmm":150,"m":8,"n":8,"edgeCellLmm":null,"edgeCellHmm":null,"massKg":2.07,"bars":[{"position":"1,2","designation":"1.243.1-4-017","lengthMm":1280,"quantity":18,"totalMassKg":2.07,"quantityPerDirection":9}],"specificationPage":12,"drawingPage":14},"loopSource":{"mark":"П2","designation":"1.243.1-4-023-01","steel":"А-I ГОСТ 5781-82","diameterMm":8,"barLengthMm":690,"massKg":0.28,"drawingPage":15,"heightMm":140,"straightLegEachSideMm":170,"bendRadiusLargeMm":30,"bendRadiusSmallMm":20}},{"id":"pt8-16-14","mark":"ПТ 8-16.14","a":1600,"b":1400,"h":80,"mass":448,"volume":0.179,"steel":5,"steelEquivalent":6.82,"loads":{"design":800,"normative":670,"longTerm":520},"spans":{"l1":1600,"l2":1400},"drawing":"1.243.1-4-200-02","sourcePage":9,"assemblyPage":11,"mesh":{"mark":"С6","summary":["1580 × 1380 мм · Ø4 Вр-I · 1 шт.","Шаг 100 × 100 мм. Масса сетки 3,88 кг."],"specification":[{"label":"Позиция 1","value":"Ø4 Вр-I, L = 1580 мм — 14 шт."},{"label":"Позиция 2","value":"Ø4 Вр-I, L = 1380 мм — 16 шт."}],"geometry":{"length":1580,"width":1380,"diameter":4,"stepA":100,"stepB":100,"edgeCellA":null,"edgeCellB":null,"endOverhang":40,"countAlongA":14,"countAlongB":16}},"lifting":{"mark":"П2","summary":["4 шт. · Ø8 А-I · L = 690 мм","Масса одной петли 0,28 кг; всего 1,12 кг."],"specification":[{"label":"Чертёж","value":"1.243.1-4-023-01"},{"label":"Привязка вдоль A","value":"C = 400 мм от каждого торца"},{"label":"Привязка по B","value":"240 мм от каждой кромки"}],"geometry":{"quantity":4,"c":400,"yOffset":240}},"notes":[],"sourcePages":[3,5,6,9,11,13,14,15,16],"sourceDescription":"Нагрузки и расчётные пролёты — техническое описание, табл. 1–2 (стр. 3); номенклатура — табл. 4 (стр. 6). Спецификация плиты — стр. 9, сборочный чертёж — стр. 11; сетка — стр. 13, 14; петли — стр. 15; ведомость расхода стали — стр. 16.","meshSource":{"mark":"С6","designation":"1.243.1-4-010-05","Lmm":1580,"Hmm":1380,"diameterMm":4,"Smm":100,"Kmm":100,"m":15,"n":13,"edgeCellLmm":null,"edgeCellHmm":null,"massKg":3.88,"bars":[{"position":"1","designation":"1.243.1-4-019","lengthMm":1580,"quantity":14,"totalMassKg":1.96},{"position":"2","designation":"1.243.1-4-020","lengthMm":1380,"quantity":16,"totalMassKg":1.92}],"specificationPage":13,"drawingPage":14},"loopSource":{"mark":"П2","designation":"1.243.1-4-023-01","steel":"А-I ГОСТ 5781-82","diameterMm":8,"barLengthMm":690,"massKg":0.28,"drawingPage":15,"heightMm":140,"straightLegEachSideMm":170,"bendRadiusLargeMm":30,"bendRadiusSmallMm":20}}],"meshes":[{"mark":"С1","designation":"1.243.1-4-010","Lmm":780,"Hmm":580,"diameterMm":4,"Smm":200,"Kmm":200,"m":3,"n":2,"edgeCellLmm":100,"edgeCellHmm":100,"massKg":0.54,"bars":[{"position":"1","designation":"1.243.1-4-011","lengthMm":780,"quantity":4,"totalMassKg":0.28},{"position":"2","designation":"1.243.1-4-012","lengthMm":580,"quantity":5,"totalMassKg":0.26}],"specificationPage":12,"drawingPage":14},{"mark":"С2","designation":"1.243.1-4-010-01","Lmm":1080,"Hmm":880,"diameterMm":4,"Smm":200,"Kmm":200,"m":5,"n":4,"edgeCellLmm":null,"edgeCellHmm":null,"massKg":0.97,"bars":[{"position":"1","designation":"1.243.1-4-013","lengthMm":1080,"quantity":5,"totalMassKg":0.49},{"position":"2","designation":"1.243.1-4-014","lengthMm":880,"quantity":6,"totalMassKg":0.48}],"specificationPage":12,"drawingPage":14},{"mark":"С3","designation":"1.243.1-4-010-02","Lmm":1080,"Hmm":880,"diameterMm":5,"Smm":200,"Kmm":200,"m":5,"n":4,"edgeCellLmm":null,"edgeCellHmm":null,"massKg":1.48,"bars":[{"position":"1","designation":"1.243.1-4-015","lengthMm":1080,"quantity":5,"totalMassKg":0.75},{"position":"2","designation":"1.243.1-4-016","lengthMm":880,"quantity":6,"totalMassKg":0.73}],"specificationPage":12,"drawingPage":14},{"mark":"С4","designation":"1.243.1-4-010-03","Lmm":1280,"Hmm":1280,"diameterMm":4,"Smm":150,"Kmm":150,"m":8,"n":8,"edgeCellLmm":null,"edgeCellHmm":null,"massKg":2.07,"bars":[{"position":"1,2","designation":"1.243.1-4-017","lengthMm":1280,"quantity":18,"totalMassKg":2.07,"quantityPerDirection":9}],"specificationPage":12,"drawingPage":14},{"mark":"С5","designation":"1.243.1-4-010-04","Lmm":1280,"Hmm":1280,"diameterMm":5,"Smm":150,"Kmm":150,"m":8,"n":8,"edgeCellLmm":null,"edgeCellHmm":null,"massKg":3.2,"bars":[{"position":"1,2","designation":"1.243.1-4-018","lengthMm":1280,"quantity":18,"totalMassKg":3.2,"quantityPerDirection":9}],"specificationPage":12,"drawingPage":14},{"mark":"С6","designation":"1.243.1-4-010-05","Lmm":1580,"Hmm":1380,"diameterMm":4,"Smm":100,"Kmm":100,"m":15,"n":13,"edgeCellLmm":null,"edgeCellHmm":null,"massKg":3.88,"bars":[{"position":"1","designation":"1.243.1-4-019","lengthMm":1580,"quantity":14,"totalMassKg":1.96},{"position":"2","designation":"1.243.1-4-020","lengthMm":1380,"quantity":16,"totalMassKg":1.92}],"specificationPage":13,"drawingPage":14},{"mark":"С7","designation":"1.243.1-4-010-06","Lmm":1580,"Hmm":1380,"diameterMm":5,"Smm":100,"Kmm":100,"m":15,"n":13,"edgeCellLmm":null,"edgeCellHmm":null,"massKg":5.98,"bars":[{"position":"1","designation":"1.243.1-4-021","lengthMm":1580,"quantity":14,"totalMassKg":2.94},{"position":"2","designation":"1.243.1-4-022","lengthMm":1380,"quantity":16,"totalMassKg":3.04}],"specificationPage":13,"drawingPage":14}],"loops":[{"mark":"П1","designation":"1.243.1-4-023","steel":"А-I ГОСТ 5781-82","diameterMm":6,"barLengthMm":690,"massKg":0.16,"drawingPage":15,"heightMm":140,"straightLegEachSideMm":170,"bendRadiusLargeMm":30,"bendRadiusSmallMm":20},{"mark":"П2","designation":"1.243.1-4-023-01","steel":"А-I ГОСТ 5781-82","diameterMm":8,"barLengthMm":690,"massKg":0.28,"drawingPage":15,"heightMm":140,"straightLegEachSideMm":170,"bendRadiusLargeMm":30,"bendRadiusSmallMm":20}],"extractionNotes":["Размеры, масса и объём сохранены по номенклатуре, без замены расчётными значениями.","Два разночтения в расходе стали отмечены в карточках соответствующих марок.","Подбор использует табличные значения нагрузок, без интерполяции."]};
+const $=id=>document.getElementById(id);
+const state={selectedId:null};
+const loadNames={design:'Расчётная',normative:'Нормативная',longTerm:'Нормативная длительная'};
+const items=Array.isArray(DB.items)?DB.items:[];
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function num(value,digits=2){return Number.isFinite(Number(value))?Number(value).toLocaleString('ru-RU',{maximumFractionDigits:digits}):'—'}
+function loadValue(value){return value===null||value===undefined?'—':num(value,1);}
+function unitLabel(){return 'кгс/м²';}
+function keyValue(label,value){return `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`;}
+function readable(value){if(value===undefined||value===null||value==='')return '';if(Array.isArray(value))return value.map(readable).filter(Boolean).join('; ');if(typeof value==='object'){if('label' in value&&'value' in value)return `${value.label}: ${readable(value.value)}`;return Object.entries(value).map(([k,v])=>`${k}: ${readable(v)}`).join('; ');}return String(value);}
+function specLines(obj){if(!obj)return '<p class="hint">Данные не указаны.</p>';if(typeof obj!=='object')return `<ul class="spec-lines"><li>${esc(readable(obj))}</li></ul>`;const labels={mark:'Марка',diameter:'Диаметр',class:'Класс',steelClass:'Класс стали',spacing:'Шаг',width:'Ширина',length:'Длина',mass:'Масса',quantity:'Количество',count:'Количество',position:'Позиция',drawing:'Чертёж',note:'Примечание',notes:'Примечания',summary:'',specification:'',lines:''};const entries=Array.isArray(obj)?obj.map(v=>['',v]):Object.entries(obj);const lines=[];for(const [key,value] of entries){if(key==='geometry'||value===null||value===undefined||value==='')continue;if(['summary','specification','lines'].includes(key)){const vals=Array.isArray(value)?value:[value];for(const v of vals)lines.push(esc(readable(v)));}else{const label=labels[key]??key;lines.push((label?`<strong>${esc(label)}:</strong> `:'')+esc(readable(value)));}}return lines.length?`<ul class="spec-lines">${lines.map(v=>`<li>${v}</li>`).join('')}</ul>`:'<p class="hint">Данные не указаны.</p>';}
+function axisPositions(extent,count,step,edgeCell,overhang){
+  const n=Math.max(0,Math.floor(Number(count)||0));
+  if(!n)return [];
+  if(n===1)return [extent/2];
+  const interval=Number(step)>0?Number(step):(extent-2*overhang)/(n-1);
+  const first=Number(edgeCell)>0?Number(edgeCell):interval;
+  return Array.from({length:n},(_,i)=>i===0?overhang:overhang+first+(i-1)*interval);
+}
+function geometryFor(item){
+  const a=Number(item.a),b=Number(item.b),g=item.mesh?.geometry,lift=item.lifting?.geometry;
+  const barsAlongA=[],barsAlongB=[],loops=[];
+  if(g){
+    const length=Number(g.length)||a-20,width=Number(g.width)||b-20,overhang=Number(g.endOverhang)||40;
+    const mx=(a-length)/2,my=(b-width)/2;
+    for(const yy of axisPositions(width,g.countAlongA,g.stepB,g.edgeCellB,overhang))barsAlongA.push({x1:mx,y1:my+yy,x2:mx+length,y2:my+yy});
+    for(const xx of axisPositions(length,g.countAlongB,g.stepA,g.edgeCellA,overhang))barsAlongB.push({x1:mx+xx,y1:my,x2:mx+xx,y2:my+width});
+  }
+  if(lift&&[2,4].includes(Number(lift.quantity))&&Number(lift.c)>0){
+    const xs=[Number(lift.c),a-Number(lift.c)];
+    const ys=Number(lift.quantity)===2?[b/2]:[Number(lift.yOffset),b-Number(lift.yOffset)];
+    for(const xx of xs)for(const yy of ys)if(Number.isFinite(yy))loops.push({x:xx,y:yy});
+  }
+  return {barsAlongA,barsAlongB,loops};
+}
+function slabSvg(item){
+  const a=Number(item.a),b=Number(item.b),h=Number(item.h||DB.common?.thickness||80);
+  const scale=Math.min(485/a,191/b),w=a*scale,d=b*scale,x=85+(485-w)/2,y=51+(191-d)/2;
+  const sideY=285,sideH=Math.max(18,Math.min(35,h*scale)),geometry=geometryFor(item);
+  const mesh=[...geometry.barsAlongA,...geometry.barsAlongB].map(bar=>`<line class="mesh-line" x1="${x+bar.x1*scale}" y1="${y+bar.y1*scale}" x2="${x+bar.x2*scale}" y2="${y+bar.y2*scale}"/>`).join('');
+  const loops=geometry.loops.map(point=>{const cx=x+point.x*scale,cy=y+point.y*scale;return `<g class="lifting-loop" fill="none" stroke="#aa6b28" stroke-width="1.4"><circle cx="${cx}" cy="${cy}" r="5" fill="#fffaf0"/><path d="M${cx-3} ${cy}H${cx+3} M${cx} ${cy-3}V${cy+3}"/></g>`;}).join('');
+  return `<svg class="sketch" viewBox="0 0 660 358" role="img" aria-labelledby="slab-svg-title slab-svg-desc"><title id="slab-svg-title">${esc(item.mark)}: ${a} × ${b} × ${h} мм</title><desc id="slab-svg-desc">Условный вид плиты сверху и сбоку. Размер A ${a} мм, размер B ${b} мм, толщина ${h} мм.${mesh?' Сетка показана по количеству и размещению стержней из серии.':''}${loops?' Монтажные петли обозначены кружками с крестом.':''}</desc><defs><marker id="dim-arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse"><path d="M7 1 L1 4 L7 7" fill="none" stroke="#506e7a" stroke-width="1"/></marker><pattern id="concrete-hatch" width="9" height="9" patternUnits="userSpaceOnUse"><path d="M0 9L9 0" stroke="#c3d8dc" stroke-width=".7"/></pattern></defs><text class="viewlabel" x="24" y="26">ВИД СВЕРХУ</text><rect x="${x}" y="${y}" width="${w}" height="${d}" rx="1" fill="#e5f1f0" stroke="#187b80" stroke-width="1.8"/>${mesh}${loops}<path class="dimension" d="M${x} ${y-5}V${y-23} M${x+w} ${y-5}V${y-23}"/><path class="dimension" d="M${x+3} ${y-18}H${x+w-3}" marker-start="url(#dim-arrow)" marker-end="url(#dim-arrow)"/><text class="dimtext" x="${x+w/2}" y="${y-25}" text-anchor="middle">A = ${num(a,0)}</text><path class="dimension" d="M${x+w+5} ${y}H${x+w+29} M${x+w+5} ${y+d}H${x+w+29}"/><path class="dimension" d="M${x+w+23} ${y+3}V${y+d-3}" marker-start="url(#dim-arrow)" marker-end="url(#dim-arrow)"/><text class="dimtext" transform="translate(${x+w+41} ${y+d/2}) rotate(-90)" text-anchor="middle">B = ${num(b,0)}</text><text class="viewlabel" x="24" y="273">ВИД СБОКУ</text><rect x="${x}" y="${sideY}" width="${w}" height="${sideH}" fill="url(#concrete-hatch)" stroke="#187b80" stroke-width="1.5"/><path class="dimension" d="M${x+w+5} ${sideY}H${x+w+29} M${x+w+5} ${sideY+sideH}H${x+w+29}"/><path class="dimension" d="M${x+w+23} ${sideY+2}V${sideY+sideH-2}" marker-start="url(#dim-arrow)" marker-end="url(#dim-arrow)"/><text class="dimtext" x="${x+w+35}" y="${sideY+sideH/2+4}">h = ${num(h,0)}</text><text class="viewlabel" x="${x+w/2}" y="${sideY+sideH+23}" text-anchor="middle">A = ${num(a,0)} мм</text>${loops?'<text class="viewlabel" x="24" y="349">⊕ — монтажная петля</text>':''}</svg>`;
+}
+function reviewMarkup(notes){return Array.isArray(notes)&&notes.length?`<aside class="review-note" aria-label="Разночтение в серии"><h4>* Разночтение в серии</h4>${notes.map(n=>`<p>${esc(typeof n==='string'?n:n.text)}${typeof n==='object'&&n.source?`<span class="review-source">${esc(n.source)}</span>`:''}</p>`).join('')}</aside>`:'';}
+function sourceMarkup(item){const pages=item.sourcePages??item.sourcePage;const pageText=Array.isArray(pages)?pages.join(', '):pages;const parts=[`<strong>Серия ${esc(DB.series||'1.243.1-4')}</strong>`];if(item.drawing)parts.push(`Обозначение чертежа: ${esc(item.drawing)}`);if(pageText!==undefined&&pageText!==null)parts.push(`Страница файла DJVU: ${esc(pageText)}`);if(item.sourceDescription)parts.push(esc(item.sourceDescription));return parts.join('<br>');}
+function renderDetail(item){if(!item){$('detail-heading').replaceChildren();$('sketch-slot').replaceChildren();$('detail-content').innerHTML='<div class="empty-detail"><h2>В каталоге нет плит</h2></div>';return;}const common=DB.common||{};const concrete=common.concrete||'—';const meshTitle=item.mesh?.mark?`Сетка ${item.mesh.mark}`:'Армирование';const noteList=[...(Array.isArray(common.notes)?common.notes:[]),...(Array.isArray(item.notes)?item.notes:[])];const self=common.selfWeight||{};const minSupport=DB.supportMin!=null?keyValue('Опирание, не менее',`${num(DB.supportMin,0)} мм`):'';const loads=Object.entries(loadNames).map(([k,name])=>`<tr><th scope="row">${name}</th><td>${loadValue(item.loads?.[k])} ${unitLabel()}</td></tr>`).join('');$('detail-content').innerHTML=`<div class="detail-top"><div><div class="eyebrow">Выбранная плита</div><h2 id="selected-mark">${esc(item.mark)}</h2><p class="subline">Плоская железобетонная плита · серия ${esc(DB.series||'1.243.1-4')}</p></div><button class="primary" type="button" id="print">Печать / PDF</button></div><div class="sketch-wrap"><div class="sketch-head"><h3>Схема плиты</h3><span>Размеры — мм</span></div>${slabSvg(item)}<p class="sketch-foot">Условный эскиз.${item.mesh?.geometry?' Сетка — по схеме серии.':''}${item.lifting?.geometry?' ⊕ — монтажная петля.':''}</p></div><div class="detail-grid"><section class="block"><h3>Характеристики</h3><dl class="kv">${keyValue('Бетон',concrete)}${keyValue('Объём бетона',item.volume!=null?`${Number(item.volume).toLocaleString('ru-RU',{minimumFractionDigits:3,maximumFractionDigits:3})} м³`:'—')}${keyValue('Расход стали'+(item.reviewNotes?.length?'*':''),item.steel!=null?`${num(item.steel,3)} кг`:'—')}</dl>${reviewMarkup(item.reviewNotes)}<dl class="kv">${keyValue('Приведено к классу А-I',item.steelEquivalent!=null?`${num(item.steelEquivalent,3)} кг`:'—')}${minSupport}</dl></section><section class="block"><h3>Нагрузки по серии</h3><p class="load-source-note">Без собственного веса плиты</p><table class="load-table"><tbody>${loads}</tbody></table><p class="self-weight">Собственный вес, учитываемый отдельно:<br>расчётный — ${loadValue(self.design)} ${unitLabel()}, нормативный — ${loadValue(self.normative)} ${unitLabel()}.</p></section></div><div class="section-rule reinforcement-grid"><section class="block"><h3>${esc(meshTitle)}</h3>${specLines(item.mesh)}</section><section class="block"><h3>Монтажные петли</h3>${specLines(item.lifting)}</section></div>${noteList.length?`<section class="block section-rule"><h3>Примечания серии</h3><ul class="note-list">${noteList.map(n=>`<li>${esc(readable(n))}</li>`).join('')}</ul></section>`:''}<section class="source section-rule" aria-label="Источник данных">${sourceMarkup(item)}</section>`;$('detail-heading').replaceChildren($('detail-content').querySelector('.detail-top'));$('sketch-slot').replaceChildren($('detail-content').querySelector('.sketch-wrap'));$('print').onclick=()=>window.print();}
+function render(){
+  if(!items.some(item=>item.id===state.selectedId))state.selectedId=items[0]?.id??null;
+  document.body.classList.toggle('no-selection',!state.selectedId);
+  $('result-count').textContent=`${items.length} марок`;
+  $('results-body').innerHTML=items.map(item=>`<tr data-id="${esc(item.id)}" class="${item.id===state.selectedId?'selected':''}" aria-selected="${item.id===state.selectedId}"><td><button class="mark-select" type="button" data-select="${esc(item.id)}" aria-pressed="${item.id===state.selectedId}">${esc(item.mark)}</button></td><td class="row-size">${num(item.a,0)} × ${num(item.b,0)} × ${num(item.h||DB.common?.thickness,0)}</td><td class="row-load">${loadValue(item.loads?.design)}</td><td>${num(item.mass,1)}</td></tr>`).join('');
+  renderDetail(items.find(item=>item.id===state.selectedId));
+  return items;
+}
+function select(id){if(!items.some(item=>item.id===id))return false;state.selectedId=id;render();return true;}
+$('purpose').textContent=DB.purpose||$('purpose').textContent;
+$('results-body').onclick=e=>{const row=e.target.closest('[data-id]');if(row)select(row.dataset.id);};
+window.SlabApp={getState:()=>({selectedId:state.selectedId,selectedItem:items.find(item=>item.id===state.selectedId)||null,matchingIds:items.map(item=>item.id)}),select,geometryFor};
+render();
+</script>
+</body>
+</html>
