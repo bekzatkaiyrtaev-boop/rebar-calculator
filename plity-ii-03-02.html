@@ -59,14 +59,14 @@ h1,h2,h3,p,dl,dd{margin:0;}
 .empty-detail{padding:60px 20px;text-align:center;color:var(--muted);}
 .empty-detail h2{font-size:18px;color:#fff;font-weight:700;}
 
-.detail-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px;}
+.detail-top{display:flex;justify-content:flex-end;gap:16px;align-items:flex-start;margin-bottom:18px;}
 .detail-top h2{font-size:22px;color:#fff;font-weight:700;}
 .primary{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:7px;padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .primary:hover{opacity:.88;}
 
 .sketch-wrap{border:1px solid var(--border);border-radius:8px;background:#fff;overflow:hidden;}
 .sketch-head{padding:12px 14px 0;display:flex;justify-content:space-between;gap:10px;align-items:center;}
-.sketch-head h3{font-size:12px;color:#172c3a;font-weight:700;}
+.sketch-head h3{font-size:16px;color:#172c3a;font-weight:700;}
 .sketch-head span{font-size:10.5px;color:#64748b;}
 .sketch{display:block;width:100%;height:auto;max-height:365px;}
 
@@ -215,8 +215,8 @@ function renderDetail(item){
   const loadNames={design:'Расчётная',longTerm:'Нормативная длительная',shortTerm:'Нормативная кратковременная'};
   const loadRows=Object.entries(loadNames).map(([key,label])=>`<tr><th scope="row">${label}</th><td>${withUnit(item.loads?.[key],'кгс/м²',1)}</td></tr>`).join('');
   const test=item.test,hasTest=test&&Object.values(test).some(v=>v!==null&&v!==undefined&&v!=='');
-  $('detail-heading').innerHTML=`<div class="detail-top"><div><h2 id="selected-mark">${esc(item.mark)}</h2></div><button class="primary" type="button" id="print">Печать / PDF</button></div>`;
-  $('sketch-slot').innerHTML=`<div class="sketch-wrap"><div class="sketch-head"><h3>Схема плиты</h3><span>Размеры — мм</span></div>${slabSvg(item)}</div>`;
+  $('detail-heading').innerHTML=`<div class="detail-top"><button class="primary" type="button" id="print">Печать / PDF</button></div>`;
+  $('sketch-slot').innerHTML=`<div class="sketch-wrap"><div class="sketch-head"><h3 id="selected-mark">${esc(item.mark)}</h3><span>Размеры — мм</span></div>${slabSvg(item)}</div>`;
   $('detail-content').innerHTML=`<div class="detail-grid"><section class="block"><h3>Характеристики</h3><dl class="kv">${keyValue('Бетон',readable(item.concrete))}${keyValue('Объём бетона',item.volume!==null&&item.volume!==undefined?`${volume(item.volume)} м³`:'—')}${keyValue('Расход стали',withUnit(item.steel,'кг',3))}</dl>${reviewMarkup(item.reviewNotes)}<dl class="kv">${keyValue('Сталь на 1 м³ бетона',withUnit(item.steelPerM3,'кг/м³',2))}${keyValue('Расчётный пролёт',withUnit(item.span,'мм',0))}${keyValue('Опирание, не менее',withUnit(item.supportMin,'мм',0))}</dl></section><section class="block"><h3>Нагрузки по альбому</h3><p class="load-source-note">С учётом собственного веса плиты</p><table class="load-table"><tbody>${loadRows}</tbody></table>${['design','longTerm','shortTerm'].some(key=>item.loads?.[key]===null||item.loads?.[key]===undefined)?'<p class="self-weight" style="margin-top:10px">«—» — значение в альбоме не приведено.</p>':''}</section></div><div class="section-rule reinforcement-grid"><section class="block"><h3>Сетки</h3>${meshesMarkup(item.meshes)}</section><section class="block loop-spec"><h3>Монтажные петли</h3>${loopMarkup(item.loop)}</section></div>${hasTest?`<section class="block section-rule"><h3>Контроль при испытании</h3><dl class="kv">${keyValue('Контрольный прогиб',withUnit(test.deflection,'мм',2))}${keyValue('Нагрузка при проверке прочности',withUnit(test.proofStrength,'кгс/м²',1))}${keyValue('Нагрузка при проверке прогиба',withUnit(test.proofDeflection,'кгс/м²',1))}</dl></section>`:''}${Array.isArray(item.notes)&&item.notes.length?`<section class="block section-rule"><h3>Примечания альбома</h3>${lines(item.notes,'note-list')}</section>`:''}<section class="source section-rule" aria-label="Источник данных">${sourceMarkup(item)}</section>`;
   $('print').onclick=()=>window.print();
 }
